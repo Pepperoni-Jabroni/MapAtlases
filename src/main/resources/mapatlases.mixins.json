@@ -1,10 +1,11 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "pepjebs.thirdpersonmaps.mixin",
+  "package": "pepjebs.mapatlases.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [],
   "client": [
+    "MapAtlasesHUDMixin"
   ],
   "injectors": {
     "defaultRequire": 1

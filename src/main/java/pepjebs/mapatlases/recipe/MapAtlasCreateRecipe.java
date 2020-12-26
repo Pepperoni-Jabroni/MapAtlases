@@ -31,15 +31,15 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
 
     @Override
     public boolean matches(CraftingInventory inv, World world) {
-        ArrayList<ItemStack> items = new ArrayList<>();
+        ArrayList<ItemStack> itemStacks = new ArrayList<>();
         for(int i = 0; i < inv.size(); i++) {
             if (!inv.getStack(i).isEmpty()) {
-                items.add(inv.getStack(i));
+                itemStacks.add(inv.getStack(i));
             }
         }
-        if (items.size() == 3) {
-            List<Item> items1 = items.stream().map(ItemStack::getItem).collect(Collectors.toList());
-            return items1.containsAll(Arrays.asList(Items.FILLED_MAP, Items.CARTOGRAPHY_TABLE, Items.BOOK));
+        if (itemStacks.size() == 3) {
+            List<Item> items = itemStacks.stream().map(ItemStack::getItem).collect(Collectors.toList());
+            return items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.CARTOGRAPHY_TABLE, Items.BOOK));
         }
         return false;
     }

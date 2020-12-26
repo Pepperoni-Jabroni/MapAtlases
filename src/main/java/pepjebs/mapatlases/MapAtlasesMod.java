@@ -8,6 +8,8 @@ import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
@@ -15,6 +17,7 @@ import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
 public class MapAtlasesMod implements ModInitializer {
 
     public static final String MOD_ID = "map_atlases";
+    public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public static final MapAtlasItem MAP_ATLAS = new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1));
 

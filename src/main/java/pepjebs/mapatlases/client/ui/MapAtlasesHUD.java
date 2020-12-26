@@ -47,7 +47,8 @@ public class MapAtlasesHUD extends DrawableHelper {
 
     private void renderMapHUDFromItemStack(MatrixStack matrices, ItemStack atlas) {
         if (client.world == null) return;
-        MapState state = MapAtlasesAccessUtils.getRandomMapStateFromAtlas(client.world, atlas);
+        MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(client, atlas);
+        if (state == null) return;
         // Draw map background
         int y = 0;
         int x = client.getWindow().getScaledWidth()-64;

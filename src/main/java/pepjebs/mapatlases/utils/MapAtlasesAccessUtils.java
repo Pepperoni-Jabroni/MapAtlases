@@ -1,12 +1,16 @@
 package pepjebs.mapatlases.utils;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 
@@ -32,6 +36,19 @@ public class MapAtlasesAccessUtils {
         return FilledMapItem.getMapState(map, world);
     }
 
+    public static List<MapState> getAllMapStatesFromAtlas(World world, ItemStack atlas) {
+        int[] mapIds = Arrays.stream(atlas.getTag().getIntArray("maps")).toArray();
+        List<MapState> mapStates = new ArrayList<>();
+        for (int i = 0; i < mapIds.length; i++) {
+            ItemStack map = new ItemStack(Items.FILLED_MAP);
+            CompoundTag tag = new CompoundTag();
+            tag.putInt("map", mapIds[i]);
+            map.setTag(tag);
+            mapStates.add(FilledMapItem.getOrCreateMapState(map, world));
+        }
+        return mapStates;
+    }
+
     public static ItemStack getAtlasFromItemStacks(List<ItemStack> itemStacks) {
         Optional<ItemStack> item =  itemStacks.stream()
                 .filter(i -> i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findFirst();
@@ -41,13 +58,13 @@ public class MapAtlasesAccessUtils {
     public static List<MapState> getMapStatesFromItemStacks(World world, List<ItemStack> itemStacks) {
         return itemStacks.stream()
                 .filter(i -> i.isItemEqual(new ItemStack(Items.FILLED_MAP)))
-                .map(m -> FilledMapItem.getMapState(m, world))
+                .map(m -> FilledMapItem.getOrCreateMapState(m, world))
                 .collect(Collectors.toList());
     }
 
     public static Set<Integer> getMapIdsFromItemStacks(ClientWorld world, List<ItemStack> itemStacks) {
         return getMapStatesFromItemStacks(world, itemStacks).stream()
-                .map(m -> getMapIntFromState(m)).collect(Collectors.toSet());
+                .map(MapAtlasesAccessUtils::getMapIntFromState).collect(Collectors.toSet());
     }
 
     public static List<ItemStack> getItemStacksFromGrid(CraftingInventory inv) {
@@ -69,5 +86,28 @@ public class MapAtlasesAccessUtils {
     public static int getMapIntFromState(MapState mapState) {
         String mapId = mapState.getId();
         return Integer.parseInt(mapId.substring(4));
+    }
+
+    public static MapState getActiveAtlasMapState(MinecraftClient client, ItemStack atlas) {
+        List<MapState> mapStates = getAllMapStatesFromAtlas(client.world, atlas);
+        for (MapState state : mapStates) {
+            if (state == null) {
+                MapAtlasesMod.LOGGER.warn("getActiveAtlasMapState: Found null MapState.");
+                continue;
+            }
+            for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
+                if (entry.getValue().getType() == MapIcon.Type.PLAYER) return state;
+            }
+        }
+        for (MapState state : mapStates) {
+            if (state == null) {
+                MapAtlasesMod.LOGGER.warn("getActiveAtlasMapState: Found null MapState.");
+                continue;
+            }
+            for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
+                if (entry.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP) return state;
+            }
+        }
+        return null;
     }
 }

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "map_atlases",
+  "version": "1.0.0",
+
+  "name": "Map Atlases",
+  "description": "A vanilla-friendly Minimap mod using vanilla Maps!",
+  "authors": [
+    "pepperoni_jabroni_"
+  ],
+  "contact": {
+    "homepage": "https://facebook.com/",
+    "sources": "https://facebook.com/"
+  },
+
+  "license": "GPL-3.0",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": ["pepjebs.mapatlases.MapAtlasesMod"]
+  },
+  "mixins": [
+    "mapatlases.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  }
+}

@@ -1,18 +1,3 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [
-    {
-      "item": "minecraft:book"
-    },
-    {
-      "item": "minecraft:cartography_table"
-    },
-    {
-      "item": "minecraft:map"
-    }
-  ],
-  "result": {
-    "item": "map_atlases:atlas",
-    "count": 1
-  }
+  "type": "map_atlases:crafting_atlas"
 }

@@ -1,5 +1,6 @@
 package pepjebs.mapatlases.recipe;
 
+import joptsimple.util.RegexMatcher;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.inventory.CraftingInventory;
@@ -8,6 +9,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapState;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.text.TranslatableText;
@@ -55,7 +57,16 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
         }
         MapState mapState = FilledMapItem.getMapState(mapItemStack, MinecraftClient.getInstance().world);
         MapAtlasItem mapAtlasItem = MapAtlasesMod.MAP_ATLAS;
-        return new ItemStack(mapAtlasItem).setCustomName(new TranslatableText(mapState.getId()));
+        CompoundTag compoundTag = new CompoundTag();
+        compoundTag.putIntArray("maps", new int[]{getMapIntFromState(mapState)});
+        ItemStack atlasItemStack = new ItemStack(mapAtlasItem);
+        atlasItemStack.setTag(compoundTag);
+        return atlasItemStack;
+    }
+
+    private int getMapIntFromState(MapState mapState) {
+        String mapId = mapState.getId();
+        return Integer.parseInt(mapId.substring(4));
     }
 
     @Override

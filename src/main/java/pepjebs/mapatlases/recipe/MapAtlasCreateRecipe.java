@@ -14,6 +14,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
+import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,15 +56,10 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
         MapState mapState = FilledMapItem.getMapState(mapItemStack, MinecraftClient.getInstance().world);
         MapAtlasItem mapAtlasItem = MapAtlasesMod.MAP_ATLAS;
         CompoundTag compoundTag = new CompoundTag();
-        compoundTag.putIntArray("maps", new int[]{getMapIntFromState(mapState)});
+        compoundTag.putIntArray("maps", new int[]{MapAtlasesAccessUtils.getMapIntFromState(mapState)});
         ItemStack atlasItemStack = new ItemStack(mapAtlasItem);
         atlasItemStack.setTag(compoundTag);
         return atlasItemStack;
-    }
-
-    private int getMapIntFromState(MapState mapState) {
-        String mapId = mapState.getId();
-        return Integer.parseInt(mapId.substring(4));
     }
 
     @Override

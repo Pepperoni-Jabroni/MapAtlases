@@ -28,6 +28,7 @@ public class MapAtlasesAccessUtils {
     }
 
     public static MapState getRandomMapStateFromAtlas(World world, ItemStack atlas) {
+        if (atlas.getTag() == null) return null;
         int[] mapIds = Arrays.stream(atlas.getTag().getIntArray("maps")).toArray();
         ItemStack map = new ItemStack(Items.FILLED_MAP);
         CompoundTag tag = new CompoundTag();
@@ -37,12 +38,13 @@ public class MapAtlasesAccessUtils {
     }
 
     public static List<MapState> getAllMapStatesFromAtlas(World world, ItemStack atlas) {
+        if (atlas.getTag() == null) return null;
         int[] mapIds = Arrays.stream(atlas.getTag().getIntArray("maps")).toArray();
         List<MapState> mapStates = new ArrayList<>();
-        for (int i = 0; i < mapIds.length; i++) {
+        for (int mapId : mapIds) {
             ItemStack map = new ItemStack(Items.FILLED_MAP);
             CompoundTag tag = new CompoundTag();
-            tag.putInt("map", mapIds[i]);
+            tag.putInt("map", mapId);
             map.setTag(tag);
             mapStates.add(FilledMapItem.getOrCreateMapState(map, world));
         }
@@ -90,6 +92,7 @@ public class MapAtlasesAccessUtils {
 
     public static MapState getActiveAtlasMapState(MinecraftClient client, ItemStack atlas) {
         List<MapState> mapStates = getAllMapStatesFromAtlas(client.world, atlas);
+        if (mapStates == null) return null;
         for (MapState state : mapStates) {
             if (state == null) {
                 MapAtlasesMod.LOGGER.warn("getActiveAtlasMapState: Found null MapState.");

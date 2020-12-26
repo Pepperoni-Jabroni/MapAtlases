@@ -25,7 +25,11 @@ public class MapAtlasItem extends Item {
 
         if (world != null && world.isClient) {
             MapState mapState = MapAtlasesAccessUtils.getRandomMapStateFromAtlas(world, stack);
-            if (mapState == null) return;
+            if (mapState == null) {
+                tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_err")
+                        .formatted(Formatting.ITALIC).formatted(Formatting.GRAY));
+                return;
+            }
             CompoundTag tag = stack.getTag();
             int mapSize = tag != null ? tag.getIntArray("maps").length : 0;
             int empties = tag != null ? tag.getIntArray("empty").length : 0;

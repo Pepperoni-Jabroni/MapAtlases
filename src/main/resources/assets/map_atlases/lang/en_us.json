@@ -3,5 +3,6 @@
   "item.map_atlases.atlas.tooltip_1": "Maps: %d",
   "item.map_atlases.atlas.tooltip_2": "Empty Maps: %d",
   "item.map_atlases.atlas.tooltip_3": "Scale: 1:%s",
-  "item.map_atlases.atlas.tooltip_4": "Dimension: %s"
+  "item.map_atlases.atlas.tooltip_4": "Dimension: %s",
+  "item.map_atlases.atlas.tooltip_err": "Invalid!"
 }

@@ -10,6 +10,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
+import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
 
 public class MapAtlasesMod implements ModInitializer {
 
@@ -17,12 +18,15 @@ public class MapAtlasesMod implements ModInitializer {
 
     public static final MapAtlasItem MAP_ATLAS = new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1));
 
-    public static SpecialRecipeSerializer<MapAtlasCreateRecipe> MAP_ATLAS_RECIPE_SERIALIZER;
+    public static SpecialRecipeSerializer<MapAtlasCreateRecipe> MAP_ATLAS_CREATE_RECIPE;
+    public static SpecialRecipeSerializer<MapAtlasesAddRecipe> MAP_ATLAS_ADD_RECIPE;
 
     @Override
     public void onInitialize() {
-        MAP_ATLAS_RECIPE_SERIALIZER = Registry.register(Registry.RECIPE_SERIALIZER,
+        MAP_ATLAS_CREATE_RECIPE = Registry.register(Registry.RECIPE_SERIALIZER,
                 new Identifier(MOD_ID, "crafting_atlas"), new SpecialRecipeSerializer<>(MapAtlasCreateRecipe::new));
+        MAP_ATLAS_ADD_RECIPE = Registry.register(Registry.RECIPE_SERIALIZER,
+                new Identifier(MOD_ID, "adding_atlas"), new SpecialRecipeSerializer<>(MapAtlasesAddRecipe::new));
         Registry.register(Registry.ITEM, new Identifier(MOD_ID,"atlas"), MAP_ATLAS);
     }
 }

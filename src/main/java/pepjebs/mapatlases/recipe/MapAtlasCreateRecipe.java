@@ -1,7 +1,5 @@
 package pepjebs.mapatlases.recipe;
 
-import joptsimple.util.RegexMatcher;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.FilledMapItem;
@@ -12,7 +10,6 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
@@ -71,7 +68,7 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
 
     @Override
     public RecipeSerializer<?> getSerializer() {
-        return MapAtlasesMod.MAP_ATLAS_RECIPE_SERIALIZER;
+        return MapAtlasesMod.MAP_ATLAS_CREATE_RECIPE;
     }
 
     @Override

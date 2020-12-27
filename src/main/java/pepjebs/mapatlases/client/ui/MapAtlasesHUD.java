@@ -1,5 +1,7 @@
 package pepjebs.mapatlases.client.ui;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.MapRenderer;
@@ -13,6 +15,7 @@ import net.minecraft.util.Identifier;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
+@Environment(EnvType.CLIENT)
 public class MapAtlasesHUD extends DrawableHelper {
 
     private static final Identifier MAP_CHKRBRD = new Identifier("minecraft:textures/map/map_background_checkerboard.png");

@@ -1,10 +1,12 @@
 package pepjebs.mapatlases.item;
 
 import net.minecraft.client.item.TooltipContext;
-import net.minecraft.item.Item;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.NetworkSyncedItem;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Packet;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
@@ -14,9 +16,15 @@ import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.List;
 
-public class MapAtlasItem extends Item {
+public class MapAtlasItem extends NetworkSyncedItem {
     public MapAtlasItem(Settings settings) {
         super(settings);
+    }
+
+    @Nullable
+    @Override
+    public Packet<?> createSyncPacket(ItemStack stack, World world, PlayerEntity player) {
+        return super.createSyncPacket(stack, world, player);
     }
 
     @Override

@@ -9,7 +9,13 @@ The "Atlas" features and details:
 - When the Atlas is on your hot-bar, it will render your current-position Map on the HUD if a such Map exists inside the Atlas.
 - You can put both Filled Maps and Empty Maps with an Atlas in a crafting inventory to insert either Map type into the Atlas.
 - Filled Maps which are added **must** be of same Dimension & Scale.
-- Empty Maps are consumed when you enter an un-mapped region to generate a new Map of the corresponding Scale and Dimension.
+- *Todo:* Filled Maps inside the Atlas will continue updating your location & world-state.
+- *Todo:* Empty Maps are consumed when you enter an un-mapped region to generate a new Map of the corresponding Scale and Dimension.
+- *Todo:* There's a maximum of 64 Maps in each Atlas.
+- *Todo:* Right click activation for the Item to display all the Maps stitched together as a single GUI interface. Zoom and pan support would be awesome.
+- *Todo:* Enable multi-dimensional Atlases, and potentially a new Item with it?
+- *Todo:* Atlas in a lectern???
+- *Todo:* Config control for `activation_location` (inv, hot-bar, hands, main-hand, off-hand), `max_map_count`, `crafting_materials`, `is_multidimensional`
 
 ## Crafting an Atlas
 ![](https://i.imgur.com/vAMa0XF.png)

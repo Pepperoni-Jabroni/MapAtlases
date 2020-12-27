@@ -38,7 +38,7 @@ public class MapAtlasesAccessUtils {
     }
 
     public static List<MapState> getAllMapStatesFromAtlas(World world, ItemStack atlas) {
-        if (atlas.getTag() == null) return null;
+        if (atlas.getTag() == null) return new ArrayList<>();
         int[] mapIds = Arrays.stream(atlas.getTag().getIntArray("maps")).toArray();
         List<MapState> mapStates = new ArrayList<>();
         for (int mapId : mapIds) {
@@ -92,7 +92,6 @@ public class MapAtlasesAccessUtils {
 
     public static MapState getActiveAtlasMapState(MinecraftClient client, ItemStack atlas) {
         List<MapState> mapStates = getAllMapStatesFromAtlas(client.world, atlas);
-        if (mapStates == null) return null;
         for (MapState state : mapStates) {
             if (state == null) {
                 MapAtlasesMod.LOGGER.warn("getActiveAtlasMapState: Found null MapState.");

@@ -10,5 +10,8 @@ A vanilla-friendly Minimap mod using vanilla Maps!
 ## Adding more Maps to an Atlas
 ![](https://i.imgur.com/rIQxD2U.png)
 
+## Maps inside the Atlas will render if the Atlas is on your hot-bar
+![](https://i.imgur.com/sPCpk0u.png)
+
 ## Custom Tooltip
 ![](https://i.imgur.com/XZqmjJT.png)

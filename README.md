@@ -15,7 +15,7 @@ The "Atlas" features and details:
 - *Todo:* Right click activation for the Item to display all the Maps stitched together as a single GUI interface. Zoom and pan support would be awesome.
 - *Todo:* Enable multi-dimensional Atlases, and potentially a new Item with it?
 - *Todo:* Atlas in a lectern???
-- *Todo:* Config control for `activation_location` (inv, hot-bar, hands, main-hand, off-hand), `max_map_count`, `crafting_materials`, `is_multidimensional`
+- *Todo:* Config control for `activation_location` (inv, hot-bar, hands, main-hand, off-hand), `max_map_count`, `crafting_materials`, `is_multidimensional`, `force_scale`
 
 ## Crafting an Atlas
 ![](https://i.imgur.com/vAMa0XF.png)

@@ -9,3 +9,6 @@ A vanilla-friendly Minimap mod using vanilla Maps!
 
 ## Adding more Maps to an Atlas
 ![](https://i.imgur.com/rIQxD2U.png)
+
+## Custom Tooltip
+![](https://i.imgur.com/XZqmjJT.png)

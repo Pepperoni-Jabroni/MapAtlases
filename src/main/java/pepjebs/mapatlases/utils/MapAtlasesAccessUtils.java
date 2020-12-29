@@ -46,7 +46,12 @@ public class MapAtlasesAccessUtils {
             CompoundTag tag = new CompoundTag();
             tag.putInt("map", mapId);
             map.setTag(tag);
-            mapStates.add(FilledMapItem.getOrCreateMapState(map, world));
+            MapState state = FilledMapItem.getOrCreateMapState(map, world);
+            if (state == null) {
+//                MapAtlasesMod.LOGGER.warn("Received null MapState from getOrCreateMapState");
+            } else {
+                mapStates.add(state);
+            }
         }
         return mapStates;
     }
@@ -90,11 +95,11 @@ public class MapAtlasesAccessUtils {
         return Integer.parseInt(mapId.substring(4));
     }
 
-    public static MapState getActiveAtlasMapState(MinecraftClient client, ItemStack atlas) {
-        List<MapState> mapStates = getAllMapStatesFromAtlas(client.world, atlas);
+    public static MapState getActiveAtlasMapState(World world, ItemStack atlas) {
+        List<MapState> mapStates = getAllMapStatesFromAtlas(world, atlas);
         for (MapState state : mapStates) {
             if (state == null) {
-                MapAtlasesMod.LOGGER.warn("getActiveAtlasMapState: Found null MapState.");
+//                MapAtlasesMod.LOGGER.warn("getActiveAtlasMapState: Found null MapState.");
                 continue;
             }
             for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
@@ -103,7 +108,7 @@ public class MapAtlasesAccessUtils {
         }
         for (MapState state : mapStates) {
             if (state == null) {
-                MapAtlasesMod.LOGGER.warn("getActiveAtlasMapState: Found null MapState.");
+//                MapAtlasesMod.LOGGER.warn("getActiveAtlasMapState: Found null MapState.");
                 continue;
             }
             for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {

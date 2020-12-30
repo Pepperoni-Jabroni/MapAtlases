@@ -8,6 +8,7 @@ import net.minecraft.item.NetworkSyncedItem;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Packet;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -20,6 +21,8 @@ import java.util.List;
 
 public class MapAtlasItem extends NetworkSyncedItem {
 
+    public static final int MAX_MAP_COUNT = 32;
+
     public MapAtlasItem(Settings settings) {
         super(settings);
     }
@@ -27,18 +30,19 @@ public class MapAtlasItem extends NetworkSyncedItem {
     @Nullable
     @Override
     public Packet<?> createSyncPacket(ItemStack stack, World world, PlayerEntity player) {
-        return super.createSyncPacket(stack, world, player);
+        MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(world, stack);
+        if (state == null) return null;
+        return state.getPlayerMarkerPacket(stack, world, player);
     }
 
     @Override
     public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
-        if (world instanceof ServerWorld && slot < 9) {
-            MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(world, stack);
-            if (state == null) {
-//                MapAtlasesMod.LOGGER.warn("Atlas tick on null MapState.");
-                return;
+        if (!world.isClient && slot < 9) {
+            List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(world, stack);
+            if (mapStates.isEmpty()) return;
+            for(MapState state : mapStates) {
+                state.update((PlayerEntity) entity, stack);
             }
-            state.update((PlayerEntity) entity, stack);
         }
     }
 

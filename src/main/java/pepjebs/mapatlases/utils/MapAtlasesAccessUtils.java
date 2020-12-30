@@ -30,11 +30,16 @@ public class MapAtlasesAccessUtils {
     public static MapState getRandomMapStateFromAtlas(World world, ItemStack atlas) {
         if (atlas.getTag() == null) return null;
         int[] mapIds = Arrays.stream(atlas.getTag().getIntArray("maps")).toArray();
+        ItemStack map = createMapItemStackFromId(mapIds[0]);
+        return FilledMapItem.getMapState(map, world);
+    }
+
+    private static ItemStack createMapItemStackFromId(int id) {
         ItemStack map = new ItemStack(Items.FILLED_MAP);
         CompoundTag tag = new CompoundTag();
-        tag.putInt("map", mapIds[0]);
+        tag.putInt("map", id);
         map.setTag(tag);
-        return FilledMapItem.getMapState(map, world);
+        return map;
     }
 
     public static List<MapState> getAllMapStatesFromAtlas(World world, ItemStack atlas) {
@@ -42,13 +47,17 @@ public class MapAtlasesAccessUtils {
         int[] mapIds = Arrays.stream(atlas.getTag().getIntArray("maps")).toArray();
         List<MapState> mapStates = new ArrayList<>();
         for (int mapId : mapIds) {
-            ItemStack map = new ItemStack(Items.FILLED_MAP);
-            CompoundTag tag = new CompoundTag();
-            tag.putInt("map", mapId);
-            map.setTag(tag);
-            MapState state = FilledMapItem.getOrCreateMapState(map, world);
+            MapState state = world.getMapState(FilledMapItem.getMapName(mapId));
             if (state == null) {
-//                MapAtlasesMod.LOGGER.warn("Received null MapState from getOrCreateMapState");
+                ItemStack map = createMapItemStackFromId(mapId);
+                state = FilledMapItem.getOrCreateMapState(map, world);
+                if (state == null) {
+                    MapAtlasesMod.LOGGER.warn("Received null MapState from getOrCreateMapState. is_client: " + world.isClient() + ", idx: " + mapId);
+//                    state = FilledMapItem.getOrCreateMapState(map, world.getServer().getWorld(world.getRegistryKey()));
+//                    mapStates.add(state);
+                } else {
+                    mapStates.add(state);
+                }
             } else {
                 mapStates.add(state);
             }
@@ -98,23 +107,25 @@ public class MapAtlasesAccessUtils {
     public static MapState getActiveAtlasMapState(World world, ItemStack atlas) {
         List<MapState> mapStates = getAllMapStatesFromAtlas(world, atlas);
         for (MapState state : mapStates) {
-            if (state == null) {
-//                MapAtlasesMod.LOGGER.warn("getActiveAtlasMapState: Found null MapState.");
-                continue;
-            }
             for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
                 if (entry.getValue().getType() == MapIcon.Type.PLAYER) return state;
             }
         }
         for (MapState state : mapStates) {
-            if (state == null) {
-//                MapAtlasesMod.LOGGER.warn("getActiveAtlasMapState: Found null MapState.");
-                continue;
-            }
             for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
                 if (entry.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP) return state;
             }
         }
         return null;
+    }
+
+    public static int getEmptyMapCountFromItemStack(ItemStack atlas) {
+        CompoundTag tag = atlas.getTag();
+        return tag != null && tag.contains("empty") ? tag.getInt("empty") : -1;
+    }
+
+    public static int getMapCountFromItemStack(ItemStack atlas) {
+        CompoundTag tag = atlas.getTag();
+        return tag != null && tag.contains("maps") ? tag.getIntArray("maps").length : -1;
     }
 }

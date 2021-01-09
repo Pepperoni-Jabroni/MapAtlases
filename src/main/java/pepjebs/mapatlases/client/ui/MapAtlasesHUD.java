@@ -21,6 +21,7 @@ public class MapAtlasesHUD extends DrawableHelper {
     private static final Identifier MAP_CHKRBRD = new Identifier("minecraft:textures/map/map_background_checkerboard.png");
     private static MinecraftClient client;
     private static MapRenderer mapRenderer;
+    private static String currentMapId = "";
 
     public MapAtlasesHUD() {
         client = MinecraftClient.getInstance();
@@ -45,10 +46,19 @@ public class MapAtlasesHUD extends DrawableHelper {
     }
 
     private void renderMapHUDFromItemStack(MatrixStack matrices, ItemStack atlas) {
-        if (client.world == null) { return; };
+        if (client.world == null) {
+            MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: client.world was null");
+            return;
+        }
         MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(client.world, atlas);
-        if (state == null) { return; }
-        MapAtlasesMod.LOGGER.info("renderMapHUDFromItemStack: Current map id - " + state.getId());
+        if (state == null) {
+            MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: getActiveAtlasMapState was null");
+            return;
+        }
+        if (state.getId().compareTo(currentMapId) != 0) {
+            MapAtlasesMod.LOGGER.info("renderMapHUDFromItemStack: Current map id - " + state.getId());
+            currentMapId = state.getId();
+        }
         // Draw map background
         int y = 0;
         int x = client.getWindow().getScaledWidth()-64;

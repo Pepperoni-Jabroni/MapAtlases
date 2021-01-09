@@ -52,10 +52,11 @@ public class MapAtlasesAccessUtils {
             if (state == null) {
                 ItemStack map = createMapItemStackFromId(mapId);
                 state = FilledMapItem.getOrCreateMapState(map, world);
-                if (state == null && world instanceof ServerWorld) {
-//                    MapAtlasesMod.LOGGER.warn("Received null MapState from getOrCreateMapState. is_client: " + world.isClient() + ", idx: " + mapId);
-                    state = FilledMapItem.getOrCreateMapState(map, world);
-                    mapStates.add(state);
+                if (state == null) {
+                    if (world instanceof ServerWorld) {
+                        state = FilledMapItem.getOrCreateMapState(map, world);
+                        mapStates.add(state);
+                    }
                 } else {
                     mapStates.add(state);
                 }

@@ -2,8 +2,11 @@ package pepjebs.mapatlases;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -20,6 +23,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
+import net.minecraft.server.world.BlockEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -71,8 +75,6 @@ public class MapAtlasesMod implements ModInitializer {
                 player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
                         MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
                         packetByteBuf));
-
-                MapAtlasesMod.LOGGER.info("Server Map Icons: " + state.icons.values().stream().map(i -> i.getType()).collect(Collectors.toList()));
                 MapAtlasesMod.LOGGER.info("Server Sent MapState: " + state.getId());
             }
         });

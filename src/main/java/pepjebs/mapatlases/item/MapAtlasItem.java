@@ -3,6 +3,7 @@ package pepjebs.mapatlases.item;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.NetworkSyncedItem;
 import net.minecraft.item.map.MapState;
@@ -19,7 +20,7 @@ import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.List;
 
-public class MapAtlasItem extends NetworkSyncedItem {
+public class MapAtlasItem extends Item {
 
     public static final int MAX_MAP_COUNT = 32;
 
@@ -27,25 +28,17 @@ public class MapAtlasItem extends NetworkSyncedItem {
         super(settings);
     }
 
-//    @Nullable
 //    @Override
-//    public Packet<?> createSyncPacket(ItemStack stack, World world, PlayerEntity player) {
-//        MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(world, stack);
-//        if (state == null) return null;
-//        return state.getPlayerMarkerPacket(stack, world, player);
+//    public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
+//        if (!world.isClient && slot < 9) {
+//            List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(world, stack);
+//            if (mapStates.isEmpty()) return;
+//            for(MapState state : mapStates) {
+//                state.update((PlayerEntity) entity, stack);
+//                state.getPlayerSyncData((PlayerEntity) entity);
+//            }
+//        }
 //    }
-
-    @Override
-    public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
-        if (!world.isClient && slot < 9) {
-            List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(world, stack);
-            if (mapStates.isEmpty()) return;
-            for(MapState state : mapStates) {
-                state.update((PlayerEntity) entity, stack);
-                state.getPlayerSyncData((PlayerEntity) entity);
-            }
-        }
-    }
 
     @Override
     public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {

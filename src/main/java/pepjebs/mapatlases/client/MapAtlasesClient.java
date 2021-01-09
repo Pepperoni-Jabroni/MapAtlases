@@ -31,19 +31,26 @@ public class MapAtlasesClient implements ClientModInitializer {
                         });
                 });
         ClientTickEvents.START_CLIENT_TICK.register((client -> {
+            List<MapState> newMapStates = new ArrayList<>();
             for (MapState state : mapStates) {
                 if (client.world != null && client.player != null &&
-                        client.world.getRegistryKey() == state.dimension &&
-                        client.world.getMapState(state.getId()) == null) {
-                    ItemStack atlas = client.player.inventory.main.stream()
-                            .filter(is -> is.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
-                    state.getPlayerSyncData(client.player);
-                    state.update(client.player, atlas);
-                    client.gameRenderer.getMapRenderer().updateTexture(state);
-                    client.world.putMapState(state);
-                    MapAtlasesMod.LOGGER.info("Client Put mapState: " + state.getId());
+                        client.world.getRegistryKey() == state.dimension) {
+//                    if (client.world.getMapState(state.getId()) == null) {
+                        ItemStack atlas = client.player.inventory.main.stream()
+                                .filter(is -> is.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
+                        state.getPlayerSyncData(client.player);
+                        state.update(client.player, atlas);
+                        client.gameRenderer.getMapRenderer().updateTexture(state);
+                        client.world.putMapState(state);
+//                        MapAtlasesMod.LOGGER.info("Client Put mapState: " + state.getId());
+//                    } else {
+//
+//                    }
+                } else {
+                    newMapStates.add(state);
                 }
             }
+            mapStates = newMapStates;
         }));
     }
 }

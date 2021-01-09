@@ -43,6 +43,14 @@ public class MapAtlasesAccessUtils {
         return map;
     }
 
+    public static ItemStack createMapItemStackFromStrId(String id) {
+        ItemStack map = new ItemStack(Items.FILLED_MAP);
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("map", Integer.parseInt(id.substring(4)));
+        map.setTag(tag);
+        return map;
+    }
+
     public static List<MapState> getAllMapStatesFromAtlas(World world, ItemStack atlas) {
         if (atlas.getTag() == null) return new ArrayList<>();
         int[] mapIds = Arrays.stream(atlas.getTag().getIntArray("maps")).toArray();

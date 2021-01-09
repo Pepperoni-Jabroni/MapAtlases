@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerBlockEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
@@ -25,6 +26,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.server.world.BlockEvent;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
@@ -76,6 +78,40 @@ public class MapAtlasesMod implements ModInitializer {
                         MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
                         packetByteBuf));
                 MapAtlasesMod.LOGGER.info("Server Sent MapState: " + state.getId());
+            }
+        });
+        ServerTickEvents.END_SERVER_TICK.register((server) -> {
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                ItemStack atlas = player.inventory.main.stream()
+                        .filter(is -> is.isItemEqual(new ItemStack(MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
+                if (!atlas.isEmpty()) {
+                    List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.world, atlas);
+                    for (MapState state : mapStates) {
+//                        int i = 1 << state.scale;
+//                        int j = state.xCenter;
+//                        int k = state.zCenter;
+//                        int l = MathHelper.floor(player.getX() - (double)j) / i + 64;
+//                        int m = MathHelper.floor(player.getZ() - (double)k) / i + 64;
+//                        int n = 128 / i;
+//                        state.markDirty(l - n + 1, m - n - 1);
+                        state.update(player, atlas);
+                        ((FilledMapItem) Items.FILLED_MAP).updateColors(player.world, player, state);
+                        state.getPlayerSyncData(player);
+                        PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+                        (new MapAtlasesInitAtlasS2CPacket(state)).write(packetByteBuf);
+                        player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                                MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
+                                packetByteBuf));
+//                        ItemStack map = MapAtlasesAccessUtils.createMapItemStackFromStrId(state.getId());
+//                        Packet<?> p = null;
+//                        while (p == null) {
+//                            p = state.getPlayerMarkerPacket(map, player.world, player);
+//                        }
+//                        if (p != null) {
+//                            player.networkHandler.sendPacket(p);
+//                        }
+                    }
+                }
             }
         });
     }

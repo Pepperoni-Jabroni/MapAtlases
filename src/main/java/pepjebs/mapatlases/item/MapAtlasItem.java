@@ -42,6 +42,7 @@ public class MapAtlasItem extends NetworkSyncedItem {
             if (mapStates.isEmpty()) return;
             for(MapState state : mapStates) {
                 state.update((PlayerEntity) entity, stack);
+                state.getPlayerSyncData((PlayerEntity) entity);
             }
         }
     }

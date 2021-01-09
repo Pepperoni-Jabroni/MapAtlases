@@ -34,7 +34,7 @@ public class MapAtlasesAccessUtils {
         return FilledMapItem.getMapState(map, world);
     }
 
-    private static ItemStack createMapItemStackFromId(int id) {
+    public static ItemStack createMapItemStackFromId(int id) {
         ItemStack map = new ItemStack(Items.FILLED_MAP);
         CompoundTag tag = new CompoundTag();
         tag.putInt("map", id);
@@ -52,7 +52,7 @@ public class MapAtlasesAccessUtils {
                 ItemStack map = createMapItemStackFromId(mapId);
                 state = FilledMapItem.getOrCreateMapState(map, world);
                 if (state == null) {
-                    MapAtlasesMod.LOGGER.warn("Received null MapState from getOrCreateMapState. is_client: " + world.isClient() + ", idx: " + mapId);
+//                    MapAtlasesMod.LOGGER.warn("Received null MapState from getOrCreateMapState. is_client: " + world.isClient() + ", idx: " + mapId);
 //                    state = FilledMapItem.getOrCreateMapState(map, world.getServer().getWorld(world.getRegistryKey()));
 //                    mapStates.add(state);
                 } else {

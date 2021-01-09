@@ -10,15 +10,15 @@ public class MapAtlasesClient implements ClientModInitializer {
     public void onInitializeClient() {
         ClientPlayNetworking.registerGlobalReceiver(MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
                 (client, handler, buf, responseSender) -> {
-//                    client.execute(() -> {
                         MapAtlasesMod.LOGGER.info("Received MapState packet...");
                         MapAtlasesInitAtlasS2CPacket p = new MapAtlasesInitAtlasS2CPacket();
                         p.read(buf);
-                        MapAtlasesMod.LOGGER.info(client.world);
-                        if (client.world == null) return;
-                        client.world.putMapState(p.getMapState());
-                        MapAtlasesMod.LOGGER.info("Received MapState: " + p.getMapState().getId());
-//                    });
+                        client.execute(() -> {
+                            MapAtlasesMod.LOGGER.info(client.world);
+                            if (client.world == null) return;
+                            client.world.putMapState(p.getMapState());
+                            MapAtlasesMod.LOGGER.info("Received MapState: " + p.getMapState().getId());
+                        });
                 });
     }
 }

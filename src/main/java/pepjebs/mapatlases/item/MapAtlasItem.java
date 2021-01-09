@@ -27,13 +27,13 @@ public class MapAtlasItem extends NetworkSyncedItem {
         super(settings);
     }
 
-    @Nullable
-    @Override
-    public Packet<?> createSyncPacket(ItemStack stack, World world, PlayerEntity player) {
-        MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(world, stack);
-        if (state == null) return null;
-        return state.getPlayerMarkerPacket(stack, world, player);
-    }
+//    @Nullable
+//    @Override
+//    public Packet<?> createSyncPacket(ItemStack stack, World world, PlayerEntity player) {
+//        MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(world, stack);
+//        if (state == null) return null;
+//        return state.getPlayerMarkerPacket(stack, world, player);
+//    }
 
     @Override
     public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {

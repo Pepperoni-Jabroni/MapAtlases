@@ -48,6 +48,7 @@ public class MapAtlasesHUD extends DrawableHelper {
         if (client.world == null) { return; };
         MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(client.world, atlas);
         if (state == null) { return; }
+        MapAtlasesMod.LOGGER.info("renderMapHUDFromItemStack: Current map id - " + state.getId());
         // Draw map background
         int y = 0;
         int x = client.getWindow().getScaledWidth()-64;

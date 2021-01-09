@@ -64,8 +64,6 @@ public class MapAtlasesMod implements ModInitializer {
             if (atlas.isEmpty()) return;
             List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(serverWorld, atlas);
             for (MapState state : mapStates) {
-                int mapId = Integer.parseInt(state.getId().substring(4));
-                ItemStack mapStack = MapAtlasesAccessUtils.createMapItemStackFromId(mapId);
                 state.update(player, atlas);
                 state.getPlayerSyncData(player);
                 PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
@@ -73,6 +71,9 @@ public class MapAtlasesMod implements ModInitializer {
                 player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
                         MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
                         packetByteBuf));
+
+                MapAtlasesMod.LOGGER.info("Server Map Icons: " + state.icons.values().stream().map(i -> i.getType()).collect(Collectors.toList()));
+                MapAtlasesMod.LOGGER.info("Server Sent MapState: " + state.getId());
             }
         });
     }

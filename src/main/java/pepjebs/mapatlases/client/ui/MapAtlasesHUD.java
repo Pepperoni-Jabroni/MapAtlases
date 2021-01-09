@@ -45,9 +45,15 @@ public class MapAtlasesHUD extends DrawableHelper {
     }
 
     private void renderMapHUDFromItemStack(MatrixStack matrices, ItemStack atlas) {
-        if (client.world == null) return;
+        if (client.world == null) {
+//            MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: client.world is null");
+            return;
+        };
         MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(client.world, atlas);
-        if (state == null) return;
+        if (state == null) {
+//            MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: state is null");
+            return;
+        }
         // Draw map background
         int y = 0;
         int x = client.getWindow().getScaledWidth()-64;

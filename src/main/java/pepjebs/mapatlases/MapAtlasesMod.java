@@ -32,6 +32,7 @@ import pepjebs.mapatlases.state.MapAtlasesInitAtlasS2CPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MapAtlasesMod implements ModInitializer {
 
@@ -65,9 +66,8 @@ public class MapAtlasesMod implements ModInitializer {
             for (MapState state : mapStates) {
                 int mapId = Integer.parseInt(state.getId().substring(4));
                 ItemStack mapStack = MapAtlasesAccessUtils.createMapItemStackFromId(mapId);
-                state.update(player, mapStack);
+                state.update(player, atlas);
                 state.getPlayerSyncData(player);
-                LOGGER.info("Setting up Map ID: " + mapId);
                 PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
                 (new MapAtlasesInitAtlasS2CPacket(state)).write(packetByteBuf);
                 player.networkHandler.sendPacket(new CustomPayloadS2CPacket(

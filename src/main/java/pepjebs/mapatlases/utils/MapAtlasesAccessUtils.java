@@ -10,6 +10,7 @@ import net.minecraft.item.Items;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
@@ -51,10 +52,10 @@ public class MapAtlasesAccessUtils {
             if (state == null) {
                 ItemStack map = createMapItemStackFromId(mapId);
                 state = FilledMapItem.getOrCreateMapState(map, world);
-                if (state == null) {
+                if (state == null && world instanceof ServerWorld) {
 //                    MapAtlasesMod.LOGGER.warn("Received null MapState from getOrCreateMapState. is_client: " + world.isClient() + ", idx: " + mapId);
-//                    state = FilledMapItem.getOrCreateMapState(map, world.getServer().getWorld(world.getRegistryKey()));
-//                    mapStates.add(state);
+                    state = FilledMapItem.getOrCreateMapState(map, world);
+                    mapStates.add(state);
                 } else {
                     mapStates.add(state);
                 }

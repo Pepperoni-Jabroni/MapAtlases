@@ -1,17 +1,25 @@
 package pepjebs.mapatlases;
 
+import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.impl.networking.server.ServerPlayNetworkHandlerExtensions;
 import net.fabricmc.fabric.mixin.container.ServerPlayerEntityAccessor;
 import net.minecraft.item.*;
 import net.minecraft.item.map.MapState;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Packet;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayerInteractionManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -20,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
+import pepjebs.mapatlases.state.MapAtlasesInitAtlasS2CPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.List;
@@ -59,23 +68,12 @@ public class MapAtlasesMod implements ModInitializer {
                 state.update(player, mapStack);
                 state.getPlayerSyncData(player);
                 LOGGER.info("Setting up Map ID: " + mapId);
-                Packet<?> p = state.getPlayerMarkerPacket(mapStack, serverWorld, player);
-                if (p != null) {
-                    player.networkHandler.sendPacket(p);
-                } else {
-                    LOGGER.warn("Null packet for map: " + state.getId());
-                }
+                PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+                (new MapAtlasesInitAtlasS2CPacket(state)).write(packetByteBuf);
+                player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                        MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
+                        packetByteBuf));
             }
-//            for (MapState state : mapStates) {
-//                int mapId = Integer.parseInt(state.getId().substring(4));
-//                ItemStack mapStack = MapAtlasesAccessUtils.createMapItemStackFromId(mapId);
-//                Packet<?> p = state.getPlayerMarkerPacket(mapStack, serverWorld, player);
-//                if (p != null) {
-//                    player.networkHandler.sendPacket(p);
-//                } else {
-//                    LOGGER.warn("Null packet for map: " + state.getId());
-//                }
-//            }
         });
     }
 }

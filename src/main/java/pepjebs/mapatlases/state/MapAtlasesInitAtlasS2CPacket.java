@@ -26,7 +26,6 @@ public class MapAtlasesInitAtlasS2CPacket implements Packet<ClientPlayPacketList
 
     @Override
     public void read(PacketByteBuf buf) {
-        buf.readIdentifier();
         int mapId = buf.readInt();
         mapState = new MapState("map_" + mapId);
         mapState.fromTag(buf.readCompoundTag());
@@ -34,11 +33,10 @@ public class MapAtlasesInitAtlasS2CPacket implements Packet<ClientPlayPacketList
 
     @Override
     public void write(PacketByteBuf buf) {
-        buf.writeIdentifier(MAP_ATLAS_INIT);
         CompoundTag mapAsTag = new CompoundTag();
         mapState.toTag(mapAsTag);
         buf.writeInt(MapAtlasesAccessUtils.getMapIntFromState(mapState));
-        buf.writeString(mapAsTag.toString(), 64000);
+        buf.writeCompoundTag(mapAsTag);
     }
 
     @Override

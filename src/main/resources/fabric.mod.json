@@ -17,7 +17,8 @@
 
   "environment": "*",
   "entrypoints": {
-    "main": ["pepjebs.mapatlases.MapAtlasesMod"]
+    "main": ["pepjebs.mapatlases.MapAtlasesMod"],
+    "client": ["pepjebs.mapatlases.client.MapAtlasesClient"]
   },
   "mixins": [
     "mapatlases.mixins.json"

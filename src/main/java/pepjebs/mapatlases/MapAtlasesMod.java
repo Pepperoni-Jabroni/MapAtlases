@@ -12,6 +12,7 @@ import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +23,9 @@ import pepjebs.mapatlases.state.MapAtlasesInitAtlasS2CPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MapAtlasesMod implements ModInitializer {
 
@@ -64,6 +67,13 @@ public class MapAtlasesMod implements ModInitializer {
                         .filter(is -> is.isItemEqual(new ItemStack(MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
                 if (!atlas.isEmpty()) {
                     List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.getServerWorld(), atlas);
+
+                    // Maps are 128x128
+                    int playX = player.getBlockPos().getX();
+                    int playZ = player.getBlockPos().getZ();
+                    int minDist = Integer.MAX_VALUE;
+                    int scale = -1;
+
                     for (MapState state : mapStates) {
                         state.update(player, atlas);
                         ((FilledMapItem) Items.FILLED_MAP).updateColors(player.getServerWorld(), player, state);
@@ -80,6 +90,29 @@ public class MapAtlasesMod implements ModInitializer {
                                     packetByteBuf));
                         } catch (IOException e) {
                             e.printStackTrace();
+                        }
+
+                        int mapCX = state.xCenter;
+                        int mapCZ = state.zCenter;
+                        minDist = Math.min(minDist, (int) Math.hypot(playX-mapCX, playZ-mapCZ));
+                        scale = state.scale;
+                    }
+
+                    if (minDist != Integer.MAX_VALUE && scale != -1 && minDist > (128 * (1 << scale))) {
+                        int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
+                        if (atlas.getTag() != null && emptyCount > 0) {
+                            atlas.getTag().putInt("empty", atlas.getTag().getInt("empty") - 1);
+                            ItemStack newMap = FilledMapItem.createMap(
+                                    player.getServerWorld(),
+                                    MathHelper.floor(player.getX()),
+                                    MathHelper.floor(player.getZ()),
+                                    (byte) scale,
+                                    true,
+                                    false);
+                            List<Integer> mapIds = Arrays.stream(
+                                    atlas.getTag().getIntArray("maps")).boxed().collect(Collectors.toList());
+                            mapIds.add(FilledMapItem.getMapId(newMap));
+                            atlas.getTag().putIntArray("maps", mapIds);
                         }
                     }
                 }

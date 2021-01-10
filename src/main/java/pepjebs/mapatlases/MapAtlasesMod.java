@@ -4,12 +4,14 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.minecraft.item.*;
 import net.minecraft.item.map.MapState;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.recipe.SpecialRecipeSerializer;
+import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
@@ -19,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
+import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
 import pepjebs.mapatlases.state.MapAtlasesInitAtlasS2CPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
@@ -37,6 +40,8 @@ public class MapAtlasesMod implements ModInitializer {
     public static SpecialRecipeSerializer<MapAtlasCreateRecipe> MAP_ATLAS_CREATE_RECIPE;
     public static SpecialRecipeSerializer<MapAtlasesAddRecipe> MAP_ATLAS_ADD_RECIPE;
 
+    public static ScreenHandlerType<MapAtlasesAtlasOverviewScreenHandler> ATLAS_OVERVIEW_HANDLER;
+
     @Override
     public void onInitialize() {
         // Register special recipes
@@ -44,6 +49,11 @@ public class MapAtlasesMod implements ModInitializer {
                 new Identifier(MOD_ID, "crafting_atlas"), new SpecialRecipeSerializer<>(MapAtlasCreateRecipe::new));
         MAP_ATLAS_ADD_RECIPE = Registry.register(Registry.RECIPE_SERIALIZER,
                 new Identifier(MOD_ID, "adding_atlas"), new SpecialRecipeSerializer<>(MapAtlasesAddRecipe::new));
+
+        ATLAS_OVERVIEW_HANDLER =
+                ScreenHandlerRegistry.registerSimple(
+                        new Identifier(MOD_ID, "atlas_overview"),
+                        (syncId, inv) -> new MapAtlasesAtlasOverviewScreenHandler(syncId));
 
         // Register items
         Registry.register(Registry.ITEM, new Identifier(MOD_ID,"atlas"), MAP_ATLAS);

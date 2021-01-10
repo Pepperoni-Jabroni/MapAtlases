@@ -37,6 +37,7 @@ import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
 import pepjebs.mapatlases.state.MapAtlasesInitAtlasS2CPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -80,36 +81,29 @@ public class MapAtlasesMod implements ModInitializer {
                 MapAtlasesMod.LOGGER.info("Server Sent MapState: " + state.getId());
             }
         });
-        ServerTickEvents.END_SERVER_TICK.register((server) -> {
+        ServerTickEvents.START_SERVER_TICK.register((server) -> {
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                 ItemStack atlas = player.inventory.main.stream()
                         .filter(is -> is.isItemEqual(new ItemStack(MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
                 if (!atlas.isEmpty()) {
-                    List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.world, atlas);
+                    List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.getServerWorld(), atlas);
                     for (MapState state : mapStates) {
-//                        int i = 1 << state.scale;
-//                        int j = state.xCenter;
-//                        int k = state.zCenter;
-//                        int l = MathHelper.floor(player.getX() - (double)j) / i + 64;
-//                        int m = MathHelper.floor(player.getZ() - (double)k) / i + 64;
-//                        int n = 128 / i;
-//                        state.markDirty(l - n + 1, m - n - 1);
                         state.update(player, atlas);
-                        ((FilledMapItem) Items.FILLED_MAP).updateColors(player.world, player, state);
-                        state.getPlayerSyncData(player);
+                        ((FilledMapItem) Items.FILLED_MAP).updateColors(player.getServerWorld(), player, state);
+                        ItemStack map = MapAtlasesAccessUtils.createMapItemStackFromStrId(state.getId());
+                        Packet<?> p = null;
+                        while (p == null) {
+                            p = state.getPlayerMarkerPacket(map, player.getServerWorld(), player);
+                        }
                         PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-                        (new MapAtlasesInitAtlasS2CPacket(state)).write(packetByteBuf);
-                        player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                                MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
-                                packetByteBuf));
-//                        ItemStack map = MapAtlasesAccessUtils.createMapItemStackFromStrId(state.getId());
-//                        Packet<?> p = null;
-//                        while (p == null) {
-//                            p = state.getPlayerMarkerPacket(map, player.world, player);
-//                        }
-//                        if (p != null) {
-//                            player.networkHandler.sendPacket(p);
-//                        }
+                        try {
+                            p.write(packetByteBuf);
+                            player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                                    MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC,
+                                    packetByteBuf));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }

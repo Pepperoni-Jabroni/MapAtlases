@@ -8,11 +8,15 @@ import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapState;
+import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
 import net.minecraft.util.registry.Registry;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.state.MapAtlasesInitAtlasS2CPacket;
+import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,27 +34,41 @@ public class MapAtlasesClient implements ClientModInitializer {
                             mapStates.add(p.getMapState());
                         });
                 });
-        ClientTickEvents.START_CLIENT_TICK.register((client -> {
-            List<MapState> newMapStates = new ArrayList<>();
-            for (MapState state : mapStates) {
-                if (client.world != null && client.player != null &&
-                        client.world.getRegistryKey() == state.dimension) {
-//                    if (client.world.getMapState(state.getId()) == null) {
-                        ItemStack atlas = client.player.inventory.main.stream()
-                                .filter(is -> is.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
+        ClientPlayNetworking.registerGlobalReceiver(MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC,
+                (client, handler, buf, responseSender) -> {
+                    MapUpdateS2CPacket p = new MapUpdateS2CPacket();
+                    try {
+                        p.read(buf);
+                        client.execute(() -> {
+                            handler.onMapUpdate(p);
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+        ClientTickEvents.END_CLIENT_TICK.register((client -> {
+            if (client.player == null) return;
+            ItemStack atlas = client.player.inventory.main.stream()
+                    .filter(is -> is.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
+            if (!atlas.isEmpty()) {
+                Iterator<MapState> itr = mapStates.iterator();
+                while (itr.hasNext()) {
+                    MapState state = itr.next();
+                    if (client.world != null && client.player != null
+                            && client.world.getRegistryKey() == state.dimension) {
                         state.getPlayerSyncData(client.player);
-                        state.update(client.player, atlas);
-                        client.gameRenderer.getMapRenderer().updateTexture(state);
                         client.world.putMapState(state);
-//                        MapAtlasesMod.LOGGER.info("Client Put mapState: " + state.getId());
-//                    } else {
-//
-//                    }
-                } else {
-                    newMapStates.add(state);
+                        itr.remove();
+                        MapAtlasesMod.LOGGER.info("Client Put MapState: " + state.getId());
+                    }
                 }
+//                List <MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(client.world, atlas);
+//                for (MapState state : mapStates) {
+//                    state.update(client.player, atlas);
+//                    ((FilledMapItem) Items.FILLED_MAP).updateColors(client.world, client.player, state);
+//                    client.gameRenderer.getMapRenderer().updateTexture(state);
+//                }
             }
-            mapStates = newMapStates;
         }));
     }
 }

@@ -64,6 +64,8 @@ public class MapAtlasesAccessUtils {
                     if (world instanceof ServerWorld) {
                         state = FilledMapItem.getOrCreateMapState(map, world);
                         mapStates.add(state);
+                    } else {
+                        MapAtlasesMod.LOGGER.warn("getAllMapStatesFromAtlas: Null MapState on client");
                     }
                 } else {
                     mapStates.add(state);

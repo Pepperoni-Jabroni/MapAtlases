@@ -52,10 +52,13 @@ public class MapAtlasesHUD extends DrawableHelper {
         }
         MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(client.world, atlas);
         if (state == null) {
-            MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: getActiveAtlasMapState was null");
+            if (currentMapId != null) {
+                MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: getActiveAtlasMapState was null");
+                currentMapId = null;
+            }
             return;
         }
-        if (state.getId().compareTo(currentMapId) != 0) {
+        if (currentMapId == null || state.getId().compareTo(currentMapId) != 0) {
             MapAtlasesMod.LOGGER.info("renderMapHUDFromItemStack: Current map id - " + state.getId());
             currentMapId = state.getId();
         }

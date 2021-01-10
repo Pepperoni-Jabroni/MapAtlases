@@ -15,6 +15,7 @@ import java.io.IOException;
 public class MapAtlasesInitAtlasS2CPacket implements Packet<ClientPlayPacketListener> {
 
     public static final Identifier MAP_ATLAS_INIT = new Identifier(MapAtlasesMod.MOD_ID, "map_atlas_init");
+    public static final Identifier MAP_ATLAS_SYNC = new Identifier(MapAtlasesMod.MOD_ID, "map_atlas_sync");
 
     private MapState mapState;
 

@@ -1,17 +1,22 @@
 package pepjebs.mapatlases.item;
 
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.map.MapState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
@@ -96,6 +101,22 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             packetByteBuf.writeInt(MapAtlasesAccessUtils.getMapIntFromState(state));
             packetByteBuf.writeInt(state.xCenter);
             packetByteBuf.writeInt(state.zCenter);
+        }
+    }
+
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        BlockState blockState = context.getWorld().getBlockState(context.getBlockPos());
+        if (blockState.isIn(BlockTags.BANNERS)) {
+            if (!context.getWorld().isClient) {
+                MapState mapState =
+                        MapAtlasesAccessUtils.getActiveAtlasMapState(context.getWorld(), context.getStack());
+                if (mapState != null) {
+                    mapState.addBanner(context.getWorld(), context.getBlockPos());
+                }
+            }
+            return ActionResult.success(context.getWorld().isClient);
+        } else {
+            return super.useOnBlock(context);
         }
     }
 }

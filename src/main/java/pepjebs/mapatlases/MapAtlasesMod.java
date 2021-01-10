@@ -65,11 +65,10 @@ public class MapAtlasesMod implements ModInitializer {
         // Register events/callbacks
         ServerPlayConnectionEvents.JOIN.register((serverPlayNetworkHandler, packetSender, minecraftServer) -> {
             ServerPlayerEntity player = serverPlayNetworkHandler.player;
-            World serverWorld = player.world;
             ItemStack atlas = player.inventory.main.stream()
                     .filter(is -> is.isItemEqual(new ItemStack(MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
             if (atlas.isEmpty()) return;
-            List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(serverWorld, atlas);
+            List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.getServerWorld(), atlas);
             for (MapState state : mapStates) {
                 state.update(player, atlas);
                 state.getPlayerSyncData(player);

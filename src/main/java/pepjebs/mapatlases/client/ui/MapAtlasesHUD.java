@@ -39,7 +39,7 @@ public class MapAtlasesHUD extends DrawableHelper {
         if (client.player == null) return ItemStack.EMPTY;
         PlayerInventory inv = client.player.inventory;
         // Check the hot-bar for an Atlas
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 9; i++) {
             if (inv.getStack(i).isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))) return inv.getStack(i);
         }
         return ItemStack.EMPTY;

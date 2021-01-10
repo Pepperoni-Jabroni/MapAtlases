@@ -1,7 +1,5 @@
 package pepjebs.mapatlases.screen;
 
-import com.google.common.collect.ImmutableList;
-import it.unimi.dsi.fastutil.ints.IntLists;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -11,16 +9,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> {
 
@@ -29,6 +23,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     private ItemStack atlas;
     public Map<Integer, List<Integer>> idsToCenters;
+    private boolean printOnce = false;
 
     public MapAtlasesAtlasOverviewScreen(ScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -45,41 +40,52 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     @Override
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
         if (client == null || client.player == null) return;
-        // Draw map background as 5x5 grid of maps
+        // Draw map background as 3x3 grid of maps
         int y = 32;
         int x = (int) (client.getWindow().getScaledWidth() / 4.0);
         client.getTextureManager().bindTexture(MAP_CHKRBRD);
-        drawTexture(matrices,x,y,0,0,200,200, 40, 40);
+        drawTexture(matrices,x,y,0,0,210,210, 70, 70);
         // Draw maps, putting active map in middle of grid
         List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(client.world, atlas);
         MapState activeState = MapAtlasesAccessUtils.getActiveAtlasMapState(client.player.world, atlas);
         if (activeState == null) return;
-        for (int i = -2; i < 3; i++) {
-            for (int j = -2; j < 3; j++) {
+        int activeMapId = MapAtlasesAccessUtils.getMapIntFromState(activeState);
+        int activeXCenter = idsToCenters.get(activeMapId).get(0);
+        int activeZCenter = idsToCenters.get(activeMapId).get(1);
+        if (!printOnce) MapAtlasesMod.LOGGER.info(idsToCenters);
+        for (int i = -1; i < 2; i++) {
+            if (!printOnce) MapAtlasesMod.LOGGER.info("Column: " + i);
+            for (int j = -1; j < 2; j++) {
+                y = 32;
+                x = (int) (client.getWindow().getScaledWidth() / 4.0);
+                if (!printOnce) MapAtlasesMod.LOGGER.info("Row: " + j);
                 // Get the map for the GUI idx
-                int reqXCenter = idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromState(activeState)).get(0) + (j * (1 << activeState.scale) * 128);
-                int reqZCenter = idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromState(activeState)).get(1) + (i * (1 << activeState.scale) * 128);
+                int reqXCenter = activeXCenter + (j * (1 << activeState.scale) * 128);
+                int reqZCenter = activeZCenter + (i * (1 << activeState.scale) * 128);
+                if (!printOnce) MapAtlasesMod.LOGGER.info(reqXCenter + ", " + reqZCenter);
                 MapState state = mapStates.stream()
                         .filter(m -> idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromState(m)).get(0) == reqXCenter
                                 && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromState(m)).get(1) == reqZCenter)
                         .findFirst().orElse(null);
                 if (state == null) continue;
                 // Draw the map
-                x += (40 * (j + 2));
-                y += (40 * (i + 2));
-                x += 4;
-                y += 4;
+                x += (70 * (j + 1));
+                y += (70 * (i + 1));
+                x += 3;
+                y += 3;
+                if (!printOnce) MapAtlasesMod.LOGGER.info(state.getId() + ": " + x + ", " + y);
                 VertexConsumerProvider.Immediate vcp;
                 vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
                 matrices.push();
                 matrices.translate(x, y, 0.0);
-                matrices.scale(0.25f, 0.25f, 0);
+                matrices.scale(0.5f, 0.5f, 0);
                 client.gameRenderer.getMapRenderer()
                         .draw(matrices, vcp, state, false, Integer.parseInt("0000000011110000", 2));
                 vcp.draw();
                 matrices.pop();
             }
         }
+        printOnce = true;
     }
 
     @Override

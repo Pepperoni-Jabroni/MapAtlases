@@ -1,7 +1,5 @@
 package pepjebs.mapatlases.utils;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.FilledMapItem;
@@ -11,7 +9,6 @@ import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 

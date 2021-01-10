@@ -21,9 +21,11 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     private static final Identifier MAP_CHKRBRD =
             new Identifier("minecraft:textures/map/map_background_checkerboard.png");
 
-    private ItemStack atlas;
+    private final ItemStack atlas;
     public Map<Integer, List<Integer>> idsToCenters;
     private boolean printOnce = false;
+    private int mouseXOffset = 0;
+    private int mouseYOffset = 0;
 
     public MapAtlasesAtlasOverviewScreen(ScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -52,6 +54,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         int activeMapId = MapAtlasesAccessUtils.getMapIntFromState(activeState);
         int activeXCenter = idsToCenters.get(activeMapId).get(0);
         int activeZCenter = idsToCenters.get(activeMapId).get(1);
+        activeXCenter = activeXCenter + (round(mouseXOffset, 50) / 50 * (1 << activeState.scale) * -128);
+        activeZCenter = activeZCenter + (round(mouseYOffset, 50) / 50 * (1 << activeState.scale) * -128);
         if (!printOnce) MapAtlasesMod.LOGGER.info(idsToCenters);
         for (int i = -1; i < 2; i++) {
             if (!printOnce) MapAtlasesMod.LOGGER.info("Column: " + i);
@@ -89,7 +93,21 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     }
 
     @Override
-    public void mouseMoved(double mouseX, double mouseY) {
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (button == 0) {
+            mouseXOffset += deltaX;
+            mouseYOffset += deltaY;
+            MapAtlasesMod.LOGGER.info(mouseXOffset + ", " + mouseYOffset);
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
 
+    private int round(int num, int mod) {
+        int t = num % mod;
+        if (t < (int) Math.floor(mod / 2.0))
+            return num - t;
+        else
+            return num + mod - t;
     }
 }

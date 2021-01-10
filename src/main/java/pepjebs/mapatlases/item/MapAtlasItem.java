@@ -1,13 +1,17 @@
 package pepjebs.mapatlases.item;
 
+import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
@@ -18,9 +22,12 @@ import org.jetbrains.annotations.Nullable;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class MapAtlasItem extends Item implements NamedScreenHandlerFactory {
+public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
     public static final int MAX_MAP_COUNT = 32;
 
@@ -70,6 +77,27 @@ public class MapAtlasItem extends Item implements NamedScreenHandlerFactory {
     @Nullable
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        return new MapAtlasesAtlasOverviewScreenHandler(syncId);
+        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(inv.main);
+        Map<Integer, List<Integer>> idsToCenters = new HashMap<>();
+        List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.world, atlas);
+        for (MapState state : mapStates) {
+            idsToCenters.put(MapAtlasesAccessUtils.getMapIntFromState(state), Arrays.asList(state.xCenter, state.zCenter));
+        }
+        return new MapAtlasesAtlasOverviewScreenHandler(syncId, inv, idsToCenters);
+    }
+
+    @Override
+    public void writeScreenOpeningData(ServerPlayerEntity serverPlayerEntity, PacketByteBuf packetByteBuf) {
+        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(serverPlayerEntity.inventory.main);
+        if (atlas.isEmpty()) return;
+        List<MapState> mapStates =
+                MapAtlasesAccessUtils.getAllMapStatesFromAtlas(serverPlayerEntity.getServerWorld(), atlas);
+        if (mapStates.isEmpty()) return;
+        packetByteBuf.writeInt(mapStates.size());
+        for (MapState state : mapStates) {
+            packetByteBuf.writeInt(MapAtlasesAccessUtils.getMapIntFromState(state));
+            packetByteBuf.writeInt(state.xCenter);
+            packetByteBuf.writeInt(state.zCenter);
+        }
     }
 }

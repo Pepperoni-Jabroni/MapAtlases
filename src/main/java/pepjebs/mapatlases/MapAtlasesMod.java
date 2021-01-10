@@ -51,9 +51,9 @@ public class MapAtlasesMod implements ModInitializer {
                 new Identifier(MOD_ID, "adding_atlas"), new SpecialRecipeSerializer<>(MapAtlasesAddRecipe::new));
 
         ATLAS_OVERVIEW_HANDLER =
-                ScreenHandlerRegistry.registerSimple(
+                ScreenHandlerRegistry.registerExtended(
                         new Identifier(MOD_ID, "atlas_overview"),
-                        (syncId, inv) -> new MapAtlasesAtlasOverviewScreenHandler(syncId));
+                        MapAtlasesAtlasOverviewScreenHandler::new);
 
         // Register items
         Registry.register(Registry.ITEM, new Identifier(MOD_ID,"atlas"), MAP_ATLAS);

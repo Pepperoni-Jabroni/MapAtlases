@@ -51,9 +51,8 @@ public class MapAtlasItem extends Item {
                         .formatted(Formatting.ITALIC).formatted(Formatting.GRAY));
                 return;
             }
-            CompoundTag tag = stack.getTag();
-            int mapSize = tag != null ? tag.getIntArray("maps").length : 0;
-            int empties = tag != null ? tag.getIntArray("empty").length : 0;
+            int mapSize = MapAtlasesAccessUtils.getMapCountFromItemStack(stack);
+            int empties = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(stack);
             tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_1", mapSize)
                     .formatted(Formatting.GRAY));
             tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_2", empties)

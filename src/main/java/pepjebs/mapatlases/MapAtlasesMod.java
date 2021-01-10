@@ -98,7 +98,7 @@ public class MapAtlasesMod implements ModInitializer {
                         scale = state.scale;
                     }
 
-                    if (minDist != Integer.MAX_VALUE && scale != -1 && minDist > (128 * (1 << scale))) {
+                    if (minDist != Integer.MAX_VALUE && scale != -1 && minDist > (80 * (1 << scale))) {
                         int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
                         if (atlas.getTag() != null && emptyCount > 0) {
                             atlas.getTag().putInt("empty", atlas.getTag().getInt("empty") - 1);

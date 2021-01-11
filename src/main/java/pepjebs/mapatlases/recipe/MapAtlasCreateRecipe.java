@@ -42,7 +42,8 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
         if (itemStacks.size() == 3) {
             List<Item> items = itemStacks.stream().map(ItemStack::getItem).collect(Collectors.toList());
             boolean hasAllCrafting =
-                    items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.SLIME_BALL, Items.BOOK));
+                    items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.SLIME_BALL, Items.BOOK)) ||
+                            items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.HONEY_BOTTLE, Items.BOOK));
             if (hasAllCrafting && !filledMap.isEmpty()) {
                 MapState state = FilledMapItem.getOrCreateMapState(filledMap, world);
                 if (state == null) return false;

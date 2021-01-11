@@ -30,14 +30,24 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
     @Override
     public boolean matches(CraftingInventory inv, World world) {
         ArrayList<ItemStack> itemStacks = new ArrayList<>();
+        ItemStack filledMap = ItemStack.EMPTY;
         for(int i = 0; i < inv.size(); i++) {
             if (!inv.getStack(i).isEmpty()) {
                 itemStacks.add(inv.getStack(i));
+                if (inv.getStack(i).getItem() == Items.FILLED_MAP) {
+                    filledMap = inv.getStack(i);
+                }
             }
         }
         if (itemStacks.size() == 3) {
             List<Item> items = itemStacks.stream().map(ItemStack::getItem).collect(Collectors.toList());
-            return items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.CARTOGRAPHY_TABLE, Items.BOOK));
+            boolean hasAllCrafting =
+                    items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.CARTOGRAPHY_TABLE, Items.BOOK));
+            if (hasAllCrafting && !filledMap.isEmpty()) {
+                MapState state = FilledMapItem.getOrCreateMapState(filledMap, world);
+                if (state == null) return false;
+                return state.dimension == World.OVERWORLD;
+            }
         }
         return false;
     }

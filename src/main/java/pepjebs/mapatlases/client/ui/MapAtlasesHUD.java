@@ -12,6 +12,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
@@ -36,7 +37,9 @@ public class MapAtlasesHUD extends DrawableHelper {
     }
 
     private ItemStack shouldDraw(MinecraftClient client) {
-        if (client.player == null) return ItemStack.EMPTY;
+        // Forcibly only render on Overworld since player trackers don't disappear from Overworld
+        // in other dimensions in vanilla MC
+        if (client.player == null || client.player.world.getRegistryKey() != World.OVERWORLD) return ItemStack.EMPTY;
         PlayerInventory inv = client.player.inventory;
         // Check the hot-bar for an Atlas
         for (int i = 0; i < 9; i++) {

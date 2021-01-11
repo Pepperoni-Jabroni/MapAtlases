@@ -130,11 +130,11 @@ public class MapAtlasesAccessUtils {
 
     public static int getEmptyMapCountFromItemStack(ItemStack atlas) {
         CompoundTag tag = atlas.getTag();
-        return tag != null && tag.contains("empty") ? tag.getInt("empty") : -1;
+        return tag != null && tag.contains("empty") ? tag.getInt("empty") : 0;
     }
 
     public static int getMapCountFromItemStack(ItemStack atlas) {
         CompoundTag tag = atlas.getTag();
-        return tag != null && tag.contains("maps") ? tag.getIntArray("maps").length : -1;
+        return tag != null && tag.contains("maps") ? tag.getIntArray("maps").length : 0;
     }
 }

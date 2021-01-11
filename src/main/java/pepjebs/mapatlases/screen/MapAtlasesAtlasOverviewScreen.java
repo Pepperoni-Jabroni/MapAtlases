@@ -13,6 +13,8 @@ import net.minecraft.util.Identifier;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,14 +25,21 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     private final ItemStack atlas;
     public Map<Integer, List<Integer>> idsToCenters;
-    private boolean printOnce = false;
     private int mouseXOffset = 0;
     private int mouseYOffset = 0;
+    private int zoomValue = 0;
+
+    private Map<Integer, List<Double>> zoomMapping;
 
     public MapAtlasesAtlasOverviewScreen(ScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
         atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(inventory.main);
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
+        zoomMapping = new HashMap<Integer, List<Double>>() {{
+            put(1, Arrays.asList(70.0, 210.0, 100.0, 1.0));
+            put(3, Arrays.asList(210.0, 70.0, 70.0, 0.5));
+            put(5, Arrays.asList(200.0, 40.0, 40.0, 0.25));
+        }};
     }
 
     @Override
@@ -42,11 +51,23 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     @Override
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
         if (client == null || client.player == null) return;
+        // Handle zooming
+        int zoomLevel = round(zoomValue, 10) / 10;
+        zoomLevel = Math.max(zoomLevel, 0);
+        zoomLevel = Math.min(zoomLevel, 2);
+        int loopBegin = -1 * zoomLevel;
+        int loopEnd = zoomLevel + 1;
+        zoomLevel = (2 * zoomLevel) + 1;
+        List<Double> zoomingInfo = zoomMapping.get(zoomLevel);
+        int size = zoomingInfo.get(0).intValue();
+        int textureSize = zoomingInfo.get(1).intValue();
+        int mapTextureTranslate = zoomingInfo.get(2).intValue();
+        float mapTextureScale = zoomingInfo.get(3).floatValue();
         // Draw map background as 3x3 grid of maps
         int y = 32;
         int x = (int) (client.getWindow().getScaledWidth() / 4.0);
         client.getTextureManager().bindTexture(MAP_CHKRBRD);
-        drawTexture(matrices,x,y,0,0,210,210, 70, 70);
+        drawTexture(matrices,x,y,0,0, size, size, textureSize, textureSize);
         // Draw maps, putting active map in middle of grid
         List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(client.world, atlas);
         MapState activeState = MapAtlasesAccessUtils.getActiveAtlasMapState(client.player.world, atlas);
@@ -56,40 +77,34 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         int activeZCenter = idsToCenters.get(activeMapId).get(1);
         activeXCenter = activeXCenter + (round(mouseXOffset, 50) / 50 * (1 << activeState.scale) * -128);
         activeZCenter = activeZCenter + (round(mouseYOffset, 50) / 50 * (1 << activeState.scale) * -128);
-        if (!printOnce) MapAtlasesMod.LOGGER.info(idsToCenters);
-        for (int i = -1; i < 2; i++) {
-            if (!printOnce) MapAtlasesMod.LOGGER.info("Column: " + i);
-            for (int j = -1; j < 2; j++) {
+        for (int i = loopBegin; i < loopEnd; i++) {
+            for (int j = loopBegin; j < loopEnd; j++) {
                 y = 32;
                 x = (int) (client.getWindow().getScaledWidth() / 4.0);
-                if (!printOnce) MapAtlasesMod.LOGGER.info("Row: " + j);
                 // Get the map for the GUI idx
                 int reqXCenter = activeXCenter + (j * (1 << activeState.scale) * 128);
                 int reqZCenter = activeZCenter + (i * (1 << activeState.scale) * 128);
-                if (!printOnce) MapAtlasesMod.LOGGER.info(reqXCenter + ", " + reqZCenter);
                 MapState state = mapStates.stream()
                         .filter(m -> idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromState(m)).get(0) == reqXCenter
                                 && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromState(m)).get(1) == reqZCenter)
                         .findFirst().orElse(null);
                 if (state == null) continue;
                 // Draw the map
-                x += (70 * (j + 1));
-                y += (70 * (i + 1));
+                x += (mapTextureTranslate * (j + loopEnd - 1));
+                y += (mapTextureTranslate * (i + loopEnd - 1));
                 x += 3;
                 y += 3;
-                if (!printOnce) MapAtlasesMod.LOGGER.info(state.getId() + ": " + x + ", " + y);
                 VertexConsumerProvider.Immediate vcp;
                 vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
                 matrices.push();
                 matrices.translate(x, y, 0.0);
-                matrices.scale(0.5f, 0.5f, 0);
+                matrices.scale(mapTextureScale, mapTextureScale, 0);
                 client.gameRenderer.getMapRenderer()
                         .draw(matrices, vcp, state, false, Integer.parseInt("0000000011110000", 2));
                 vcp.draw();
                 matrices.pop();
             }
         }
-        printOnce = true;
     }
 
     @Override
@@ -97,10 +112,15 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         if (button == 0) {
             mouseXOffset += deltaX;
             mouseYOffset += deltaY;
-            MapAtlasesMod.LOGGER.info(mouseXOffset + ", " + mouseYOffset);
             return true;
         }
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        zoomValue += -1 * amount;
+        return true;
     }
 
     private int round(int num, int mod) {

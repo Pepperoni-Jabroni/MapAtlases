@@ -14,7 +14,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
-import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.ArrayList;

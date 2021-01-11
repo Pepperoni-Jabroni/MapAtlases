@@ -60,7 +60,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         Set<Integer> mapIds = MapAtlasesAccessUtils.getMapIdsFromItemStacks(world, itemStacks);
         // Set NBT Data
         int emptyMapCount = (int)itemStacks.stream().filter(i -> i.isItemEqual(new ItemStack(Items.MAP))).count();
-        CompoundTag compoundTag = atlas.getTag();
+        CompoundTag compoundTag = atlas.getOrCreateTag();
         Set<Integer> existingMaps = new HashSet<>(Ints.asList(compoundTag.getIntArray("maps")));
         existingMaps.addAll(mapIds);
         compoundTag.putIntArray("maps", existingMaps.stream().mapToInt(i->i).toArray());

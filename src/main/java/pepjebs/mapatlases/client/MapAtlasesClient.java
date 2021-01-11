@@ -11,7 +11,6 @@ import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreen;
 import pepjebs.mapatlases.state.MapAtlasesInitAtlasS2CPacket;
 
 import java.io.IOException;
-import java.util.stream.Collectors;
 
 public class MapAtlasesClient implements ClientModInitializer {
 
@@ -24,7 +23,7 @@ public class MapAtlasesClient implements ClientModInitializer {
                     MapAtlasesInitAtlasS2CPacket p = new MapAtlasesInitAtlasS2CPacket();
                     p.read(buf);
                     client.execute(() -> {
-                        if (client.world == null) return;
+                        if (client.world == null || client.player == null) return;
                         MapState state = p.getMapState();
                         ItemStack atlas = client.player.inventory.main.stream()
                                 .filter(is -> is.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);

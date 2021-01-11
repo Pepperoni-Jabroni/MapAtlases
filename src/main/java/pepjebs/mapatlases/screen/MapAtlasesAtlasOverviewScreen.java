@@ -10,7 +10,6 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.Arrays;

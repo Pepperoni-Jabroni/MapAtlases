@@ -10,8 +10,6 @@ import net.minecraft.util.Identifier;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
-import java.io.IOException;
-
 public class MapAtlasesInitAtlasS2CPacket implements Packet<ClientPlayPacketListener> {
 
     public static final Identifier MAP_ATLAS_INIT = new Identifier(MapAtlasesMod.MOD_ID, "map_atlas_init");

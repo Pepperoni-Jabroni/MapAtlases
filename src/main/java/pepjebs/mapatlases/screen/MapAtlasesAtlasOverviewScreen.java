@@ -27,7 +27,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     public Map<Integer, List<Integer>> idsToCenters;
     private int mouseXOffset = 0;
     private int mouseYOffset = 0;
-    private int zoomValue = 0;
+    private int zoomValue = 10;
 
     private Map<Integer, List<Double>> zoomMapping;
 
@@ -36,9 +36,10 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(inventory.main);
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
         zoomMapping = new HashMap<Integer, List<Double>>() {{
-            put(1, Arrays.asList(70.0, 210.0, 100.0, 1.0));
-            put(3, Arrays.asList(210.0, 70.0, 70.0, 0.5));
-            put(5, Arrays.asList(200.0, 40.0, 40.0, 0.25));
+            // backgroundSize, textureSize, mapTextureTranslate, mapTextureScale, mapTextureOffset
+            put(1, Arrays.asList(160.0, 160.0, -1.0, 1.15, 6.0));
+            put(3, Arrays.asList(210.0, 70.0, 70.0, 0.5, 3.0));
+            put(5, Arrays.asList(200.0, 40.0, 40.0, 0.28, 2.0));
         }};
     }
 
@@ -63,7 +64,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         int textureSize = zoomingInfo.get(1).intValue();
         int mapTextureTranslate = zoomingInfo.get(2).intValue();
         float mapTextureScale = zoomingInfo.get(3).floatValue();
-        // Draw map background as 3x3 grid of maps
+        int mapTextureOffset = zoomingInfo.get(4).intValue();
+        // Draw map background
         int y = 32;
         int x = (int) (client.getWindow().getScaledWidth() / 4.0);
         client.getTextureManager().bindTexture(MAP_CHKRBRD);
@@ -92,8 +94,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 // Draw the map
                 x += (mapTextureTranslate * (j + loopEnd - 1));
                 y += (mapTextureTranslate * (i + loopEnd - 1));
-                x += 3;
-                y += 3;
+                x += mapTextureOffset;
+                y += mapTextureOffset;
                 VertexConsumerProvider.Immediate vcp;
                 vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
                 matrices.push();
@@ -120,6 +122,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         zoomValue += -1 * amount;
+        zoomValue = Math.max(zoomValue, -10);
+        zoomValue = Math.min(zoomValue, 30);
         return true;
     }
 

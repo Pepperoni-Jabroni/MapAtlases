@@ -54,20 +54,11 @@ public class MapAtlasesAccessUtils {
         List<MapState> mapStates = new ArrayList<>();
         for (int mapId : mapIds) {
             MapState state = world.getMapState(FilledMapItem.getMapName(mapId));
-            if (state == null) {
+            if (state == null && world instanceof ServerWorld) {
                 ItemStack map = createMapItemStackFromId(mapId);
                 state = FilledMapItem.getOrCreateMapState(map, world);
-                if (state == null) {
-                    if (world instanceof ServerWorld) {
-                        state = FilledMapItem.getOrCreateMapState(map, world);
-                        mapStates.add(state);
-                    } else {
-                        MapAtlasesMod.LOGGER.warn("getAllMapStatesFromAtlas: Null MapState on client");
-                    }
-                } else {
-                    mapStates.add(state);
-                }
-            } else {
+            }
+            if (state != null) {
                 mapStates.add(state);
             }
         }

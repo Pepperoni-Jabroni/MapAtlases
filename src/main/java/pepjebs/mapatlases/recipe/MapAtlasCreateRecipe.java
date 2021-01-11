@@ -46,7 +46,7 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
             if (hasAllCrafting && !filledMap.isEmpty()) {
                 MapState state = FilledMapItem.getOrCreateMapState(filledMap, world);
                 if (state == null) return false;
-                return state.dimension == World.OVERWORLD;
+                return state.dimension == World.OVERWORLD || state.dimension == World.END;
             }
         }
         return false;
@@ -64,7 +64,12 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
             return ItemStack.EMPTY;
         }
         MapState mapState = FilledMapItem.getMapState(mapItemStack, MinecraftClient.getInstance().world);
-        MapAtlasItem mapAtlasItem = MapAtlasesMod.MAP_ATLAS;
+        MapAtlasItem mapAtlasItem;
+        if (mapState.dimension == World.END) {
+            mapAtlasItem = MapAtlasesMod.END_MAP_ATLAS;
+        } else {
+            mapAtlasItem = MapAtlasesMod.MAP_ATLAS;
+        }
         CompoundTag compoundTag = new CompoundTag();
         compoundTag.putIntArray("maps", new int[]{MapAtlasesAccessUtils.getMapIntFromState(mapState)});
         ItemStack atlasItemStack = new ItemStack(mapAtlasItem);

@@ -73,7 +73,12 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         // Draw maps, putting active map in middle of grid
         List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(client.world, atlas);
         MapState activeState = MapAtlasesAccessUtils.getActiveAtlasMapState(client.player.world, atlas);
-        if (activeState == null) return;
+        if (activeState == null) {
+            if (!mapStates.isEmpty())
+                activeState = mapStates.get(0);
+            else
+                return;
+        }
         int activeMapId = MapAtlasesAccessUtils.getMapIntFromState(activeState);
         int activeXCenter = idsToCenters.get(activeMapId).get(0);
         int activeZCenter = idsToCenters.get(activeMapId).get(1);

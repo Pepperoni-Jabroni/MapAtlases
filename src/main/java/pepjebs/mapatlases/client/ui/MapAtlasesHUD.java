@@ -47,13 +47,13 @@ public class MapAtlasesHUD extends DrawableHelper {
 
     private void renderMapHUDFromItemStack(MatrixStack matrices, ItemStack atlas) {
         if (client.world == null) {
-            MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: client.world was null");
+            MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: Current map id - null (client.world)");
             return;
         }
         MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(client.world, atlas);
         if (state == null) {
             if (currentMapId != null) {
-                MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: getActiveAtlasMapState was null");
+                MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: Current map id - null (state)");
                 currentMapId = null;
             }
             return;

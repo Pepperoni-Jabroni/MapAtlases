@@ -19,6 +19,7 @@ import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pepjebs.mapatlases.item.MapAtlasItem;
+import pepjebs.mapatlases.item.MapEndAtlasItem;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
@@ -36,6 +37,7 @@ public class MapAtlasesMod implements ModInitializer {
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public static final MapAtlasItem MAP_ATLAS = new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1));
+    public static final MapAtlasItem END_MAP_ATLAS = new MapEndAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1));
 
     public static SpecialRecipeSerializer<MapAtlasCreateRecipe> MAP_ATLAS_CREATE_RECIPE;
     public static SpecialRecipeSerializer<MapAtlasesAddRecipe> MAP_ATLAS_ADD_RECIPE;
@@ -57,6 +59,7 @@ public class MapAtlasesMod implements ModInitializer {
 
         // Register items
         Registry.register(Registry.ITEM, new Identifier(MOD_ID,"atlas"), MAP_ATLAS);
+        Registry.register(Registry.ITEM, new Identifier(MOD_ID,"end_atlas"), END_MAP_ATLAS);
 
         // Register events/callbacks
         ServerPlayConnectionEvents.JOIN.register((serverPlayNetworkHandler, packetSender, minecraftServer) -> {
@@ -68,6 +71,11 @@ public class MapAtlasesMod implements ModInitializer {
             for (MapState state : mapStates) {
                 state.update(player, atlas);
                 state.getPlayerSyncData(player);
+                PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+                (new MapAtlasesInitAtlasS2CPacket(state)).write(packetByteBuf);
+                player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                        MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
+                        packetByteBuf));
                 MapAtlasesMod.LOGGER.info("Server Sent MapState: " + state.getId());
             }
         });
@@ -89,17 +97,21 @@ public class MapAtlasesMod implements ModInitializer {
                         ((FilledMapItem) Items.FILLED_MAP).updateColors(player.getServerWorld(), player, state);
                         ItemStack map = MapAtlasesAccessUtils.createMapItemStackFromStrId(state.getId());
                         Packet<?> p = null;
-                        while (p == null) {
+                        int tries = 0;
+                        while (p == null && tries < 10) {
                             p = state.getPlayerMarkerPacket(map, player.getServerWorld(), player);
+                            tries++;
                         }
-                        PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-                        try {
-                            p.write(packetByteBuf);
-                            player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                                    MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC,
-                                    packetByteBuf));
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                        if (p != null) {
+                            PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+                            try {
+                                p.write(packetByteBuf);
+                                player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                                        MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC,
+                                        packetByteBuf));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
 
                         int mapCX = state.xCenter;

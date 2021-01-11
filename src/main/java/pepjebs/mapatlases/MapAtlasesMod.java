@@ -19,7 +19,6 @@ import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pepjebs.mapatlases.item.MapAtlasItem;
-import pepjebs.mapatlases.item.MapEndAtlasItem;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
@@ -36,8 +35,7 @@ public class MapAtlasesMod implements ModInitializer {
     public static final String MOD_ID = "map_atlases";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
-    public static final MapAtlasItem MAP_ATLAS = new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1));
-    public static final MapAtlasItem END_MAP_ATLAS = new MapEndAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1));
+    public static MapAtlasItem MAP_ATLAS;
 
     public static SpecialRecipeSerializer<MapAtlasCreateRecipe> MAP_ATLAS_CREATE_RECIPE;
     public static SpecialRecipeSerializer<MapAtlasesAddRecipe> MAP_ATLAS_ADD_RECIPE;
@@ -58,8 +56,13 @@ public class MapAtlasesMod implements ModInitializer {
                         MapAtlasesAtlasOverviewScreenHandler::new);
 
         // Register items
-        Registry.register(Registry.ITEM, new Identifier(MOD_ID,"atlas"), MAP_ATLAS);
-        Registry.register(Registry.ITEM, new Identifier(MOD_ID,"end_atlas"), END_MAP_ATLAS);
+        Registry.register(Registry.ITEM, new Identifier(MOD_ID,"atlas"),
+                new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1)));
+        Registry.register(Registry.ITEM, new Identifier(MOD_ID,"end_atlas"),
+                new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1)));
+        Registry.register(Registry.ITEM, new Identifier(MOD_ID,"nether_atlas"),
+                new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1)));
+        MAP_ATLAS = (MapAtlasItem) Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));
 
         // Register events/callbacks
         ServerPlayConnectionEvents.JOIN.register((serverPlayNetworkHandler, packetSender, minecraftServer) -> {

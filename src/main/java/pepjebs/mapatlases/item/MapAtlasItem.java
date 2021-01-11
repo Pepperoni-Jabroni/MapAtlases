@@ -57,12 +57,6 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
                     .formatted(Formatting.GRAY));
             tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_3", 1 << mapState.scale)
                     .formatted(Formatting.GRAY));
-            if (mapState.dimension != null) {
-                String dimensionName = mapState.dimension.getValue().getPath();
-                dimensionName = dimensionName.substring(0, 1).toUpperCase() + dimensionName.substring(1);
-                tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_4",
-                        dimensionName).formatted(Formatting.GRAY));
-            }
         }
     }
 

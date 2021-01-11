@@ -11,6 +11,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
@@ -46,7 +47,8 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
             if (hasAllCrafting && !filledMap.isEmpty()) {
                 MapState state = FilledMapItem.getOrCreateMapState(filledMap, world);
                 if (state == null) return false;
-                return state.dimension == World.OVERWORLD || state.dimension == World.END;
+                return state.dimension == World.OVERWORLD || state.dimension == World.END
+                        || state.dimension == World.NETHER;
             }
         }
         return false;
@@ -60,15 +62,18 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
                 mapItemStack = inv.getStack(i);
             }
         }
-        if (mapItemStack == null) {
+        if (mapItemStack == null || MinecraftClient.getInstance().world == null) {
             return ItemStack.EMPTY;
         }
         MapState mapState = FilledMapItem.getMapState(mapItemStack, MinecraftClient.getInstance().world);
-        MapAtlasItem mapAtlasItem;
+        if (mapState == null) return ItemStack.EMPTY;
+        Item mapAtlasItem;
         if (mapState.dimension == World.END) {
-            mapAtlasItem = MapAtlasesMod.END_MAP_ATLAS;
+            mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "end_atlas"));
+        } else if (mapState.dimension == World.NETHER) {
+            mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "nether_atlas"));
         } else {
-            mapAtlasItem = MapAtlasesMod.MAP_ATLAS;
+            mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));
         }
         CompoundTag compoundTag = new CompoundTag();
         compoundTag.putIntArray("maps", new int[]{MapAtlasesAccessUtils.getMapIntFromState(mapState)});

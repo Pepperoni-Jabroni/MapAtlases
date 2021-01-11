@@ -67,9 +67,9 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
         MapState mapState = FilledMapItem.getMapState(mapItemStack, MinecraftClient.getInstance().world);
         if (mapState == null) return ItemStack.EMPTY;
         Item mapAtlasItem;
-        if (mapState.dimension == World.END) {
+        if (MapAtlasesMod.enableMultiDimMaps && mapState.dimension == World.END) {
             mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "end_atlas"));
-        } else if (mapState.dimension == World.NETHER) {
+        } else if (MapAtlasesMod.enableMultiDimMaps && mapState.dimension == World.NETHER) {
             mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "nether_atlas"));
         } else {
             mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));

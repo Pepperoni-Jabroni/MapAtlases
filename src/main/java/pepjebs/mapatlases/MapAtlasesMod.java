@@ -16,6 +16,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pepjebs.mapatlases.item.MapAtlasItem;
@@ -36,6 +37,7 @@ public class MapAtlasesMod implements ModInitializer {
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
     public static MapAtlasItem MAP_ATLAS;
+    public static boolean enableMultiDimMaps = false;
 
     public static SpecialRecipeSerializer<MapAtlasCreateRecipe> MAP_ATLAS_CREATE_RECIPE;
     public static SpecialRecipeSerializer<MapAtlasesAddRecipe> MAP_ATLAS_ADD_RECIPE;
@@ -58,10 +60,12 @@ public class MapAtlasesMod implements ModInitializer {
         // Register items
         Registry.register(Registry.ITEM, new Identifier(MOD_ID,"atlas"),
                 new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1)));
-        Registry.register(Registry.ITEM, new Identifier(MOD_ID,"end_atlas"),
-                new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1)));
-        Registry.register(Registry.ITEM, new Identifier(MOD_ID,"nether_atlas"),
-                new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1)));
+        if (enableMultiDimMaps) {
+            Registry.register(Registry.ITEM, new Identifier(MOD_ID,"end_atlas"),
+                    new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1)));
+            Registry.register(Registry.ITEM, new Identifier(MOD_ID,"nether_atlas"),
+                    new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1)));
+        }
         MAP_ATLAS = (MapAtlasItem) Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));
 
         // Register events/callbacks

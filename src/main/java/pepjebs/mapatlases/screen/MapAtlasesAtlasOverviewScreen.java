@@ -21,12 +21,14 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     private static final Identifier MAP_CHKRBRD =
             new Identifier("minecraft:textures/map/map_background_checkerboard.png");
+    private static final int ZOOM_BUCKET = 4;
+    private static final int PAN_BUCKET = 25;
 
     private final ItemStack atlas;
     public Map<Integer, List<Integer>> idsToCenters;
     private int mouseXOffset = 0;
     private int mouseYOffset = 0;
-    private int zoomValue = 10;
+    private int zoomValue = ZOOM_BUCKET;
 
     private Map<Integer, List<Double>> zoomMapping;
 
@@ -39,6 +41,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             put(1, Arrays.asList(160.0, 160.0, -1.0, 1.15, 6.0));
             put(3, Arrays.asList(210.0, 70.0, 70.0, 0.5, 3.0));
             put(5, Arrays.asList(200.0, 40.0, 40.0, 0.28, 2.0));
+            put(7, Arrays.asList(175.0, 25.0, 25.0, 0.18, 1.5));
         }};
     }
 
@@ -52,9 +55,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
         if (client == null || client.player == null) return;
         // Handle zooming
-        int zoomLevel = round(zoomValue, 10) / 10;
+        int zoomLevel = round(zoomValue, ZOOM_BUCKET) / ZOOM_BUCKET;
         zoomLevel = Math.max(zoomLevel, 0);
-        zoomLevel = Math.min(zoomLevel, 2);
+        zoomLevel = Math.min(zoomLevel, zoomMapping.size() - 1);
         int loopBegin = -1 * zoomLevel;
         int loopEnd = zoomLevel + 1;
         zoomLevel = (2 * zoomLevel) + 1;
@@ -63,12 +66,12 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         int textureSize = zoomingInfo.get(1).intValue();
         int mapTextureTranslate = zoomingInfo.get(2).intValue();
         float mapTextureScale = zoomingInfo.get(3).floatValue();
-        int mapTextureOffset = zoomingInfo.get(4).intValue();
+        double mapTextureOffset = zoomingInfo.get(4).intValue();
         // Draw map background
-        int y = 32;
-        int x = (int) (client.getWindow().getScaledWidth() / 4.0);
+        double y = 32;
+        double x = client.getWindow().getScaledWidth() / 4.0;
         client.getTextureManager().bindTexture(MAP_CHKRBRD);
-        drawTexture(matrices,x,y,0,0, size, size, textureSize, textureSize);
+        drawTexture(matrices, (int) x, (int) y,0,0, size, size, textureSize, textureSize);
         // Draw maps, putting active map in middle of grid
         List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(client.world, atlas);
         MapState activeState = MapAtlasesAccessUtils.getActiveAtlasMapState(client.player.world, atlas);
@@ -81,12 +84,14 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         int activeMapId = MapAtlasesAccessUtils.getMapIntFromState(activeState);
         int activeXCenter = idsToCenters.get(activeMapId).get(0);
         int activeZCenter = idsToCenters.get(activeMapId).get(1);
-        activeXCenter = activeXCenter + (round(mouseXOffset, 50) / 50 * (1 << activeState.scale) * -128);
-        activeZCenter = activeZCenter + (round(mouseYOffset, 50) / 50 * (1 << activeState.scale) * -128);
+        activeXCenter = activeXCenter +
+                (round(mouseXOffset, PAN_BUCKET) / PAN_BUCKET * (1 << activeState.scale) * -128);
+        activeZCenter = activeZCenter +
+                (round(mouseYOffset, PAN_BUCKET) / PAN_BUCKET * (1 << activeState.scale) * -128);
         for (int i = loopBegin; i < loopEnd; i++) {
             for (int j = loopBegin; j < loopEnd; j++) {
                 y = 32;
-                x = (int) (client.getWindow().getScaledWidth() / 4.0);
+                x = client.getWindow().getScaledWidth() / 4.0;
                 // Get the map for the GUI idx
                 int reqXCenter = activeXCenter + (j * (1 << activeState.scale) * 128);
                 int reqZCenter = activeZCenter + (i * (1 << activeState.scale) * 128);
@@ -126,8 +131,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         zoomValue += -1 * amount;
-        zoomValue = Math.max(zoomValue, -10);
-        zoomValue = Math.min(zoomValue, 30);
+        zoomValue = Math.max(zoomValue, -1 * ZOOM_BUCKET);
+        zoomValue = Math.min(zoomValue, zoomMapping.size() * ZOOM_BUCKET);
         return true;
     }
 

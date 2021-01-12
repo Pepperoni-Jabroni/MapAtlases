@@ -47,8 +47,12 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
             if (hasAllCrafting && !filledMap.isEmpty()) {
                 MapState state = FilledMapItem.getOrCreateMapState(filledMap, world);
                 if (state == null) return false;
-                return state.dimension == World.OVERWORLD || state.dimension == World.END
-                        || state.dimension == World.NETHER;
+                if (MapAtlasesMod.enableMultiDimMaps) {
+                    return state.dimension == World.OVERWORLD || state.dimension == World.END
+                            || state.dimension == World.NETHER;
+                } else {
+                    return state.dimension == World.OVERWORLD;
+                }
             }
         }
         return false;

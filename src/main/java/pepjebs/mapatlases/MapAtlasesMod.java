@@ -2,33 +2,41 @@ package pepjebs.mapatlases;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
+import net.minecraft.client.options.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.*;
 import net.minecraft.item.map.MapState;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
+import net.minecraft.network.packet.s2c.play.HeldItemChangeS2CPacket;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.glfw.GLFW;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
 import pepjebs.mapatlases.state.MapAtlasesInitAtlasS2CPacket;
+import pepjebs.mapatlases.state.MapAtlasesOpenGUIC2SPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
 public class MapAtlasesMod implements ModInitializer {
@@ -43,6 +51,8 @@ public class MapAtlasesMod implements ModInitializer {
     public static SpecialRecipeSerializer<MapAtlasesAddRecipe> MAP_ATLAS_ADD_RECIPE;
 
     public static ScreenHandlerType<MapAtlasesAtlasOverviewScreenHandler> ATLAS_OVERVIEW_HANDLER;
+
+    public static KeyBinding displayMapGUIBinding;
 
     @Override
     public void onInitialize() {
@@ -68,6 +78,14 @@ public class MapAtlasesMod implements ModInitializer {
         }
         MAP_ATLAS = (MapAtlasItem) Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));
 
+        // Register Keybind
+        displayMapGUIBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+           "key.map_atlases.open_minimap",
+           InputUtil.Type.KEYSYM,
+            GLFW.GLFW_KEY_M,
+            "category.map_atlases.minimap"
+        ));
+
         // Register events/callbacks
         ServerPlayConnectionEvents.JOIN.register((serverPlayNetworkHandler, packetSender, minecraftServer) -> {
             ServerPlayerEntity player = serverPlayNetworkHandler.player;
@@ -86,6 +104,33 @@ public class MapAtlasesMod implements ModInitializer {
                 MapAtlasesMod.LOGGER.info("Server Sent MapState: " + state.getId());
             }
         });
+        ServerPlayNetworking.registerGlobalReceiver(MapAtlasesOpenGUIC2SPacket.MAP_ATLAS_OPEN_GUI,
+                (server, player, handler, buf, responseSender) -> {
+                    MapAtlasesOpenGUIC2SPacket p = new MapAtlasesOpenGUIC2SPacket();
+                    p.read(buf);
+                    server.execute(() -> {
+                        ItemStack atlas = p.atlas;
+                        int atlasIdx = 40;
+                        for (int i = 0; i < player.inventory.main.size(); i++) {
+                            if (player.inventory.main.get(i).getItem() == atlas.getItem() &&
+                                    player.inventory.main.get(i).getTag() != null &&
+                                    atlas.getTag() != null &&
+                                    player.inventory.main.get(i).getTag().toString().compareTo(atlas.getTag().toString()) == 0) {
+                                atlasIdx = i;
+                                break;
+                            }
+                        }
+                        if (atlasIdx < 9) {
+                            player.inventory.selectedSlot = atlasIdx;
+                            player.networkHandler.sendPacket(new HeldItemChangeS2CPacket(atlasIdx));
+                            OptionalInt i = player.openHandledScreen((MapAtlasItem) atlas.getItem());
+                            if (i.isPresent()) {
+                                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(
+                                        i.getAsInt(), player.inventory.selectedSlot, atlas));
+                            }
+                        }
+                    });
+                });
         ServerTickEvents.START_SERVER_TICK.register((server) -> {
             for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
                 ItemStack atlas = player.inventory.main.stream()

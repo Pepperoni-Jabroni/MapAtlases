@@ -15,7 +15,6 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.HeldItemChangeS2CPacket;
-import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -36,7 +35,6 @@ import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
 public class MapAtlasesMod implements ModInitializer {
@@ -123,11 +121,7 @@ public class MapAtlasesMod implements ModInitializer {
                         if (atlasIdx < 9) {
                             player.inventory.selectedSlot = atlasIdx;
                             player.networkHandler.sendPacket(new HeldItemChangeS2CPacket(atlasIdx));
-                            OptionalInt i = player.openHandledScreen((MapAtlasItem) atlas.getItem());
-                            if (i.isPresent()) {
-                                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(
-                                        i.getAsInt(), player.inventory.selectedSlot, atlas));
-                            }
+                            player.openHandledScreen((MapAtlasItem) atlas.getItem());
                         }
                     });
                 });

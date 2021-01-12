@@ -17,6 +17,8 @@ import java.util.stream.Collectors;
 
 public class MapAtlasesAccessUtils {
 
+    public static MapState previousMapState = null;
+
     public static boolean areMapsSameScale(MapState testAgainst, List<MapState> newMaps) {
         return newMaps.stream().filter(m -> m.scale == testAgainst.scale).count() == newMaps.size();
     }
@@ -108,15 +110,13 @@ public class MapAtlasesAccessUtils {
         List<MapState> mapStates = getAllMapStatesFromAtlas(world, atlas);
         for (MapState state : mapStates) {
             for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
-                if (entry.getValue().getType() == MapIcon.Type.PLAYER) return state;
+                if (entry.getValue().getType() == MapIcon.Type.PLAYER) {
+                    previousMapState = state;
+                    return state;
+                }
             }
         }
-        for (MapState state : mapStates) {
-            for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
-                if (entry.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP) return state;
-            }
-        }
-        return null;
+        return previousMapState;
     }
 
     public static int getEmptyMapCountFromItemStack(ItemStack atlas) {

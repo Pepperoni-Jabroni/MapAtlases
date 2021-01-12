@@ -38,10 +38,10 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
         zoomMapping = new HashMap<Integer, List<Double>>() {{
             // backgroundSize, textureSize, mapTextureTranslate, mapTextureScale, mapTextureOffset
-            put(1, Arrays.asList(160.0, 160.0, -1.0, 1.15, 6.0));
-            put(3, Arrays.asList(210.0, 70.0, 70.0, 0.5, 3.0));
-            put(5, Arrays.asList(200.0, 40.0, 40.0, 0.28, 2.0));
-            put(7, Arrays.asList(175.0, 25.0, 25.0, 0.18, 1.5));
+            put(1, Arrays.asList(180.0, 180.0, -1.0, 1.15, 6.0));
+            put(3, Arrays.asList(180.0, 180.0, 60.0, 0.5, 0.0));
+            put(5, Arrays.asList(180.0, 180.0, 35.0, 0.28, 0.0));
+            put(7, Arrays.asList(180.0, 180.0, 15.0, 0.18, 0.0));
         }};
     }
 

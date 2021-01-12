@@ -17,7 +17,7 @@ public class MapAtlasesHUDMixin {
             method = "render",
             at = @At("TAIL")
     )
-    private void renderThirdPersonMap(MatrixStack matrices, float tickDelta, CallbackInfo ci) {
+    private void renderHUDActiveAtlasMap(MatrixStack matrices, float tickDelta, CallbackInfo ci) {
         mapAtlasesAtlasHUD.render(matrices);
     }
 }

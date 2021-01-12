@@ -11,13 +11,13 @@ import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
 @Mixin(InGameHud.class)
 public class MapAtlasesHUDMixin {
 
-    private static MapAtlasesHUD mapHUD = new MapAtlasesHUD();
+    private static MapAtlasesHUD mapAtlasesAtlasHUD = new MapAtlasesHUD();
 
     @Inject(
             method = "render",
             at = @At("TAIL")
     )
     private void renderThirdPersonMap(MatrixStack matrices, float tickDelta, CallbackInfo ci) {
-        mapHUD.render(matrices);
+        mapAtlasesAtlasHUD.render(matrices);
     }
 }

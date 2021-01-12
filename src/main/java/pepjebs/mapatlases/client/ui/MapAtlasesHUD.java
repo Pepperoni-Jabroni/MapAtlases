@@ -19,7 +19,8 @@ import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 @Environment(EnvType.CLIENT)
 public class MapAtlasesHUD extends DrawableHelper {
 
-    private static final Identifier MAP_CHKRBRD = new Identifier("minecraft:textures/map/map_background_checkerboard.png");
+    public static final Identifier MAP_CHKRBRD =
+            new Identifier("minecraft:textures/map/map_background_checkerboard.png");
     private static MinecraftClient client;
     private static MapRenderer mapRenderer;
     private static String currentMapId = "";
@@ -62,7 +63,6 @@ public class MapAtlasesHUD extends DrawableHelper {
             return;
         }
         if (currentMapId == null || state.getId().compareTo(currentMapId) != 0) {
-            MapAtlasesMod.LOGGER.info("renderMapHUDFromItemStack: Current map id - " + state.getId());
             currentMapId = state.getId();
         }
         // Draw map background

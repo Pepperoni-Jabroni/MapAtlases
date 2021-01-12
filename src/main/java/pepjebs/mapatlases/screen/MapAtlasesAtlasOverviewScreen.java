@@ -9,7 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.Arrays;
@@ -19,8 +19,6 @@ import java.util.Map;
 
 public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> {
 
-    private static final Identifier MAP_CHKRBRD =
-            new Identifier("minecraft:textures/map/map_background_checkerboard.png");
     private static final int ZOOM_BUCKET = 4;
     private static final int PAN_BUCKET = 25;
 
@@ -70,7 +68,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         // Draw map background
         double y = 32;
         double x = client.getWindow().getScaledWidth() / 4.0;
-        client.getTextureManager().bindTexture(MAP_CHKRBRD);
+        client.getTextureManager().bindTexture(MapAtlasesHUD.MAP_CHKRBRD);
         drawTexture(matrices, (int) x, (int) y,0,0, size, size, textureSize, textureSize);
         // Draw maps, putting active map in middle of grid
         List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(client.world, atlas);

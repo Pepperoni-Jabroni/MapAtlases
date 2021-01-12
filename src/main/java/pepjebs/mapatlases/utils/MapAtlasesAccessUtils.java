@@ -116,7 +116,16 @@ public class MapAtlasesAccessUtils {
                 }
             }
         }
-        return previousMapState;
+        if (previousMapState != null) return previousMapState;
+        for (MapState state : mapStates) {
+            for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
+                if (entry.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP) {
+                    previousMapState = state;
+                    return state;
+                }
+            }
+        }
+        return null;
     }
 
     public static int getEmptyMapCountFromItemStack(ItemStack atlas) {

@@ -6,16 +6,18 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
+import net.minecraft.world.World;
+import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> {
 
@@ -108,10 +110,25 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 matrices.push();
                 matrices.translate(x, y, 0.0);
                 matrices.scale(mapTextureScale, mapTextureScale, 0);
+                // Remove the off-map player icons temporarily during render
+                Iterator<Map.Entry<String, MapIcon>> it = state.icons.entrySet().iterator();
+                List<Map.Entry<String, MapIcon>> removed = new ArrayList<>();
+                while (it.hasNext()) {
+                    Map.Entry<String, MapIcon> e = it.next();
+                    if (e.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP
+                            || e.getValue().getType() == MapIcon.Type.PLAYER_OFF_LIMITS) {
+                        it.remove();
+                        removed.add(e);
+                    }
+                }
                 client.gameRenderer.getMapRenderer()
                         .draw(matrices, vcp, state, false, Integer.parseInt("0000000011110000", 2));
                 vcp.draw();
                 matrices.pop();
+                // Re-add the off-map player icons after render
+                for (Map.Entry<String, MapIcon> e : removed) {
+                    state.icons.put(e.getKey(), e.getValue());
+                }
             }
         }
     }

@@ -11,5 +11,5 @@
   "category.map_atlases.minimap": "Map Atlases Keybinds",
   "subtitles.map_atlases.atlas_open": "Atlas opens",
   "subtitles.map_atlases.atlas_page_turn": "Atlas page turns",
-  "subtitles.map_atlases.atlas_create_map": "Atlas creates new map"
+  "subtitles.map_atlases.atlas_create_map": "Atlas map drawn"
 }

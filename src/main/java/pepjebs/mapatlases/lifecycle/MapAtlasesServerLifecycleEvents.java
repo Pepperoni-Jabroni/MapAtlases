@@ -28,8 +28,6 @@ import java.util.stream.Collectors;
 
 public class MapAtlasesServerLifecycleEvents {
 
-    private static boolean isCreatingMap = false;
-
     public static void openGuiEvent(
             MinecraftServer server,
             ServerPlayerEntity player,
@@ -123,8 +121,7 @@ public class MapAtlasesServerLifecycleEvents {
                     scale = state.scale;
                 }
 
-                if (!isCreatingMap && minDist != Integer.MAX_VALUE && scale != -1 && minDist > (80 * (1 << scale))) {
-                    isCreatingMap = true;
+                if (minDist != Integer.MAX_VALUE && scale != -1 && minDist > (80 * (1 << scale))) {
                     int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
                     if (atlas.getTag() != null && emptyCount > 0) {
                         atlas.getTag().putInt("empty", atlas.getTag().getInt("empty") - 1);
@@ -142,7 +139,6 @@ public class MapAtlasesServerLifecycleEvents {
                         player.getServerWorld().playSound(null, player.getBlockPos(),
                                 MapAtlasesMod.ATLAS_CREATE_MAP_SOUND_EVENT,
                                 SoundCategory.PLAYERS, 1.0F, 1.0F);
-                        isCreatingMap = false;
                     }
                 }
             }

@@ -12,6 +12,7 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -21,6 +22,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
@@ -66,6 +68,8 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
         player.openHandledScreen(this);
+        world.playSound(player.getX(), player.getY(), player.getZ(), MapAtlasesMod.ATLAS_OPEN_SOUND_EVENT,
+                SoundCategory.PLAYERS, 1.0F, 1.0F, false);
         return TypedActionResult.consume(player.getStackInHand(hand));
     }
 

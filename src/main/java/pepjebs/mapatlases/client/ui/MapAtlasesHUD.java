@@ -11,6 +11,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
@@ -63,6 +64,10 @@ public class MapAtlasesHUD extends DrawableHelper {
             return;
         }
         if (currentMapId == null || state.getId().compareTo(currentMapId) != 0) {
+            if (currentMapId != null && currentMapId.compareTo("") != 0) {
+                client.world.playSound(client.player.getX(), client.player.getY(), client.player.getZ(),
+                        MapAtlasesMod.ATLAS_PAGE_TURN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F, false);
+            }
             currentMapId = state.getId();
         }
         // Draw map background

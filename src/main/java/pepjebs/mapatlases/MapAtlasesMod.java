@@ -15,9 +15,12 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.network.packet.s2c.play.HeldItemChangeS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlaySoundIdS2CPacket;
 import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
@@ -50,6 +53,13 @@ public class MapAtlasesMod implements ModInitializer {
 
     public static ScreenHandlerType<MapAtlasesAtlasOverviewScreenHandler> ATLAS_OVERVIEW_HANDLER;
 
+    private static final Identifier ATLAS_OPEN_SOUND_ID = new Identifier(MOD_ID, "atlas_open");
+    public static SoundEvent ATLAS_OPEN_SOUND_EVENT = new SoundEvent(ATLAS_OPEN_SOUND_ID);
+    private static final Identifier ATLAS_PAGE_TURN_SOUND_ID = new Identifier(MOD_ID, "atlas_page_turn");
+    public static SoundEvent ATLAS_PAGE_TURN_SOUND_EVENT = new SoundEvent(ATLAS_PAGE_TURN_SOUND_ID);
+    private static final Identifier ATLAS_CREATE_MAP_SOUND_ID = new Identifier(MOD_ID, "atlas_create_map");
+    public static SoundEvent ATLAS_CREATE_MAP_SOUND_EVENT = new SoundEvent(ATLAS_CREATE_MAP_SOUND_ID);
+
     public static KeyBinding displayMapGUIBinding;
 
     @Override
@@ -64,6 +74,11 @@ public class MapAtlasesMod implements ModInitializer {
                 ScreenHandlerRegistry.registerExtended(
                         new Identifier(MOD_ID, "atlas_overview"),
                         MapAtlasesAtlasOverviewScreenHandler::new);
+
+        // Register sounds
+        Registry.register(Registry.SOUND_EVENT, ATLAS_OPEN_SOUND_ID, ATLAS_OPEN_SOUND_EVENT);
+        Registry.register(Registry.SOUND_EVENT, ATLAS_PAGE_TURN_SOUND_ID, ATLAS_PAGE_TURN_SOUND_EVENT);
+        Registry.register(Registry.SOUND_EVENT, ATLAS_CREATE_MAP_SOUND_ID, ATLAS_CREATE_MAP_SOUND_EVENT);
 
         // Register items
         Registry.register(Registry.ITEM, new Identifier(MOD_ID,"atlas"),
@@ -122,6 +137,8 @@ public class MapAtlasesMod implements ModInitializer {
                             player.inventory.selectedSlot = atlasIdx;
                             player.networkHandler.sendPacket(new HeldItemChangeS2CPacket(atlasIdx));
                             player.openHandledScreen((MapAtlasItem) atlas.getItem());
+                            player.getServerWorld().playSound(null, player.getBlockPos(),
+                                    MapAtlasesMod.ATLAS_OPEN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F);
                         }
                     });
                 });
@@ -181,6 +198,9 @@ public class MapAtlasesMod implements ModInitializer {
                                     atlas.getTag().getIntArray("maps")).boxed().collect(Collectors.toList());
                             mapIds.add(FilledMapItem.getMapId(newMap));
                             atlas.getTag().putIntArray("maps", mapIds);
+                            player.getServerWorld().playSound(null, player.getBlockPos(),
+                                    MapAtlasesMod.ATLAS_CREATE_MAP_SOUND_EVENT,
+                                    SoundCategory.PLAYERS, 1.0F, 1.0F);
                         }
                     }
                 }

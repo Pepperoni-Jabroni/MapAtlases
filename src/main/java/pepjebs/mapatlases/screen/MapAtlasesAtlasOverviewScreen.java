@@ -37,11 +37,11 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(inventory.main);
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
         zoomMapping = new HashMap<Integer, List<Double>>() {{
-            // backgroundSize, textureSize, mapTextureTranslate, mapTextureScale, mapTextureOffset
-            put(1, Arrays.asList(180.0, 180.0, -1.0, 1.15, 6.0));
-            put(3, Arrays.asList(180.0, 180.0, 60.0, 0.5, 0.0));
-            put(5, Arrays.asList(180.0, 180.0, 35.0, 0.28, 0.0));
-            put(7, Arrays.asList(180.0, 180.0, 15.0, 0.18, 0.0));
+            // mapTextureTranslate, mapTextureScale
+            put(1, Arrays.asList(1.0, 1.29));
+            put(3, Arrays.asList(55.0, 0.43));
+            put(5, Arrays.asList(33.0, 0.26));
+            put(7, Arrays.asList(24.0, 0.19));
         }};
     }
 
@@ -62,16 +62,13 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         int loopEnd = zoomLevel + 1;
         zoomLevel = (2 * zoomLevel) + 1;
         List<Double> zoomingInfo = zoomMapping.get(zoomLevel);
-        int size = zoomingInfo.get(0).intValue();
-        int textureSize = zoomingInfo.get(1).intValue();
-        int mapTextureTranslate = zoomingInfo.get(2).intValue();
-        float mapTextureScale = zoomingInfo.get(3).floatValue();
-        double mapTextureOffset = zoomingInfo.get(4).intValue();
+        int mapTextureTranslate = zoomingInfo.get(0).intValue();
+        float mapTextureScale = zoomingInfo.get(1).floatValue();
         // Draw map background
-        double y = 32;
-        double x = client.getWindow().getScaledWidth() / 4.0;
+        double y = (height - backgroundHeight) / 2.0;
+        double x = (width - backgroundWidth) / 2.0;
         client.getTextureManager().bindTexture(MapAtlasesHUD.MAP_CHKRBRD);
-        drawTexture(matrices, (int) x, (int) y,0,0, size, size, textureSize, textureSize);
+        drawTexture(matrices, (int) x, (int) y,0,0, 180, 180, 180, 180);
         // Draw maps, putting active map in middle of grid
         List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(client.world, atlas);
         MapState activeState = MapAtlasesAccessUtils.getActiveAtlasMapState(client.player.world, atlas);
@@ -90,8 +87,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 (round(mouseYOffset, PAN_BUCKET) / PAN_BUCKET * (1 << activeState.scale) * -128);
         for (int i = loopBegin; i < loopEnd; i++) {
             for (int j = loopBegin; j < loopEnd; j++) {
-                y = 32;
-                x = client.getWindow().getScaledWidth() / 4.0;
+                y = 68;
+                x = client.getWindow().getScaledWidth() / 4.0 + 22;
                 // Get the map for the GUI idx
                 int reqXCenter = activeXCenter + (j * (1 << activeState.scale) * 128);
                 int reqZCenter = activeZCenter + (i * (1 << activeState.scale) * 128);
@@ -103,8 +100,6 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 // Draw the map
                 x += (mapTextureTranslate * (j + loopEnd - 1));
                 y += (mapTextureTranslate * (i + loopEnd - 1));
-                x += mapTextureOffset;
-                y += mapTextureOffset;
                 VertexConsumerProvider.Immediate vcp;
                 vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
                 matrices.push();
@@ -113,12 +108,15 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 // Remove the off-map player icons temporarily during render
                 Iterator<Map.Entry<String, MapIcon>> it = state.icons.entrySet().iterator();
                 List<Map.Entry<String, MapIcon>> removed = new ArrayList<>();
-                while (it.hasNext()) {
-                    Map.Entry<String, MapIcon> e = it.next();
-                    if (e.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP
-                            || e.getValue().getType() == MapIcon.Type.PLAYER_OFF_LIMITS) {
-                        it.remove();
-                        removed.add(e);
+                if (state.getId().compareTo(activeState.getId()) != 0) {
+                    // Only remove the off-map icon if it's not the active map
+                    while (it.hasNext()) {
+                        Map.Entry<String, MapIcon> e = it.next();
+                        if (e.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP
+                                || e.getValue().getType() == MapIcon.Type.PLAYER_OFF_LIMITS) {
+                            it.remove();
+                            removed.add(e);
+                        }
                     }
                 }
                 client.gameRenderer.getMapRenderer()

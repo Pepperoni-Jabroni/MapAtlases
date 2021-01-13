@@ -33,7 +33,7 @@ import java.util.Map;
 
 public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
-    public static final int MAX_MAP_COUNT = 32;
+    public static final int MAX_MAP_COUNT = 128;
 
     public MapAtlasItem(Settings settings) {
         super(settings);

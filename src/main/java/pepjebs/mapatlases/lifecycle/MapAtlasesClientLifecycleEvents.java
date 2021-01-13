@@ -10,8 +10,8 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
 import pepjebs.mapatlases.MapAtlasesMod;
-import pepjebs.mapatlases.state.MapAtlasesInitAtlasS2CPacket;
-import pepjebs.mapatlases.state.MapAtlasesOpenGUIC2SPacket;
+import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
+import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.io.IOException;

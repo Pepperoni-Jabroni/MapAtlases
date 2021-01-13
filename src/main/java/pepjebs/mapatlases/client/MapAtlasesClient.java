@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.lifecycle.MapAtlasesClientLifecycleEvents;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreen;
-import pepjebs.mapatlases.state.MapAtlasesInitAtlasS2CPacket;
+import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
 
 public class MapAtlasesClient implements ClientModInitializer {
 

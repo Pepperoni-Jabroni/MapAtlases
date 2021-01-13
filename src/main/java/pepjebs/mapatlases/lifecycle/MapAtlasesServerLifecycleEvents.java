@@ -17,8 +17,8 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.MathHelper;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
-import pepjebs.mapatlases.state.MapAtlasesInitAtlasS2CPacket;
-import pepjebs.mapatlases.state.MapAtlasesOpenGUIC2SPacket;
+import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
+import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.io.IOException;

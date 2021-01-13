@@ -22,7 +22,7 @@ import pepjebs.mapatlases.lifecycle.MapAtlasesServerLifecycleEvents;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
-import pepjebs.mapatlases.state.MapAtlasesOpenGUIC2SPacket;
+import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
 
 public class MapAtlasesMod implements ModInitializer {
 

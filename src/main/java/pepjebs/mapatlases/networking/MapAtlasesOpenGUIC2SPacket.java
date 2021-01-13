@@ -1,4 +1,4 @@
-package pepjebs.mapatlases.state;
+package pepjebs.mapatlases.networking;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;

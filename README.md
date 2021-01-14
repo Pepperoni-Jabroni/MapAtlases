@@ -32,10 +32,10 @@ The "Atlas" features and details:
 ![](https://i.imgur.com/MwxT6uf.png)
 
 ## Custom Tooltip
-![](https://i.imgur.com/UUDgvnO.png)
+![](https://i.imgur.com/XZqmjJT.png)
 
 ## World Map View 1x1
-![](https://i.imgur.com/aWmjdNK.png)
+![](https://i.imgur.com/UUDgvnO.png)
 
 ## World Map View 3x3
 ![](https://i.imgur.com/yTu35Vz.png)

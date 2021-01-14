@@ -18,7 +18,9 @@ The "Atlas" features and details:
 - *Todo:* Config control for `activation_location` (inv, hot-bar, hands, main-hand, off-hand), `max_map_count`, `crafting_materials`, `is_multidimensional`, `force_scale`
 
 ## Crafting an Atlas
-![](https://i.imgur.com/vAMa0XF.png)
+![](https://i.imgur.com/yjKU4nO.png)
+
+![](https://i.imgur.com/EwwBQ6d.png)
 
 ## Maps inside the Atlas will render if the Atlas is on your hot-bar
 ![](https://i.imgur.com/sPCpk0u.png)
@@ -30,7 +32,22 @@ The "Atlas" features and details:
 ![](https://i.imgur.com/MwxT6uf.png)
 
 ## Custom Tooltip
-![](https://i.imgur.com/XZqmjJT.png)
+![](https://i.imgur.com/UUDgvnO.png)
+
+## World Map View 1x1
+![](https://i.imgur.com/aWmjdNK.png)
+
+## World Map View 3x3
+![](https://i.imgur.com/yTu35Vz.png)
+
+## World Map View 5x5
+![](https://i.imgur.com/9PBGB4E.png)
+
+## World Map View 7x7
+![](https://i.imgur.com/FE4tiSn.png)
+
+## World Map View 1x1 (& Mini-map) with a Banner
+![](https://i.imgur.com/aWmjdNK.png)
 
 Sound Sources
 - [Atlas open sound](https://freesound.org/people/InspectorJ/sounds/416179/)

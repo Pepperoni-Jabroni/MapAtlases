@@ -12,7 +12,7 @@ The "Atlas" features and details:
 - There's a maximum of 128 Maps in each Atlas.
 - Filled Maps inside the Atlas will continue updating your location & world-state.
 - Empty Maps are consumed when you enter an un-mapped region to generate a new Map of the corresponding Scale.
-- The Atlas has a world map view as well. To access this, right-click the Atlas or press "m".
+- The Atlas has a world map view as well. To access this, right-click the Atlas or press "m" while the Atlas is on your hot-bar.
 - The Atlas world view has 4 scales: 1x1, 3x3, 5x5, & 7x7. Use your mouse scroll to change zoom levels.
 - The Atlas world view has full pan support as well, using your mouse to drag the world map.
 - Atlases also support right-clicking Banners to add "waypoints", which display in both the mini-map & world-view map.

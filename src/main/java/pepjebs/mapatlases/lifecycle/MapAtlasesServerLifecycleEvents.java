@@ -2,6 +2,7 @@ package pepjebs.mapatlases.lifecycle;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -23,10 +24,14 @@ import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MapAtlasesServerLifecycleEvents {
+
+    // Used to prevent map auto-creation from spamming new maps when server is lagging
+    private static final HashMap<String, Integer> lastMapCreationSize = new HashMap<>();
 
     public static void openGuiEvent(
             MinecraftServer server,
@@ -38,7 +43,7 @@ public class MapAtlasesServerLifecycleEvents {
         p.read(buf);
         server.execute(() -> {
             ItemStack atlas = p.atlas;
-            int atlasIdx = 40;
+            int atlasIdx = player.inventory.main.size();
             for (int i = 0; i < player.inventory.main.size(); i++) {
                 if (player.inventory.main.get(i).getItem() == atlas.getItem() &&
                         player.inventory.main.get(i).getTag() != null &&
@@ -48,7 +53,7 @@ public class MapAtlasesServerLifecycleEvents {
                     break;
                 }
             }
-            if (atlasIdx < 9) {
+            if (atlasIdx < PlayerInventory.getHotbarSize()) {
                 player.inventory.selectedSlot = atlasIdx;
                 player.networkHandler.sendPacket(new HeldItemChangeS2CPacket(atlasIdx));
                 player.openHandledScreen((MapAtlasItem) atlas.getItem());
@@ -121,25 +126,30 @@ public class MapAtlasesServerLifecycleEvents {
                     scale = state.scale;
                 }
 
-                if (minDist != Integer.MAX_VALUE && scale != -1 && minDist > (80 * (1 << scale))) {
-                    int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
-                    if (atlas.getTag() != null && emptyCount > 0) {
-                        atlas.getTag().putInt("empty", atlas.getTag().getInt("empty") - 1);
-                        ItemStack newMap = FilledMapItem.createMap(
-                                player.getServerWorld(),
-                                MathHelper.floor(player.getX()),
-                                MathHelper.floor(player.getZ()),
-                                (byte) scale,
-                                true,
-                                false);
-                        List<Integer> mapIds = Arrays.stream(
-                                atlas.getTag().getIntArray("maps")).boxed().collect(Collectors.toList());
-                        mapIds.add(FilledMapItem.getMapId(newMap));
-                        atlas.getTag().putIntArray("maps", mapIds);
-                        player.getServerWorld().playSound(null, player.getBlockPos(),
-                                MapAtlasesMod.ATLAS_CREATE_MAP_SOUND_EVENT,
-                                SoundCategory.PLAYERS, 1.0F, 1.0F);
-                    }
+                if (atlas.getTag() == null) continue;
+                List<Integer> mapIds = Arrays.stream(
+                        atlas.getTag().getIntArray("maps")).boxed().collect(Collectors.toList());
+                int mapSize = mapIds.size();
+                int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
+                if (!lastMapCreationSize.containsKey(player.getName().getString()))
+                    lastMapCreationSize.put(player.getName().getString(), -1);
+                int lastMapSize = lastMapCreationSize.get(player.getName().getString());
+                if (lastMapSize != mapSize
+                        && minDist != -1 && scale != -1 && minDist > (100 * (1 << scale)) && emptyCount > 0) {
+                    atlas.getTag().putInt("empty", atlas.getTag().getInt("empty") - 1);
+                    ItemStack newMap = FilledMapItem.createMap(
+                            player.getServerWorld(),
+                            MathHelper.floor(player.getX()),
+                            MathHelper.floor(player.getZ()),
+                            (byte) scale,
+                            true,
+                            false);
+                    lastMapCreationSize.put(player.getName().getString(), mapIds.size());
+                    mapIds.add(FilledMapItem.getMapId(newMap));
+                    atlas.getTag().putIntArray("maps", mapIds);
+                    player.getServerWorld().playSound(null, player.getBlockPos(),
+                            MapAtlasesMod.ATLAS_CREATE_MAP_SOUND_EVENT,
+                            SoundCategory.PLAYERS, 1.0F, 1.0F);
                 }
             }
         }

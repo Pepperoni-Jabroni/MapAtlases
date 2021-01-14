@@ -87,8 +87,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 (round(mouseYOffset, PAN_BUCKET) / PAN_BUCKET * (1 << activeState.scale) * -128);
         for (int i = loopBegin; i < loopEnd; i++) {
             for (int j = loopBegin; j < loopEnd; j++) {
-                y = 68;
-                x = client.getWindow().getScaledWidth() / 4.0 + 22;
+                double mapTextY = (height - backgroundHeight) / 2.0 + 8;
+                double mapTextX = (width - backgroundWidth) / 2.0 + 8;
                 // Get the map for the GUI idx
                 int reqXCenter = activeXCenter + (j * (1 << activeState.scale) * 128);
                 int reqZCenter = activeZCenter + (i * (1 << activeState.scale) * 128);
@@ -98,12 +98,12 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                         .findFirst().orElse(null);
                 if (state == null) continue;
                 // Draw the map
-                x += (mapTextureTranslate * (j + loopEnd - 1));
-                y += (mapTextureTranslate * (i + loopEnd - 1));
+                mapTextX += (mapTextureTranslate * (j + loopEnd - 1));
+                mapTextY += (mapTextureTranslate * (i + loopEnd - 1));
                 VertexConsumerProvider.Immediate vcp;
                 vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
                 matrices.push();
-                matrices.translate(x, y, 0.0);
+                matrices.translate(mapTextX, mapTextY, 0.0);
                 matrices.scale(mapTextureScale, mapTextureScale, 0);
                 // Remove the off-map player icons temporarily during render
                 Iterator<Map.Entry<String, MapIcon>> it = state.icons.entrySet().iterator();

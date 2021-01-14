@@ -33,6 +33,9 @@ public class MapAtlasesServerLifecycleEvents {
     // Used to prevent map auto-creation from spamming new maps when server is lagging
     private static final HashMap<String, Integer> lastMapCreationSize = new HashMap<>();
 
+    // Value minimum of 64, since maps are 128
+    private static final int NEW_MAP_CENTER_DISTANCE = 90;
+
     public static void openGuiEvent(
             MinecraftServer server,
             ServerPlayerEntity player,
@@ -135,7 +138,7 @@ public class MapAtlasesServerLifecycleEvents {
                     lastMapCreationSize.put(player.getName().getString(), -1);
                 int lastMapSize = lastMapCreationSize.get(player.getName().getString());
                 if (lastMapSize != mapSize
-                        && minDist != -1 && scale != -1 && minDist > (100 * (1 << scale)) && emptyCount > 0) {
+                        && minDist != -1 && scale != -1 && minDist > (NEW_MAP_CENTER_DISTANCE * (1 << scale)) && emptyCount > 0) {
                     atlas.getTag().putInt("empty", atlas.getTag().getInt("empty") - 1);
                     ItemStack newMap = FilledMapItem.createMap(
                             player.getServerWorld(),

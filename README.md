@@ -31,3 +31,8 @@ The "Atlas" features and details:
 
 ## Custom Tooltip
 ![](https://i.imgur.com/XZqmjJT.png)
+
+Sound Sources
+- [Atlas open sound](https://freesound.org/people/InspectorJ/sounds/416179/)
+- [Atlas page flip sound](https://freesound.org/people/flag2/sounds/63318/)
+- [Atlas new map creation sound](https://freesound.org/people/Tomoyo%20Ichijouji/sounds/211247/)

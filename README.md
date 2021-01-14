@@ -2,7 +2,7 @@
 
 <a href="https://www.curseforge.com/minecraft/mc-mods/fabric-api"><img src="https://i.imgur.com/Ol1Tcf8.png" width="149" height="50" title="Fabric API" alt="Fabric API"></a>
 
-A vanilla-friendly Minimap mod using vanilla Maps. Adds a single new item: the "Atlas"!
+A vanilla-friendly mini-map mod using vanilla Maps, introducing the "Atlas".
 
 The "Atlas" features and details:
 - Crafted with a **Filled** Map (the source map), a Book, and something sticky (Slimeball or Honey Bottle). The source map determines the Atlas' scale. *Who knew this whole time, all you had to do to get a mini-map was slap a map onto a book?*

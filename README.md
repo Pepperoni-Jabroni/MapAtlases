@@ -2,7 +2,7 @@
 
 <a href="https://www.curseforge.com/minecraft/mc-mods/fabric-api"><img src="https://i.imgur.com/Ol1Tcf8.png" width="149" height="50" title="Fabric API" alt="Fabric API"></a>
 
-A vanilla-friendly mini-map mod using vanilla Maps, introducing the "Atlas".
+A vanilla-friendly mini-map/world-view mod using vanilla Maps, introducing the "Atlas".
 
 The "Atlas" features and details:
 - Crafted with a **Filled** Map (the source map), a Book, and something sticky (Slimeball or Honey Bottle). The source map determines the Atlas' scale. *Who knew this whole time, all you had to do to get a mini-map was slap a map onto a book?*
@@ -15,6 +15,8 @@ The "Atlas" features and details:
 - The Atlas has a world map view as well. To access this, right-click the Atlas or press "m".
 - The Atlas world view has 4 scales: 1x1, 3x3, 5x5, & 7x7. Use your mouse scroll to change zoom levels.
 - The Atlas world view has full pan support as well, using your mouse to drag the world map.
+- Atlases also support right-clicking Banners to add "waypoints", which display in both the mini-map & world-view map.
+- Atlases have 3 sounds: An opening world-view sound, a new map drawing sound, & a page flipping (new mini-map displaying) sound.
 - **Note**: Atlases are limited to the Overworld due to some buggy code out of my control.
 - *Todo:* Config control for `activation_location` (inv, hot-bar, hands, main-hand, off-hand), `max_map_count`, `crafting_materials`, `is_multidimensional`, `force_scale`
 

@@ -39,7 +39,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         // Ensure we're not trying to add too many Maps
         int empties = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
         int mapCount = MapAtlasesAccessUtils.getMapCountFromItemStack(atlas);
-        if (empties + mapCount + itemStacks.size() - 1 > MapAtlasItem.MAX_MAP_COUNT) return false;
+        if (empties + mapCount + itemStacks.size() - 1 > MapAtlasItem.getMaxMapCount()) return false;
 
         // Ensure Filled Maps are all same Scale & Dimension
         if(!(MapAtlasesAccessUtils.areMapsSameScale(sampleMap, mapStates) &&

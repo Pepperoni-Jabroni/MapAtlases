@@ -33,10 +33,15 @@ import java.util.Map;
 
 public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
-    public static final int MAX_MAP_COUNT = 128;
-
     public MapAtlasItem(Settings settings) {
         super(settings);
+    }
+
+    public static int getMaxMapCount() {
+        if (MapAtlasesMod.CONFIG != null) {
+            return MapAtlasesMod.CONFIG.maxMapCount;
+        }
+        return 128;
     }
 
     @Override
@@ -52,7 +57,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             }
             int mapSize = MapAtlasesAccessUtils.getMapCountFromItemStack(stack);
             int empties = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(stack);
-            if (mapSize + empties >= MAX_MAP_COUNT) {
+            if (mapSize + empties >= getMaxMapCount()) {
                 tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_full")
                         .formatted(Formatting.ITALIC).formatted(Formatting.GRAY));
             }

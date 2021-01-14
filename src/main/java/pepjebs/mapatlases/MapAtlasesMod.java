@@ -1,5 +1,7 @@
 package pepjebs.mapatlases;
 
+import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
+import me.sargunvohra.mcmods.autoconfig1u.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -17,6 +19,7 @@ import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFW;
+import pepjebs.mapatlases.config.MapAtlasesConfig;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.lifecycle.MapAtlasesServerLifecycleEvents;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
@@ -28,6 +31,7 @@ public class MapAtlasesMod implements ModInitializer {
 
     public static final String MOD_ID = "map_atlases";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
+    public static MapAtlasesConfig CONFIG = null;
 
     public static MapAtlasItem MAP_ATLAS;
     public static boolean enableMultiDimMaps = false;
@@ -48,6 +52,10 @@ public class MapAtlasesMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        // Register config
+        AutoConfig.register(MapAtlasesConfig.class, JanksonConfigSerializer::new);
+        CONFIG = AutoConfig.getConfigHolder(MapAtlasesConfig.class).getConfig();
+
         // Register special recipes
         MAP_ATLAS_CREATE_RECIPE = Registry.register(Registry.RECIPE_SERIALIZER,
                 new Identifier(MOD_ID, "crafting_atlas"), new SpecialRecipeSerializer<>(MapAtlasCreateRecipe::new));

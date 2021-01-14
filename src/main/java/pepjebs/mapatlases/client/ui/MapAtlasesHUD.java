@@ -17,6 +17,8 @@ import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
+import java.util.Map;
+
 @Environment(EnvType.CLIENT)
 public class MapAtlasesHUD extends DrawableHelper {
 
@@ -71,10 +73,14 @@ public class MapAtlasesHUD extends DrawableHelper {
             currentMapId = state.getId();
         }
         // Draw map background
+        int mapScaling = 64;
+        if (MapAtlasesMod.CONFIG != null) {
+            mapScaling = MapAtlasesMod.CONFIG.forceMiniMapScaling;
+        }
         int y = 0;
-        int x = client.getWindow().getScaledWidth()-64;
+        int x = client.getWindow().getScaledWidth()-mapScaling;
         client.getTextureManager().bindTexture(MAP_CHKRBRD);
-        drawTexture(matrices,x,y,0,0,64,64, 64, 64);
+        drawTexture(matrices,x,y,0,0,mapScaling,mapScaling, mapScaling, mapScaling);
 
         // Draw map data
         x += 4;
@@ -83,7 +89,8 @@ public class MapAtlasesHUD extends DrawableHelper {
         vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         matrices.push();
         matrices.translate(x, y, 0.0);
-        matrices.scale(0.45f, 0.45f, 0);
+        // Prepare yourself for some magic numbers
+        matrices.scale((float) mapScaling / 142, (float) mapScaling / 142, 0);
         mapRenderer.draw(matrices, vcp, state, false, Integer.parseInt("0000000011110000", 2));
         vcp.draw();
         matrices.pop();

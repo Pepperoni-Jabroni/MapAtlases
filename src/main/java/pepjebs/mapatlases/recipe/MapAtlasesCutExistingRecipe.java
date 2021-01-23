@@ -57,7 +57,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
             }
         }
         if (atlas.getTag() == null) return ItemStack.EMPTY;
-        if (MapAtlasesAccessUtils.getMapCountFromItemStack(atlas) > 0) {
+        if (MapAtlasesAccessUtils.getMapCountFromItemStack(atlas) > 1) {
             List<Integer> mapIds = Arrays.stream(atlas.getTag()
                     .getIntArray("maps")).boxed().collect(Collectors.toList());
             if (mapIds.size() > 0) {

@@ -12,13 +12,17 @@ The "Atlas" features and details:
 - There's a maximum of 128 Maps in each Atlas.
 - Filled Maps inside the Atlas will continue updating your location & world-state.
 - Empty Maps are consumed when you enter an un-mapped region to generate a new Map of the corresponding Scale.
+- You may also **cut out Maps** when putting it in a Crafting Grid with Shears. 
+   - This will remove Filled Maps from the Atlas until only the Source Map is left, which cannot be cut out. 
+   - It will then start removing Empty Maps from the Atlas if there are no Filled Maps left inside (besides Source Map).
+   - This does consume Shear's durability (Unbreaking still functions though).
 - The Atlas has a world map view as well. To access this, right-click the Atlas or press "m" while the Atlas is on your hot-bar.
 - The Atlas world view has 4 scales: 1x1, 3x3, 5x5, & 7x7. Use your mouse scroll to change zoom levels.
 - The Atlas world view has full pan support as well, using your mouse to drag the world map.
 - Atlases also support right-clicking Banners to add "waypoints", which display in both the mini-map & world-view map.
 - Atlases have 3 sounds: An opening world-view sound, a new map drawing sound, & a page flipping (new mini-map displaying) sound.
 - **Note**: Atlases are limited to the Overworld due to some buggy code out of my control.
-- *Todo:* Config control for `activation_location` (inv, hot-bar, hands, main-hand, off-hand), `max_map_count`, `crafting_materials`, `is_multidimensional`, `force_scale`
+- The mod has config control for configuring the maximum number of maps allowed in an Atlas & to force the mini-map scale on your GUI.
 
 Future ideas:
 - Fix issues with Atlases in other dimensions.
@@ -55,6 +59,12 @@ Future ideas:
 
 ## World Map View 1x1 (& Mini-map) with a Banner
 ![](https://i.imgur.com/aWmjdNK.png)
+
+## Cutting a Filled Map out of an Atlas
+![](https://i.imgur.com/Ga4dzle.png)
+
+## Cutting an Empty Map out of an Atlas
+![](https://i.imgur.com/iK1rrht.png)
 
 Sound Sources
 - [Atlas open sound](https://freesound.org/people/InspectorJ/sounds/416179/)

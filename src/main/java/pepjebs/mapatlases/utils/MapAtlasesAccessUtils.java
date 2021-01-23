@@ -27,10 +27,15 @@ public class MapAtlasesAccessUtils {
         return newMaps.stream().filter(m -> m.dimension == testAgainst.dimension).count() == newMaps.size();
     }
 
-    public static MapState getRandomMapStateFromAtlas(World world, ItemStack atlas) {
+    public static MapState getFirstMapStateFromAtlas(World world, ItemStack atlas) {
+        return getMapStateByIndexFromAtlas(world, atlas, 0);
+    }
+
+    public static MapState getMapStateByIndexFromAtlas(World world, ItemStack atlas, int i) {
         if (atlas.getTag() == null) return null;
         int[] mapIds = Arrays.stream(atlas.getTag().getIntArray("maps")).toArray();
-        ItemStack map = createMapItemStackFromId(mapIds[0]);
+        if (i < 0 || i >= mapIds.length) return null;
+        ItemStack map = createMapItemStackFromId(mapIds[i]);
         return FilledMapItem.getMapState(map, world);
     }
 

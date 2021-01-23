@@ -24,6 +24,7 @@ import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.lifecycle.MapAtlasesServerLifecycleEvents;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
+import pepjebs.mapatlases.recipe.MapAtlasesCutExistingRecipe;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
 import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
 
@@ -38,6 +39,7 @@ public class MapAtlasesMod implements ModInitializer {
 
     public static SpecialRecipeSerializer<MapAtlasCreateRecipe> MAP_ATLAS_CREATE_RECIPE;
     public static SpecialRecipeSerializer<MapAtlasesAddRecipe> MAP_ATLAS_ADD_RECIPE;
+    public static SpecialRecipeSerializer<MapAtlasesCutExistingRecipe> MAP_ATLAS_CUT_RECIPE;
 
     public static ScreenHandlerType<MapAtlasesAtlasOverviewScreenHandler> ATLAS_OVERVIEW_HANDLER;
 
@@ -61,6 +63,8 @@ public class MapAtlasesMod implements ModInitializer {
                 new Identifier(MOD_ID, "crafting_atlas"), new SpecialRecipeSerializer<>(MapAtlasCreateRecipe::new));
         MAP_ATLAS_ADD_RECIPE = Registry.register(Registry.RECIPE_SERIALIZER,
                 new Identifier(MOD_ID, "adding_atlas"), new SpecialRecipeSerializer<>(MapAtlasesAddRecipe::new));
+        MAP_ATLAS_CUT_RECIPE = Registry.register(Registry.RECIPE_SERIALIZER,
+                new Identifier(MOD_ID, "cutting_atlas"), new SpecialRecipeSerializer<>(MapAtlasesCutExistingRecipe::new));
 
         ATLAS_OVERVIEW_HANDLER =
                 ScreenHandlerRegistry.registerExtended(

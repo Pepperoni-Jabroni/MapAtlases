@@ -49,7 +49,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         super.appendTooltip(stack, world, tooltip, context);
 
         if (world != null && world.isClient) {
-            MapState mapState = MapAtlasesAccessUtils.getRandomMapStateFromAtlas(world, stack);
+            MapState mapState = MapAtlasesAccessUtils.getFirstMapStateFromAtlas(world, stack);
             if (mapState == null) {
                 tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_err")
                         .formatted(Formatting.ITALIC).formatted(Formatting.GRAY));

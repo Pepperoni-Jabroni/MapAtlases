@@ -30,7 +30,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
 
         // Ensure there's an Atlas
         if (atlas.isEmpty()) return false;
-        MapState sampleMap = MapAtlasesAccessUtils.getRandomMapStateFromAtlas(world, atlas);
+        MapState sampleMap = MapAtlasesAccessUtils.getFirstMapStateFromAtlas(world, atlas);
 
         // Ensure only correct ingredients are present
         if (!(itemStacks.size() > 1 && MapAtlasesAccessUtils.isListOnylIngredients(itemStacks))) return false;

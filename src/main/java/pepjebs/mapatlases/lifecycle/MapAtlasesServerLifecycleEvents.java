@@ -26,15 +26,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 public class MapAtlasesServerLifecycleEvents {
 
-    // Used to prevent map auto-creation from spamming new maps when server is lagging
-    private static final HashMap<String, Integer> lastMapCreationSize = new HashMap<>();
-
     // Value minimum of 64, since maps are 128
     private static final int NEW_MAP_CENTER_DISTANCE = 90;
+
+    private static Semaphore mutex = new Semaphore(1);
 
     public static void openGuiEvent(
             MinecraftServer server,
@@ -132,27 +132,29 @@ public class MapAtlasesServerLifecycleEvents {
                 if (atlas.getTag() == null) continue;
                 List<Integer> mapIds = Arrays.stream(
                         atlas.getTag().getIntArray("maps")).boxed().collect(Collectors.toList());
-                int mapSize = mapIds.size();
                 int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
-                if (!lastMapCreationSize.containsKey(player.getName().getString()))
-                    lastMapCreationSize.put(player.getName().getString(), -1);
-                int lastMapSize = lastMapCreationSize.get(player.getName().getString());
-                if (lastMapSize != mapSize
-                        && minDist != -1 && scale != -1 && minDist > (NEW_MAP_CENTER_DISTANCE * (1 << scale)) && emptyCount > 0) {
-                    atlas.getTag().putInt("empty", atlas.getTag().getInt("empty") - 1);
-                    ItemStack newMap = FilledMapItem.createMap(
-                            player.getServerWorld(),
-                            MathHelper.floor(player.getX()),
-                            MathHelper.floor(player.getZ()),
-                            (byte) scale,
-                            true,
-                            false);
-                    lastMapCreationSize.put(player.getName().getString(), mapIds.size());
-                    mapIds.add(FilledMapItem.getMapId(newMap));
-                    atlas.getTag().putIntArray("maps", mapIds);
-                    player.getServerWorld().playSound(null, player.getBlockPos(),
-                            MapAtlasesMod.ATLAS_CREATE_MAP_SOUND_EVENT,
-                            SoundCategory.PLAYERS, 1.0F, 1.0F);
+                if (mutex.availablePermits() > 0 && minDist != -1 &&
+                        scale != -1 && minDist > (NEW_MAP_CENTER_DISTANCE * (1 << scale)) && emptyCount > 0) {
+                    try {
+                        mutex.acquire();
+                        atlas.getTag().putInt("empty", atlas.getTag().getInt("empty") - 1);
+                        ItemStack newMap = FilledMapItem.createMap(
+                                player.getServerWorld(),
+                                MathHelper.floor(player.getX()),
+                                MathHelper.floor(player.getZ()),
+                                (byte) scale,
+                                true,
+                                false);
+                        mapIds.add(FilledMapItem.getMapId(newMap));
+                        atlas.getTag().putIntArray("maps", mapIds);
+                        player.getServerWorld().playSound(null, player.getBlockPos(),
+                                MapAtlasesMod.ATLAS_CREATE_MAP_SOUND_EVENT,
+                                SoundCategory.PLAYERS, 1.0F, 1.0F);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        mutex.release();
+                    }
                 }
             }
         }

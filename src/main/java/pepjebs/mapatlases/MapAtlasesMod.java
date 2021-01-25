@@ -3,13 +3,10 @@ package pepjebs.mapatlases;
 import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
 import me.sargunvohra.mcmods.autoconfig1u.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
-import net.minecraft.client.options.KeyBinding;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.*;
 import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.screen.ScreenHandlerType;
@@ -18,7 +15,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.glfw.GLFW;
 import pepjebs.mapatlases.config.MapAtlasesConfig;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.lifecycle.MapAtlasesServerLifecycleEvents;
@@ -49,8 +45,6 @@ public class MapAtlasesMod implements ModInitializer {
     public static SoundEvent ATLAS_PAGE_TURN_SOUND_EVENT = new SoundEvent(ATLAS_PAGE_TURN_SOUND_ID);
     private static final Identifier ATLAS_CREATE_MAP_SOUND_ID = new Identifier(MOD_ID, "atlas_create_map");
     public static SoundEvent ATLAS_CREATE_MAP_SOUND_EVENT = new SoundEvent(ATLAS_CREATE_MAP_SOUND_ID);
-
-    public static KeyBinding displayMapGUIBinding;
 
     @Override
     public void onInitialize() {
@@ -86,14 +80,6 @@ public class MapAtlasesMod implements ModInitializer {
                     new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1)));
         }
         MAP_ATLAS = (MapAtlasItem) Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));
-
-        // Register Keybind
-        displayMapGUIBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-           "key.map_atlases.open_minimap",
-           InputUtil.Type.KEYSYM,
-            GLFW.GLFW_KEY_M,
-            "category.map_atlases.minimap"
-        ));
 
         // Register events/callbacks
         ServerPlayConnectionEvents.JOIN.register(MapAtlasesServerLifecycleEvents::mapAtlasPlayerJoin);

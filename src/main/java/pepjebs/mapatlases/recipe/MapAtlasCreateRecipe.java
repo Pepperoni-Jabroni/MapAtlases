@@ -23,12 +23,15 @@ import java.util.stream.Collectors;
 
 public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
 
+    private World world = null;
+
     public MapAtlasCreateRecipe(Identifier id) {
         super(id);
     }
 
     @Override
     public boolean matches(CraftingInventory inv, World world) {
+        this.world = world;
         ArrayList<ItemStack> itemStacks = new ArrayList<>();
         ItemStack filledMap = ItemStack.EMPTY;
         for(int i = 0; i < inv.size(); i++) {
@@ -66,10 +69,10 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
                 mapItemStack = inv.getStack(i);
             }
         }
-        if (mapItemStack == null || MinecraftClient.getInstance().world == null) {
+        if (mapItemStack == null || world == null) {
             return ItemStack.EMPTY;
         }
-        MapState mapState = FilledMapItem.getMapState(mapItemStack, MinecraftClient.getInstance().world);
+        MapState mapState = FilledMapItem.getMapState(mapItemStack, world);
         if (mapState == null) return ItemStack.EMPTY;
         Item mapAtlasItem;
         if (MapAtlasesMod.enableMultiDimMaps && mapState.dimension == World.END) {

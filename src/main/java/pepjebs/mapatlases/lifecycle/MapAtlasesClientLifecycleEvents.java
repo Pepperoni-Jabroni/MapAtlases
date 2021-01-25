@@ -10,6 +10,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
 import pepjebs.mapatlases.MapAtlasesMod;
+import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
 import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
@@ -19,7 +20,7 @@ import java.io.IOException;
 public class MapAtlasesClientLifecycleEvents {
 
     public static void mapAtlasClientTick(MinecraftClient client) {
-        while (MapAtlasesMod.displayMapGUIBinding.wasPressed()) {
+        while (MapAtlasesClient.displayMapGUIBinding.wasPressed()) {
             if (client.world == null || client.player == null) return;
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(client.player.inventory.main);
             if (atlas.isEmpty()) return;

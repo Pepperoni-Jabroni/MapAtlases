@@ -6,7 +6,7 @@ A vanilla-friendly mini-map/world-view mod using vanilla Maps, introducing the "
 
 The "Atlas" features and details:
 - Crafted with a **Filled** Map (the source map), a Book, and something sticky (Slimeball or Honey Bottle). The source map determines the Atlas' scale. *Who knew this whole time, all you had to do to get a mini-map was slap a map onto a book?*
-- When the Atlas is on your hot-bar, it will render your current-position Map on the HUD if a such Map exists inside the Atlas.
+- When the Atlas is on your hot-bar or off-hand, it will render your current-position Map on the HUD if a such Map exists inside the Atlas.
 - You can put both Filled Maps and Empty Maps with an Atlas in a crafting inventory to insert either Map type into the Atlas.
 - Filled Maps which are added **must** be of same Scale.
 - There's a maximum of 128 Maps in each Atlas.
@@ -22,7 +22,7 @@ The "Atlas" features and details:
 - Atlases also support right-clicking Banners to add "waypoints", which display in both the mini-map & world-view map.
 - Atlases have 3 sounds: An opening world-view sound, a new map drawing sound, & a page flipping (new mini-map displaying) sound.
 - **Note**: Atlases are limited to the Overworld due to some buggy code out of my control.
-- The mod has config control for configuring the maximum number of maps allowed in an Atlas & to force the mini-map scale on your GUI.
+- The mod has config control for configuring the maximum number of maps allowed in an Atlas, to force the mini-map scale on your GUI, & to disable mini-map drawing entirely if you prefer not to have it.
 
 Future ideas:
 - Fix issues with Atlases in other dimensions.

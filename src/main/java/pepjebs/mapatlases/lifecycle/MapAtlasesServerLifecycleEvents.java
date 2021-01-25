@@ -55,23 +55,26 @@ public class MapAtlasesServerLifecycleEvents {
         p.read(buf);
         server.execute(() -> {
             ItemStack atlas = p.atlas;
-            int atlasIdx = player.inventory.main.size();
-            for (int i = 0; i < player.inventory.main.size(); i++) {
-                if (player.inventory.main.get(i).getItem() == atlas.getItem() &&
-                        player.inventory.main.get(i).getTag() != null &&
-                        atlas.getTag() != null &&
-                        player.inventory.main.get(i).getTag().toString().compareTo(atlas.getTag().toString()) == 0) {
-                    atlasIdx = i;
-                    break;
+            if (!(player.inventory.offHand.get(0).getTag() != null && atlas.getTag() != null &&
+                    player.inventory.offHand.get(0).getTag().toString().compareTo(atlas.getTag().toString()) == 0)) {
+                int atlasIdx = player.inventory.main.size();
+                for (int i = 0; i < player.inventory.main.size(); i++) {
+                    if (player.inventory.main.get(i).getItem() == atlas.getItem() &&
+                            player.inventory.main.get(i).getTag() != null &&
+                            atlas.getTag() != null &&
+                            player.inventory.main.get(i).getTag().toString().compareTo(atlas.getTag().toString()) == 0) {
+                        atlasIdx = i;
+                        break;
+                    }
+                }
+                if (atlasIdx < PlayerInventory.getHotbarSize()) {
+                    player.inventory.selectedSlot = atlasIdx;
+                    player.networkHandler.sendPacket(new HeldItemChangeS2CPacket(atlasIdx));
                 }
             }
-            if (atlasIdx < PlayerInventory.getHotbarSize()) {
-                player.inventory.selectedSlot = atlasIdx;
-                player.networkHandler.sendPacket(new HeldItemChangeS2CPacket(atlasIdx));
-                player.openHandledScreen((MapAtlasItem) atlas.getItem());
-                player.getServerWorld().playSound(null, player.getBlockPos(),
-                        MapAtlasesMod.ATLAS_OPEN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F);
-            }
+            player.openHandledScreen((MapAtlasItem) atlas.getItem());
+            player.getServerWorld().playSound(null, player.getBlockPos(),
+                    MapAtlasesMod.ATLAS_OPEN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F);
         });
     }
 
@@ -101,6 +104,8 @@ public class MapAtlasesServerLifecycleEvents {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             ItemStack atlas = player.inventory.main.stream()
                     .filter(is -> is.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
+            if (atlas.isEmpty() && player.getOffHandStack().getItem() == MapAtlasesMod.MAP_ATLAS)
+                atlas =  player.getOffHandStack();
             if (!atlas.isEmpty()) {
                 MapState activeState =
                         MapAtlasesAccessUtils.getActiveAtlasMapState(

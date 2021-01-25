@@ -22,7 +22,7 @@ public class MapAtlasesClientLifecycleEvents {
     public static void mapAtlasClientTick(MinecraftClient client) {
         while (MapAtlasesClient.displayMapGUIBinding.wasPressed()) {
             if (client.world == null || client.player == null) return;
-            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(client.player.inventory.main);
+            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayer(client.player.inventory);
             if (atlas.isEmpty()) return;
             MapAtlasesOpenGUIC2SPacket p = new MapAtlasesOpenGUIC2SPacket(atlas);
             PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
@@ -42,8 +42,7 @@ public class MapAtlasesClientLifecycleEvents {
         client.execute(() -> {
             if (client.world == null || client.player == null) return;
             MapState state = p.getMapState();
-            ItemStack atlas = client.player.inventory.main.stream()
-                    .filter(is -> is.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
+            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayer(client.player.inventory);
             state.update(client.player, atlas);
             state.getPlayerSyncData(client.player);
             client.world.putMapState(state);

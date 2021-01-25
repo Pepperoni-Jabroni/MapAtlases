@@ -35,7 +35,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     public MapAtlasesAtlasOverviewScreen(ScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
-        atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(inventory.main);
+        atlas = MapAtlasesAccessUtils.getAtlasFromPlayer(inventory);
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
         zoomMapping = new HashMap<Integer, List<Double>>() {{
             // mapTextureTranslate, mapTextureScale

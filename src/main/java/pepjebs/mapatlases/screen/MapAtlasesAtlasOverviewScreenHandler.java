@@ -32,6 +32,6 @@ public class MapAtlasesAtlasOverviewScreenHandler extends ScreenHandler {
 
     @Override
     public boolean canUse(PlayerEntity player) {
-        return MapAtlasesAccessUtils.getAtlasFromItemStacks(player.inventory.main) != ItemStack.EMPTY;
+        return MapAtlasesAccessUtils.getAtlasFromPlayer(player.inventory) != ItemStack.EMPTY;
     }
 }

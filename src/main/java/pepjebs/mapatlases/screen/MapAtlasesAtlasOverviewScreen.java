@@ -54,7 +54,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     @Override
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
-        if (client == null || client.player == null) return;
+        if (client == null || client.player == null || client.world == null) return;
         // Handle zooming
         int zoomLevel = round(zoomValue, ZOOM_BUCKET) / ZOOM_BUCKET;
         zoomLevel = Math.max(zoomLevel, 0);
@@ -80,6 +80,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 return;
         }
         int activeMapId = MapAtlasesAccessUtils.getMapIntFromState(activeState);
+        if (!idsToCenters.containsKey(activeMapId)) {
+            MapAtlasesMod.LOGGER.warn("Client didn't have idsToCenters entry.");
+        }
         int activeXCenter = idsToCenters.get(activeMapId).get(0);
         int activeZCenter = idsToCenters.get(activeMapId).get(1);
         activeXCenter = activeXCenter +

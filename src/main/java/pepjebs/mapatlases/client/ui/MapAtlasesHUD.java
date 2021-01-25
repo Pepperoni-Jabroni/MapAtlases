@@ -16,6 +16,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
+import pepjebs.mapatlases.config.MapAtlasesConfig;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.Map;
@@ -46,6 +47,8 @@ public class MapAtlasesHUD extends DrawableHelper {
         // in other dimensions in vanilla MC
         if (client.player == null || client.player.world.getRegistryKey() != World.OVERWORLD) return ItemStack.EMPTY;
         PlayerInventory inv = client.player.inventory;
+        // Check config disable
+        if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.drawMiniMapHUD) return ItemStack.EMPTY;
         // Check the hot-bar for an Atlas
         return MapAtlasesAccessUtils.getAtlasFromPlayer(client.player.inventory);
     }

@@ -15,6 +15,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
+import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.Map;
@@ -53,11 +54,11 @@ public class MapAtlasesHUD extends DrawableHelper {
     }
 
     private void renderMapHUDFromItemStack(MatrixStack matrices, ItemStack atlas) {
-        if (client.world == null) {
+        if (client.world == null || MinecraftClient.getInstance().player == null) {
             MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: Current map id - null (client.world)");
             return;
         }
-        MapState state = MapAtlasesAccessUtils.getActiveAtlasMapState(client.world, atlas);
+        MapState state = client.world.getMapState(MapAtlasesClient.currentMapStateId);
         if (state == null) {
             if (currentMapId != null) {
                 MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: Current map id - null (state)");

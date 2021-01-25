@@ -111,11 +111,13 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     }
 
     public ActionResult useOnBlock(ItemUsageContext context) {
+        if (context.getPlayer() == null || context.getWorld().isClient) return super.useOnBlock(context);
         BlockState blockState = context.getWorld().getBlockState(context.getBlockPos());
         if (blockState.isIn(BlockTags.BANNERS)) {
             if (!context.getWorld().isClient) {
                 MapState mapState =
-                        MapAtlasesAccessUtils.getActiveAtlasMapState(context.getWorld(), context.getStack());
+                        MapAtlasesAccessUtils.getActiveAtlasMapState(
+                                context.getWorld(), context.getStack(), context.getPlayer().getName().getString());
                 if (mapState != null) {
                     mapState.addBanner(context.getWorld(), context.getBlockPos());
                 }

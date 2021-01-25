@@ -1,5 +1,6 @@
 package pepjebs.mapatlases.utils;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
 
 public class MapAtlasesAccessUtils {
 
-    public static MapState previousMapState = null;
+    public static Map<String, MapState> previousMapStates = new HashMap<>();
 
     public static boolean areMapsSameScale(MapState testAgainst, List<MapState> newMaps) {
         return newMaps.stream().filter(m -> m.scale == testAgainst.scale).count() == newMaps.size();
@@ -110,21 +111,24 @@ public class MapAtlasesAccessUtils {
         return Integer.parseInt(mapId.substring(4));
     }
 
-    public static MapState getActiveAtlasMapState(World world, ItemStack atlas) {
+    public static MapState getActiveAtlasMapState(World world, ItemStack atlas, String playerName) {
         List<MapState> mapStates = getAllMapStatesFromAtlas(world, atlas);
         for (MapState state : mapStates) {
             for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
-                if (entry.getValue().getType() == MapIcon.Type.PLAYER) {
-                    previousMapState = state;
+                MapIcon icon = entry.getValue();
+                // Entry.getKey is "icon-0" on client
+                if (icon.getType() == MapIcon.Type.PLAYER && entry.getKey().compareTo(playerName) == 0) {
+                    previousMapStates.put(playerName, state);
                     return state;
                 }
             }
         }
-        if (previousMapState != null) return previousMapState;
+        if (previousMapStates.containsKey(playerName)) return previousMapStates.get(playerName);
         for (MapState state : mapStates) {
             for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
-                if (entry.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP) {
-                    previousMapState = state;
+                if (entry.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP
+                        && entry.getKey().compareTo(playerName) == 0) {
+                    previousMapStates.put(playerName, state);
                     return state;
                 }
             }

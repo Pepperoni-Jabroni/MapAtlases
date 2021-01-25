@@ -13,6 +13,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
+import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
@@ -71,7 +72,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         drawTexture(matrices, (int) x, (int) y,0,0, 180, 180, 180, 180);
         // Draw maps, putting active map in middle of grid
         List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(client.world, atlas);
-        MapState activeState = MapAtlasesAccessUtils.getActiveAtlasMapState(client.player.world, atlas);
+        MapState activeState = client.world.getMapState(MapAtlasesClient.currentMapStateId);
         if (activeState == null) {
             if (!mapStates.isEmpty())
                 activeState = mapStates.get(0);

@@ -15,6 +15,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
@@ -26,15 +27,23 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
 public class MapAtlasesServerLifecycleEvents {
 
+    public static final Identifier MAP_ATLAS_ACTIVE_STATE_CHANGE = new Identifier(
+            MapAtlasesMod.MOD_ID, "active_state_change");
+
     // Value minimum of 64, since maps are 128
     private static final int NEW_MAP_CENTER_DISTANCE = 90;
 
-    private static Semaphore mutex = new Semaphore(1);
+    // Used to prevent Map creation spam consuming all Empty Maps on auto-create
+    private static final Semaphore mutex = new Semaphore(1);
+
+    // Holds the current MapState ID for each player
+    private static final Map<String, String> playerToActiveMapId = new HashMap<>();
 
     public static void openGuiEvent(
             MinecraftServer server,
@@ -93,6 +102,22 @@ public class MapAtlasesServerLifecycleEvents {
             ItemStack atlas = player.inventory.main.stream()
                     .filter(is -> is.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
             if (!atlas.isEmpty()) {
+                MapState activeState =
+                        MapAtlasesAccessUtils.getActiveAtlasMapState(
+                                player.getServerWorld(), atlas, player.getName().getString());
+                if (activeState != null) {
+                    String playerName = player.getName().getString();
+                    if (!playerToActiveMapId.containsKey(playerName)
+                            || playerToActiveMapId.get(playerName).compareTo(activeState.getId()) != 0) {
+                        playerToActiveMapId.put(playerName, activeState.getId());
+                        PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+                        packetByteBuf.writeString(activeState.getId());
+                        player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                                MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
+                    }
+                }
+
+
                 List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.getServerWorld(), atlas);
 
                 // Maps are 128x128

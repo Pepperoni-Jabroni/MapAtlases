@@ -1,6 +1,5 @@
 package pepjebs.mapatlases.utils;
 
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
@@ -85,7 +84,7 @@ public class MapAtlasesAccessUtils {
                 .collect(Collectors.toList());
     }
 
-    public static Set<Integer> getMapIdsFromItemStacks(ClientWorld world, List<ItemStack> itemStacks) {
+    public static Set<Integer> getMapIdsFromItemStacks(World world, List<ItemStack> itemStacks) {
         return getMapStatesFromItemStacks(world, itemStacks).stream()
                 .map(MapAtlasesAccessUtils::getMapIntFromState).collect(Collectors.toSet());
     }

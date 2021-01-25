@@ -1,8 +1,6 @@
 package pepjebs.mapatlases.recipe;
 
 import com.google.common.primitives.Ints;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -19,12 +17,16 @@ import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 import java.util.*;
 
 public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
+
+    private World world = null;
+
     public MapAtlasesAddRecipe(Identifier id) {
         super(id);
     }
 
     @Override
     public boolean matches(CraftingInventory inv, World world) {
+        this.world = world;
         List<ItemStack> itemStacks = MapAtlasesAccessUtils.getItemStacksFromGrid(inv);
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(itemStacks);
 
@@ -52,7 +54,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
 
     @Override
     public ItemStack craft(CraftingInventory inv) {
-        ClientWorld world = MinecraftClient.getInstance().world;
+        if (world == null) return ItemStack.EMPTY;
         List<ItemStack> itemStacks = MapAtlasesAccessUtils.getItemStacksFromGrid(inv);
         // Grab the Atlas in the Grid
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(itemStacks);

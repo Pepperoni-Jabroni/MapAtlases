@@ -63,8 +63,10 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             }
             tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_1", mapSize)
                     .formatted(Formatting.GRAY));
-            tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_2", empties)
-                    .formatted(Formatting.GRAY));
+            if (MapAtlasesMod.CONFIG == null || MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) {
+                tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_2", empties)
+                        .formatted(Formatting.GRAY));
+            }
             tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_3", 1 << mapState.scale)
                     .formatted(Formatting.GRAY));
         }

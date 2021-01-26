@@ -16,4 +16,7 @@ public class MapAtlasesConfig implements ConfigData {
 
     @Comment("If 'true', the Mini-Map of the Active Map will be drawn on the HUD while the Atlas is on your hot-bar or off-hand.")
     public boolean drawMiniMapHUD = true;
+
+    @Comment("If 'true', Atlases will be able to store Empty Maps and auto-fill them as you explore.")
+    public boolean enableEmptyMapEntryAndFill = true;
 }

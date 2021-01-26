@@ -159,6 +159,7 @@ public class MapAtlasesServerLifecycleEvents {
                     scale = state.scale;
                 }
 
+                if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) continue;
                 if (atlas.getTag() == null) continue;
                 List<Integer> mapIds = Arrays.stream(
                         atlas.getTag().getIntArray("maps")).boxed().collect(Collectors.toList());

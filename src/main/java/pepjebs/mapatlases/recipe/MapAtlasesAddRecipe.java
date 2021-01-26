@@ -2,6 +2,7 @@ package pepjebs.mapatlases.recipe;
 
 import com.google.common.primitives.Ints;
 import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapState;
@@ -35,7 +36,13 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         MapState sampleMap = MapAtlasesAccessUtils.getFirstMapStateFromAtlas(world, atlas);
 
         // Ensure only correct ingredients are present
-        if (!(itemStacks.size() > 1 && MapAtlasesAccessUtils.isListOnylIngredients(itemStacks))) return false;
+        List<Item> additems = new ArrayList<>(Arrays.asList(Items.FILLED_MAP, MapAtlasesMod.MAP_ATLAS));
+        if (MapAtlasesMod.CONFIG == null || MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill)
+            additems.add(Items.MAP);
+        if (!(itemStacks.size() > 1 && MapAtlasesAccessUtils.isListOnlyIngredients(
+                itemStacks,
+                additems)))
+            return false;
         List<MapState> mapStates = MapAtlasesAccessUtils.getMapStatesFromItemStacks(world, itemStacks);
 
         // Ensure we're not trying to add too many Maps

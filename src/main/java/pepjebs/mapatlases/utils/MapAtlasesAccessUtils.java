@@ -4,6 +4,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.FilledMapItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapIcon;
@@ -105,16 +106,19 @@ public class MapAtlasesAccessUtils {
         List<ItemStack> itemStacks = new ArrayList<>();
         for(int i = 0; i < inv.size(); i++) {
             if (!inv.getStack(i).isEmpty()) {
-                itemStacks.add(inv.getStack(i));
+                itemStacks.add(inv.getStack(i).copy());
             }
         }
         return itemStacks;
     }
 
-    public static boolean isListOnylIngredients(List<ItemStack> itemStacks) {
-        return itemStacks.stream().filter(is -> is.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))
-                || is.isItemEqual(new ItemStack(Items.MAP))
-                || is.isItemEqual(new ItemStack(Items.FILLED_MAP))).count() == itemStacks.size();
+    public static boolean isListOnlyIngredients(List<ItemStack> itemStacks, List<Item> items) {
+        return itemStacks.stream().filter(is -> {
+            for (Item i : items) {
+                if (i == is.getItem()) return true;
+            }
+            return false;
+        }).count() == itemStacks.size();
     }
 
     public static int getMapIntFromState(MapState mapState) {

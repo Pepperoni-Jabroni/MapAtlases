@@ -75,7 +75,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
     public DefaultedList<ItemStack> getRemainingStacks(CraftingInventory inv) {
         DefaultedList<ItemStack> list = DefaultedList.of();
         for(int i = 0; i < inv.size(); i++) {
-            ItemStack cur = inv.getStack(i);
+            ItemStack cur = inv.getStack(i).copy();
             if (cur.getItem() == Items.SHEARS) {
                 cur.damage(1, new Random(), null);
             } else if (cur.getItem() == MapAtlasesMod.MAP_ATLAS && cur.getTag() != null) {
@@ -94,7 +94,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
                     cur.getTag().putInt("empty", cur.getTag().getInt("empty") - 1);
                 }
             }
-            list.add(cur.copy());
+            list.add(cur);
         }
         return list;
     }

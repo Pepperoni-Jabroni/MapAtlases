@@ -22,7 +22,7 @@ The "Atlas" features and details:
 - Atlases also support right-clicking Banners to add "waypoints", which display in both the mini-map & world-view map.
 - Atlases have 3 sounds: An opening world-view sound, a new map drawing sound, & a page flipping (new mini-map displaying) sound.
 - **Note**: Atlases are limited to the Overworld due to some buggy code out of my control.
-- The mod has config control for configuring the maximum number of maps allowed in an Atlas, to force the mini-map scale on your GUI, & to disable mini-map drawing entirely if you prefer not to have it.
+- The mod has config control for configuring the maximum number of maps allowed in an Atlas, to force the mini-map scale on your GUI, to disable Empty Map entry + new-map generation, & to disable mini-map drawing entirely if you prefer not to have it.
 
 Future ideas:
 - Fix issues with Atlases in other dimensions.

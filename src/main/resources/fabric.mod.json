@@ -1,16 +1,17 @@
 {
   "schemaVersion": 1,
   "id": "map_atlases",
-  "version": "1.2.1",
+  "version": "1.2.2",
 
   "name": "Map Atlases",
-  "description": "A vanilla-friendly Minimap mod using vanilla Maps!",
+  "description": "A vanilla-friendly mini-map/world-map mod using vanilla Maps!",
   "authors": [
-    "pepperoni_jabroni_"
+    "Pepperoni__Jabroni__"
   ],
   "contact": {
-    "homepage": "https://facebook.com/",
-    "sources": "https://facebook.com/"
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/map-atlases",
+    "sources": "https://github.com/Pepperoni-Jabroni/MapAtlases",
+    "issues": "https://github.com/Pepperoni-Jabroni/MapAtlases/issues"
   },
 
   "license": "GPL-3.0",
@@ -18,7 +19,8 @@
   "environment": "*",
   "entrypoints": {
     "main": ["pepjebs.mapatlases.MapAtlasesMod"],
-    "client": ["pepjebs.mapatlases.client.MapAtlasesClient"]
+    "client": ["pepjebs.mapatlases.client.MapAtlasesClient"],
+    "modmenu": ["pepjebs.mapatlases.config.MapAtlasesModMenuApiImpl"]
   },
   "mixins": [
     "mapatlases.mixins.json"

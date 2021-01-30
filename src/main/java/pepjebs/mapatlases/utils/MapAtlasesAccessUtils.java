@@ -1,6 +1,5 @@
 package pepjebs.mapatlases.utils;
 
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.FilledMapItem;
@@ -11,6 +10,7 @@ import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 
@@ -74,11 +74,29 @@ public class MapAtlasesAccessUtils {
         return mapStates;
     }
 
-    public static ItemStack getAtlasFromPlayer(PlayerInventory inventory) {
+    public static ItemStack getAtlasFromPlayerByConfig(PlayerInventory inventory) {
         ItemStack itemStack =  inventory.main.stream()
                 .limit(9)
                 .filter(i -> i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
                 .findFirst().orElse(null);
+
+        if (MapAtlasesMod.CONFIG != null && MapAtlasesMod.CONFIG.forceUseInHands ) {
+            itemStack = null;
+            ItemStack mainHand = inventory.main.get(inventory.selectedSlot);
+            if (mainHand.getItem() == MapAtlasesMod.MAP_ATLAS)
+                itemStack = mainHand;
+        }
+        if (itemStack == null && inventory.offHand.get(0).getItem() == MapAtlasesMod.MAP_ATLAS)
+            itemStack = inventory.offHand.get(0);
+        return itemStack != null ? itemStack.copy() : ItemStack.EMPTY;
+    }
+
+    public static ItemStack getAtlasFromPlayerByHotbar(PlayerInventory inventory) {
+        ItemStack itemStack =  inventory.main.stream()
+                .limit(9)
+                .filter(i -> i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
+                .findFirst().orElse(null);
+
         if (itemStack == null && inventory.offHand.get(0).getItem() == MapAtlasesMod.MAP_ATLAS)
             itemStack = inventory.offHand.get(0);
         return itemStack != null ? itemStack.copy() : ItemStack.EMPTY;
@@ -159,5 +177,21 @@ public class MapAtlasesAccessUtils {
     public static int getMapCountFromItemStack(ItemStack atlas) {
         CompoundTag tag = atlas.getTag();
         return tag != null && tag.contains("maps") ? tag.getIntArray("maps").length : 0;
+    }
+
+    public static DefaultedList<ItemStack> setAllMatchingItemStacks(
+            DefaultedList<ItemStack> itemStacks,
+            int size,
+            Item searchingItem,
+            String searchingTag,
+            ItemStack newItemStack) {
+        for (int i = 0; i < size; i++) {
+            if (itemStacks.get(i).getItem() == searchingItem
+                    && itemStacks.get(i)
+                    .getOrCreateTag().toString().compareTo(searchingTag) == 0) {
+                itemStacks.set(i, newItemStack);
+            }
+        }
+        return itemStacks;
     }
 }

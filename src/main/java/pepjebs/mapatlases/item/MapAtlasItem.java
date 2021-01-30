@@ -88,7 +88,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     @Nullable
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayer(player.inventory);
+        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.inventory);
         Map<Integer, List<Integer>> idsToCenters = new HashMap<>();
         List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.world, atlas);
         for (MapState state : mapStates) {
@@ -99,7 +99,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
     @Override
     public void writeScreenOpeningData(ServerPlayerEntity serverPlayerEntity, PacketByteBuf packetByteBuf) {
-        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayer(serverPlayerEntity.inventory);
+        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(serverPlayerEntity.inventory);
         if (atlas.isEmpty()) return;
         List<MapState> mapStates =
                 MapAtlasesAccessUtils.getAllMapStatesFromAtlas(serverPlayerEntity.getServerWorld(), atlas);

@@ -16,10 +16,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
-import pepjebs.mapatlases.config.MapAtlasesConfig;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
-
-import java.util.Map;
 
 @Environment(EnvType.CLIENT)
 public class MapAtlasesHUD extends DrawableHelper {
@@ -49,12 +46,14 @@ public class MapAtlasesHUD extends DrawableHelper {
         PlayerInventory inv = client.player.inventory;
         // Check config disable
         if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.drawMiniMapHUD) return ItemStack.EMPTY;
+        // Check F3 menu displayed
+        if (client.options.debugEnabled) return ItemStack.EMPTY;
         // Check the hot-bar for an Atlas
-        return MapAtlasesAccessUtils.getAtlasFromPlayer(client.player.inventory);
+        return MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player.inventory);
     }
 
     private void renderMapHUDFromItemStack(MatrixStack matrices, ItemStack atlas) {
-        if (client.world == null || MinecraftClient.getInstance().player == null) {
+        if (client.world == null || client.player == null) {
             MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: Current map id - null (client.world)");
             return;
         }
@@ -79,6 +78,9 @@ public class MapAtlasesHUD extends DrawableHelper {
             mapScaling = MapAtlasesMod.CONFIG.forceMiniMapScaling;
         }
         int y = 0;
+        if (!client.player.getStatusEffects().isEmpty()) {
+            y = 26;
+        }
         int x = client.getWindow().getScaledWidth()-mapScaling;
         client.getTextureManager().bindTexture(MAP_CHKRBRD);
         drawTexture(matrices,x,y,0,0,mapScaling,mapScaling, mapScaling, mapScaling);

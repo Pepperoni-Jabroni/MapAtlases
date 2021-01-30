@@ -24,4 +24,8 @@ public class MapAtlasesConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip()
     @Comment("If 'true', Atlases will be able to store Empty Maps and auto-fill them as you explore.")
     public boolean enableEmptyMapEntryAndFill = true;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("If 'true', Atlases will require to be held in Main or Off Hands to be displayed or updated.")
+    public boolean forceUseInHands = false;
 }

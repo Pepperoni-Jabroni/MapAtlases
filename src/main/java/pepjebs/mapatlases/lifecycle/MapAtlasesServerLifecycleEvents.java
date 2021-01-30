@@ -84,8 +84,7 @@ public class MapAtlasesServerLifecycleEvents {
             MinecraftServer _server
     ) {
         ServerPlayerEntity player = serverPlayNetworkHandler.player;
-        ItemStack atlas = player.inventory.main.stream()
-                .filter(is -> is.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
+        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.inventory);
         if (atlas.isEmpty()) return;
         List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.getServerWorld(), atlas);
         for (MapState state : mapStates) {
@@ -102,10 +101,7 @@ public class MapAtlasesServerLifecycleEvents {
 
     public static void mapAtlasServerTick(MinecraftServer server) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            ItemStack atlas = player.inventory.main.stream()
-                    .filter(is -> is.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findAny().orElse(ItemStack.EMPTY);
-            if (atlas.isEmpty() && player.getOffHandStack().getItem() == MapAtlasesMod.MAP_ATLAS)
-                atlas =  player.getOffHandStack();
+            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.inventory);
             if (!atlas.isEmpty()) {
                 MapState activeState =
                         MapAtlasesAccessUtils.getActiveAtlasMapState(
@@ -120,6 +116,8 @@ public class MapAtlasesServerLifecycleEvents {
                         player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
                                 MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
                     }
+                } else if (MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas) != 0) {
+                    MapAtlasesMod.LOGGER.info("Null active MapState with non-empty Atlas");
                 }
 
 
@@ -161,6 +159,7 @@ public class MapAtlasesServerLifecycleEvents {
 
                 if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) continue;
                 if (atlas.getTag() == null) continue;
+                String oldAtlasTagState = atlas.getTag().toString();
                 List<Integer> mapIds = Arrays.stream(
                         atlas.getTag().getIntArray("maps")).boxed().collect(Collectors.toList());
                 int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
@@ -168,6 +167,8 @@ public class MapAtlasesServerLifecycleEvents {
                         scale != -1 && minDist > (NEW_MAP_CENTER_DISTANCE * (1 << scale)) && emptyCount > 0) {
                     try {
                         mutex.acquire();
+
+                        // Make the new map
                         atlas.getTag().putInt("empty", atlas.getTag().getInt("empty") - 1);
                         ItemStack newMap = FilledMapItem.createMap(
                                 player.getServerWorld(),
@@ -178,11 +179,19 @@ public class MapAtlasesServerLifecycleEvents {
                                 false);
                         mapIds.add(FilledMapItem.getMapId(newMap));
                         atlas.getTag().putIntArray("maps", mapIds);
+
+                        // Update the reference in the inventory
+                        MapAtlasesAccessUtils.setAllMatchingItemStacks(
+                                player.inventory.offHand, 1, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
+                        MapAtlasesAccessUtils.setAllMatchingItemStacks(
+                                player.inventory.main, 9, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
+
+                        // Play the sound
                         player.getServerWorld().playSound(null, player.getBlockPos(),
                                 MapAtlasesMod.ATLAS_CREATE_MAP_SOUND_EVENT,
                                 SoundCategory.PLAYERS, 1.0F, 1.0F);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        MapAtlasesMod.LOGGER.warn(e);
                     } finally {
                         mutex.release();
                     }

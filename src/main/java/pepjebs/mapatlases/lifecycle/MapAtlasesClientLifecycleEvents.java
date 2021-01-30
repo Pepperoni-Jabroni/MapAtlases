@@ -9,7 +9,6 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
-import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
 import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
@@ -22,7 +21,7 @@ public class MapAtlasesClientLifecycleEvents {
     public static void mapAtlasClientTick(MinecraftClient client) {
         while (MapAtlasesClient.displayMapGUIBinding.wasPressed()) {
             if (client.world == null || client.player == null) return;
-            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayer(client.player.inventory);
+            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByHotbar(client.player.inventory);
             if (atlas.isEmpty()) return;
             MapAtlasesOpenGUIC2SPacket p = new MapAtlasesOpenGUIC2SPacket(atlas);
             PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
@@ -42,7 +41,7 @@ public class MapAtlasesClientLifecycleEvents {
         client.execute(() -> {
             if (client.world == null || client.player == null) return;
             MapState state = p.getMapState();
-            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayer(client.player.inventory);
+            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player.inventory);
             state.update(client.player, atlas);
             state.getPlayerSyncData(client.player);
             client.world.putMapState(state);

@@ -8,17 +8,14 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
-import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> {
 
@@ -35,7 +32,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     public MapAtlasesAtlasOverviewScreen(ScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
-        atlas = MapAtlasesAccessUtils.getAtlasFromPlayer(inventory);
+        atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(inventory);
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
         zoomMapping = new HashMap<Integer, List<Double>>() {{
             // mapTextureTranslate, mapTextureScale
@@ -82,6 +79,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         int activeMapId = MapAtlasesAccessUtils.getMapIntFromState(activeState);
         if (!idsToCenters.containsKey(activeMapId)) {
             MapAtlasesMod.LOGGER.warn("Client didn't have idsToCenters entry.");
+            if (idsToCenters.isEmpty())
+                return;
+            activeMapId = idsToCenters.keySet().stream().findAny().get();
         }
         int activeXCenter = idsToCenters.get(activeMapId).get(0);
         int activeZCenter = idsToCenters.get(activeMapId).get(1);

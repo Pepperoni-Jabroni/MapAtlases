@@ -86,8 +86,8 @@ public class MapAtlasesHUD extends DrawableHelper {
         drawTexture(matrices,x,y,0,0,mapScaling,mapScaling, mapScaling, mapScaling);
 
         // Draw map data
-        x += 4;
-        y += 4;
+        x += (mapScaling / 16) - (mapScaling / 64);
+        y += (mapScaling / 16) - (mapScaling / 64);
         VertexConsumerProvider.Immediate vcp;
         vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         matrices.push();

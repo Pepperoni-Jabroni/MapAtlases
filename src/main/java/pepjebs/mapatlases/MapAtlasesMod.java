@@ -1,7 +1,7 @@
 package pepjebs.mapatlases;
 
-import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
-import me.sargunvohra.mcmods.autoconfig1u.serializer.JanksonConfigSerializer;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
@@ -16,6 +16,7 @@ import net.minecraft.util.registry.Registry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pepjebs.mapatlases.config.MapAtlasesConfig;
+import pepjebs.mapatlases.item.DummyFilledMap;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.lifecycle.MapAtlasesServerLifecycleEvents;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
@@ -80,6 +81,8 @@ public class MapAtlasesMod implements ModInitializer {
                     new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(1)));
         }
         MAP_ATLAS = (MapAtlasItem) Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));
+        Registry.register(Registry.ITEM, new Identifier(MOD_ID,"dummy_filled_map"),
+                new DummyFilledMap(new Item.Settings()));
 
         // Register events/callbacks
         ServerPlayConnectionEvents.JOIN.register(MapAtlasesServerLifecycleEvents::mapAtlasPlayerJoin);

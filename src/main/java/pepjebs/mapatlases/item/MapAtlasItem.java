@@ -88,18 +88,18 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     @Nullable
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.inventory);
+        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.getInventory());
         Map<Integer, List<Integer>> idsToCenters = new HashMap<>();
         List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.world, atlas);
         for (MapState state : mapStates) {
-            idsToCenters.put(MapAtlasesAccessUtils.getMapIntFromState(state), Arrays.asList(state.xCenter, state.zCenter));
+            idsToCenters.put(MapAtlasesAccessUtils.getMapIntFromState(state), Arrays.asList(state.centerX, state.centerZ));
         }
         return new MapAtlasesAtlasOverviewScreenHandler(syncId, inv, idsToCenters);
     }
 
     @Override
     public void writeScreenOpeningData(ServerPlayerEntity serverPlayerEntity, PacketByteBuf packetByteBuf) {
-        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(serverPlayerEntity.inventory);
+        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(serverPlayerEntity.getInventory());
         if (atlas.isEmpty()) return;
         List<MapState> mapStates =
                 MapAtlasesAccessUtils.getAllMapStatesFromAtlas(serverPlayerEntity.getServerWorld(), atlas);
@@ -107,8 +107,8 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         packetByteBuf.writeInt(mapStates.size());
         for (MapState state : mapStates) {
             packetByteBuf.writeInt(MapAtlasesAccessUtils.getMapIntFromState(state));
-            packetByteBuf.writeInt(state.xCenter);
-            packetByteBuf.writeInt(state.zCenter);
+            packetByteBuf.writeInt(state.centerX);
+            packetByteBuf.writeInt(state.centerZ);
         }
     }
 

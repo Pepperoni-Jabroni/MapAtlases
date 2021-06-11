@@ -10,7 +10,7 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
-import net.minecraft.network.packet.s2c.play.HeldItemChangeS2CPacket;
+import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -55,21 +55,21 @@ public class MapAtlasesServerLifecycleEvents {
         p.read(buf);
         server.execute(() -> {
             ItemStack atlas = p.atlas;
-            if (!(player.inventory.offHand.get(0).getTag() != null && atlas.getTag() != null &&
-                    player.inventory.offHand.get(0).getTag().toString().compareTo(atlas.getTag().toString()) == 0)) {
-                int atlasIdx = player.inventory.main.size();
-                for (int i = 0; i < player.inventory.main.size(); i++) {
-                    if (player.inventory.main.get(i).getItem() == atlas.getItem() &&
-                            player.inventory.main.get(i).getTag() != null &&
+            if (!(player.getInventory().offHand.get(0).getTag() != null && atlas.getTag() != null &&
+                    player.getInventory().offHand.get(0).getTag().toString().compareTo(atlas.getTag().toString()) == 0)) {
+                int atlasIdx = player.getInventory().main.size();
+                for (int i = 0; i < player.getInventory().main.size(); i++) {
+                    if (player.getInventory().main.get(i).getItem() == atlas.getItem() &&
+                            player.getInventory().main.get(i).getTag() != null &&
                             atlas.getTag() != null &&
-                            player.inventory.main.get(i).getTag().toString().compareTo(atlas.getTag().toString()) == 0) {
+                            player.getInventory().main.get(i).getTag().toString().compareTo(atlas.getTag().toString()) == 0) {
                         atlasIdx = i;
                         break;
                     }
                 }
                 if (atlasIdx < PlayerInventory.getHotbarSize()) {
-                    player.inventory.selectedSlot = atlasIdx;
-                    player.networkHandler.sendPacket(new HeldItemChangeS2CPacket(atlasIdx));
+                    player.getInventory().selectedSlot = atlasIdx;
+                    player.networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(atlasIdx));
                 }
             }
             player.openHandledScreen((MapAtlasItem) atlas.getItem());
@@ -84,7 +84,7 @@ public class MapAtlasesServerLifecycleEvents {
             MinecraftServer _server
     ) {
         ServerPlayerEntity player = serverPlayNetworkHandler.player;
-        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.inventory);
+        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.getInventory());
         if (atlas.isEmpty()) return;
         List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.getServerWorld(), atlas);
         for (MapState state : mapStates) {
@@ -101,7 +101,7 @@ public class MapAtlasesServerLifecycleEvents {
 
     public static void mapAtlasServerTick(MinecraftServer server) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.inventory);
+            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.getInventory());
             if (!atlas.isEmpty()) {
                 MapState activeState =
                         MapAtlasesAccessUtils.getActiveAtlasMapState(
@@ -151,8 +151,8 @@ public class MapAtlasesServerLifecycleEvents {
                         }
                     }
 
-                    int mapCX = state.xCenter;
-                    int mapCZ = state.zCenter;
+                    int mapCX = state.centerX;
+                    int mapCZ = state.centerZ;
                     minDist = Math.min(minDist, (int) Math.hypot(playX-mapCX, playZ-mapCZ));
                     scale = state.scale;
                 }
@@ -182,9 +182,9 @@ public class MapAtlasesServerLifecycleEvents {
 
                         // Update the reference in the inventory
                         MapAtlasesAccessUtils.setAllMatchingItemStacks(
-                                player.inventory.offHand, 1, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
+                                player.getInventory().offHand, 1, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
                         MapAtlasesAccessUtils.setAllMatchingItemStacks(
-                                player.inventory.main, 9, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
+                                player.getInventory().main, 9, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
 
                         // Play the sound
                         player.getServerWorld().playSound(null, player.getBlockPos(),

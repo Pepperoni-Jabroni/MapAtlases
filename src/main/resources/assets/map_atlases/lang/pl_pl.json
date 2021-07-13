@@ -1,6 +1,6 @@
 {
   "item.map_atlases.atlas": "Atlas",
-  "item.map_atlases.end_atlas": "Atlas endu",
+  "item.map_atlases.end_atlas": "Atlas kresu",
   "item.map_atlases.nether_atlas": "Atlas netheru",
   "item.map_atlases.atlas.tooltip_1": "Map: %d",
   "item.map_atlases.atlas.tooltip_2": "Pustych map: %d",

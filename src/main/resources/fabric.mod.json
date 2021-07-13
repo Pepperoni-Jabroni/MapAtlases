@@ -5,6 +5,7 @@
 
   "name": "Map Atlases",
   "description": "A vanilla-friendly mini-map/world-map mod using vanilla Maps!",
+  "icon": "assets/map_atlases/icon.png",
   "authors": [
     "Pepperoni__Jabroni__"
   ],

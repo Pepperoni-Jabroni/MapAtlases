@@ -8,7 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
@@ -43,7 +43,7 @@ public class MapAtlasesAccessUtils {
 
     public static ItemStack createMapItemStackFromId(int id) {
         ItemStack map = new ItemStack(Items.FILLED_MAP);
-        CompoundTag tag = new CompoundTag();
+        NbtCompound tag = new NbtCompound();
         tag.putInt("map", id);
         map.setTag(tag);
         return map;
@@ -51,7 +51,7 @@ public class MapAtlasesAccessUtils {
 
     public static ItemStack createMapItemStackFromStrId(String id) {
         ItemStack map = new ItemStack(Items.FILLED_MAP);
-        CompoundTag tag = new CompoundTag();
+        NbtCompound tag = new NbtCompound();
         tag.putInt("map", Integer.parseInt(id.substring(4)));
         map.setTag(tag);
         return map;
@@ -170,12 +170,12 @@ public class MapAtlasesAccessUtils {
     }
 
     public static int getEmptyMapCountFromItemStack(ItemStack atlas) {
-        CompoundTag tag = atlas.getTag();
+        NbtCompound tag = atlas.getTag();
         return tag != null && tag.contains("empty") ? tag.getInt("empty") : 0;
     }
 
     public static int getMapCountFromItemStack(ItemStack atlas) {
-        CompoundTag tag = atlas.getTag();
+        NbtCompound tag = atlas.getTag();
         return tag != null && tag.contains("maps") ? tag.getIntArray("maps").length : 0;
     }
 

@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.options.KeyBinding;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.network.PacketByteBuf;
 import org.lwjgl.glfw.GLFW;
@@ -17,7 +17,6 @@ import pepjebs.mapatlases.lifecycle.MapAtlasesClientLifecycleEvents;
 import pepjebs.mapatlases.lifecycle.MapAtlasesServerLifecycleEvents;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreen;
 import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
-import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 public class MapAtlasesClient implements ClientModInitializer {
 

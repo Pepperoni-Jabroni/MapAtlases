@@ -7,7 +7,11 @@ pluginManagement {
         }
         maven {
             name = 'Mod Menu Api'
-            url = 'https://maven.fabricmc.net/io/github/prospector/modmenu/'
+            url = 'https://maven.terraformersmc.com/releases/com/terraformersmc/modmenu/'
+        }
+        maven {
+            name = 'Cloth Config Api'
+            url = 'https://maven.shedaniel.me/'
         }
         gradlePluginPortal()
     }

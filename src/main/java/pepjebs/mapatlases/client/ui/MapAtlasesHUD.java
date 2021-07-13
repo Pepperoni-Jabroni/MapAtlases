@@ -4,7 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.gui.MapRenderer;
+import net.minecraft.client.render.MapRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
@@ -43,13 +43,13 @@ public class MapAtlasesHUD extends DrawableHelper {
         // Forcibly only render on Overworld since player trackers don't disappear from Overworld
         // in other dimensions in vanilla MC
         if (client.player == null || client.player.world.getRegistryKey() != World.OVERWORLD) return ItemStack.EMPTY;
-        PlayerInventory inv = client.player.inventory;
+        PlayerInventory inv = client.player.getInventory();
         // Check config disable
         if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.drawMiniMapHUD) return ItemStack.EMPTY;
         // Check F3 menu displayed
         if (client.options.debugEnabled) return ItemStack.EMPTY;
         // Check the hot-bar for an Atlas
-        return MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player.inventory);
+        return MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player.getInventory());
     }
 
     private void renderMapHUDFromItemStack(MatrixStack matrices, ItemStack atlas) {

@@ -36,15 +36,14 @@ public class MapAtlasesClientLifecycleEvents {
             ClientPlayNetworkHandler _handler,
             PacketByteBuf buf,
             PacketSender _sender) {
-        MapAtlasesInitAtlasS2CPacket p = new MapAtlasesInitAtlasS2CPacket();
-        p.read(buf);
+        MapAtlasesInitAtlasS2CPacket p = new MapAtlasesInitAtlasS2CPacket(buf);
         client.execute(() -> {
             if (client.world == null || client.player == null) return;
             MapState state = p.getMapState();
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player.getInventory());
             state.update(client.player, atlas);
             state.getPlayerSyncData(client.player);
-            client.world.putMapState(state);
+            client.world.putMapState(p.getMapId(), state);
         });
     }
 
@@ -53,14 +52,9 @@ public class MapAtlasesClientLifecycleEvents {
             ClientPlayNetworkHandler handler,
             PacketByteBuf buf,
             PacketSender _sender) {
-        MapUpdateS2CPacket p = new MapUpdateS2CPacket();
-        try {
-            p.read(buf);
-            client.execute(() -> {
-                handler.onMapUpdate(p);
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        MapUpdateS2CPacket p = new MapUpdateS2CPacket(buf);
+        client.execute(() -> {
+            handler.onMapUpdate(p);
+        });
     }
 }

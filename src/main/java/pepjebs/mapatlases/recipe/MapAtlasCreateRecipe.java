@@ -82,7 +82,7 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
             mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));
         }
         NbtCompound compoundTag = new NbtCompound();
-        compoundTag.putIntArray("maps", new int[]{MapAtlasesAccessUtils.getMapIntFromState(mapState)});
+        compoundTag.putIntArray("maps", new int[]{FilledMapItem.getMapId(mapItemStack)});
         ItemStack atlasItemStack = new ItemStack(mapAtlasItem);
         atlasItemStack.setNbt(compoundTag);
         return atlasItemStack;

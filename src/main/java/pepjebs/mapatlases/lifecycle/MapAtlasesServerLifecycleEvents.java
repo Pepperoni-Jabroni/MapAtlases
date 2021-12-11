@@ -86,16 +86,18 @@ public class MapAtlasesServerLifecycleEvents {
         ServerPlayerEntity player = serverPlayNetworkHandler.player;
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.getInventory());
         if (atlas.isEmpty()) return;
-        List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.getWorld(), atlas);
-        for (MapState state : mapStates) {
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
+        for (Map.Entry<String, MapState> info : mapInfos.entrySet()) {
+            String mapId = info.getKey();
+            MapState state = info.getValue();
             state.update(player, atlas);
             state.getPlayerSyncData(player);
             PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-            (new MapAtlasesInitAtlasS2CPacket(state)).write(packetByteBuf);
+            (new MapAtlasesInitAtlasS2CPacket(mapId, state)).write(packetByteBuf);
             player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
                     MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
                     packetByteBuf));
-            MapAtlasesMod.LOGGER.info("Server Sent MapState: " + state.getId());
+            MapAtlasesMod.LOGGER.info("Server Sent MapState: " + mapId);
         }
     }
 
@@ -103,16 +105,16 @@ public class MapAtlasesServerLifecycleEvents {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.getInventory());
             if (!atlas.isEmpty()) {
-                MapState activeState =
+                Map.Entry<String, MapState> activeInfo =
                         MapAtlasesAccessUtils.getActiveAtlasMapState(
                                 player.getWorld(), atlas, player.getName().getString());
-                if (activeState != null) {
+                if (activeInfo != null) {
                     String playerName = player.getName().getString();
                     if (!playerToActiveMapId.containsKey(playerName)
-                            || playerToActiveMapId.get(playerName).compareTo(activeState.getId()) != 0) {
-                        playerToActiveMapId.put(playerName, activeState.getId());
+                            || playerToActiveMapId.get(playerName).compareTo(activeInfo.getKey()) != 0) {
+                        playerToActiveMapId.put(playerName, activeInfo.getKey());
                         PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-                        packetByteBuf.writeString(activeState.getId());
+                        packetByteBuf.writeString(activeInfo.getKey());
                         player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
                                 MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
                     }
@@ -133,23 +135,19 @@ public class MapAtlasesServerLifecycleEvents {
                     MapState state = info.getValue();
                     state.update(player, atlas);
                     ((FilledMapItem) Items.FILLED_MAP).updateColors(player.getWorld(), player, state);
-                    ItemStack map = MapAtlasesAccessUtils.createMapItemStackFromStrId(info.getKey());
+                    int mapId = MapAtlasesAccessUtils.getMapIntFromString(info.getKey());
                     Packet<?> p = null;
                     int tries = 0;
                     while (p == null && tries < 10) {
-                        p = state.getPlayerMarkerPacket(map, player.getWorld(), player);
+                        p = state.getPlayerMarkerPacket(mapId, player);
                         tries++;
                     }
                     if (p != null) {
                         PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-                        try {
-                            p.write(packetByteBuf);
-                            player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                                    MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC,
-                                    packetByteBuf));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        p.write(packetByteBuf);
+                        player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                                MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC,
+                                packetByteBuf));
                     }
 
                     int mapCX = state.centerX;

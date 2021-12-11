@@ -5,6 +5,7 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
@@ -13,6 +14,7 @@ import net.minecraft.text.Text;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
+import pepjebs.mapatlases.utils.MapStateIntrfc;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.*;
@@ -68,15 +70,16 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         client.getTextureManager().bindTexture(MapAtlasesHUD.MAP_CHKRBRD);
         drawTexture(matrices, (int) x, (int) y,0,0, 180, 180, 180, 180);
         // Draw maps, putting active map in middle of grid
-        List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(client.world, atlas);
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(client.world, atlas);
         MapState activeState = client.world.getMapState(MapAtlasesClient.currentMapStateId);
+        ItemStack activeFilledMap = MapAtlasesAccessUtils.createMapItemStackFromStrId(MapAtlasesClient.currentMapStateId);
         if (activeState == null) {
-            if (!mapStates.isEmpty())
-                activeState = mapStates.get(0);
+            if (!mapInfos.isEmpty())
+                activeState = mapInfos.entrySet().stream().findFirst().get().getValue();
             else
                 return;
         }
-        int activeMapId = MapAtlasesAccessUtils.getMapIntFromState(activeState);
+        int activeMapId = FilledMapItem.getMapId(activeFilledMap);
         if (!idsToCenters.containsKey(activeMapId)) {
             MapAtlasesMod.LOGGER.warn("Client didn't have idsToCenters entry.");
             if (idsToCenters.isEmpty())
@@ -96,9 +99,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 // Get the map for the GUI idx
                 int reqXCenter = activeXCenter + (j * (1 << activeState.scale) * 128);
                 int reqZCenter = activeZCenter + (i * (1 << activeState.scale) * 128);
-                MapState state = mapStates.stream()
-                        .filter(m -> idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromState(m)).get(0) == reqXCenter
-                                && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromState(m)).get(1) == reqZCenter)
+                Map.Entry<String, MapState> state = mapInfos.entrySet().stream()
+                        .filter(m -> idsToCenters.get(m.getKey()).get(0) == reqXCenter
+                                && idsToCenters.get(m.getKey()).get(1) == reqZCenter)
                         .findFirst().orElse(null);
                 if (state == null) continue;
                 // Draw the map
@@ -110,9 +113,10 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 matrices.translate(mapTextX, mapTextY, 0.0);
                 matrices.scale(mapTextureScale, mapTextureScale, 0);
                 // Remove the off-map player icons temporarily during render
-                Iterator<Map.Entry<String, MapIcon>> it = state.icons.entrySet().iterator();
+                Iterator<Map.Entry<String, MapIcon>> it = ((MapStateIntrfc) state.getValue())
+                        .getFullIcons().entrySet().iterator();
                 List<Map.Entry<String, MapIcon>> removed = new ArrayList<>();
-                if (state.getId().compareTo(activeState.getId()) != 0) {
+                if (state.getKey().compareTo(FilledMapItem.getMapName(activeMapId)) != 0) {
                     // Only remove the off-map icon if it's not the active map
                     while (it.hasNext()) {
                         Map.Entry<String, MapIcon> e = it.next();
@@ -124,12 +128,19 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                     }
                 }
                 client.gameRenderer.getMapRenderer()
-                        .draw(matrices, vcp, state, false, Integer.parseInt("0000000011110000", 2));
+                        .draw(
+                                matrices,
+                                vcp,
+                                activeMapId,
+                                state.getValue(),
+                                false,
+                                Integer.parseInt("0000000011110000", 2)
+                        );
                 vcp.draw();
                 matrices.pop();
                 // Re-add the off-map player icons after render
                 for (Map.Entry<String, MapIcon> e : removed) {
-                    state.icons.put(e.getKey(), e.getValue());
+                    ((MapStateIntrfc) state.getValue()).getFullIcons().put(e.getKey(), e.getValue());
                 }
             }
         }

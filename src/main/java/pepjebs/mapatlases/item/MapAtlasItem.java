@@ -121,7 +121,9 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             if (!context.getWorld().isClient) {
                 MapState mapState =
                         MapAtlasesAccessUtils.getActiveAtlasMapState(
-                                context.getWorld(), context.getStack(), context.getPlayer().getName().getString());
+                                context.getWorld(),
+                                context.getStack(),
+                                context.getPlayer().getName().getString()).getValue();
                 if (mapState != null) {
                     mapState.addBanner(context.getWorld(), context.getBlockPos());
                 }

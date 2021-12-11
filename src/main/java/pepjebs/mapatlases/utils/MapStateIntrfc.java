@@ -1,4 +1,4 @@
-package pepjebs.mapatlases.mixin;
+package pepjebs.mapatlases.utils;
 
 import net.minecraft.item.map.MapIcon;
 

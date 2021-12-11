@@ -10,19 +10,16 @@ import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
-import pepjebs.mapatlases.mixin.MapStateIntrfc;
-import pepjebs.mapatlases.mixin.MapStateMemberAccessor;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class MapAtlasesAccessUtils {
 
-    public static Map<String, MapState> previousMapStates = new HashMap<>();
+    public static Map<String, Map.Entry<String, MapState>> previousMapStates = new HashMap<>();
 
     public static boolean areMapsSameScale(MapState testAgainst, List<MapState> newMaps) {
         return newMaps.stream().filter(m -> m.scale == testAgainst.scale).count() == newMaps.size();
@@ -175,9 +172,9 @@ public class MapAtlasesAccessUtils {
 //        return Integer.parseInt(mapId.substring(4));
 //    }
 
-    public static MapState getActiveAtlasMapState(World world, ItemStack atlas, String playerName) {
-        List<MapState> mapStates = getAllMapStatesFromAtlas(world, atlas);
-        for (MapState state : mapStates) {
+    public static Map.Entry<String, MapState> getActiveAtlasMapState(World world, ItemStack atlas, String playerName) {
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(world, atlas);
+        for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
             for (Map.Entry<String, MapIcon> entry : ((MapStateIntrfc) state).getFullIcons().entrySet()) {
                 MapIcon icon = entry.getValue();
                 // Entry.getKey is "icon-0" on client
@@ -188,7 +185,7 @@ public class MapAtlasesAccessUtils {
             }
         }
         if (previousMapStates.containsKey(playerName)) return previousMapStates.get(playerName);
-        for (MapState state : mapStates) {
+        for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
             for (Map.Entry<String, MapIcon> entry : ((MapStateIntrfc) state).getFullIcons().entrySet()) {
                 if (entry.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP
                         && entry.getKey().compareTo(playerName) == 0) {

@@ -6,7 +6,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapState;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.util.Identifier;
@@ -68,10 +68,10 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
                 mapItemStack = inv.getStack(i);
             }
         }
-        if (mapItemStack == null || world == null) {
+        if (mapItemStack == null || world == null || mapItemStack.getNbt() == null) {
             return ItemStack.EMPTY;
         }
-        MapState mapState = FilledMapItem.getMapState(mapItemStack, world);
+        MapState mapState = FilledMapItem.getMapState(mapItemStack.getNbt().getInt("map"), world);
         if (mapState == null) return ItemStack.EMPTY;
         Item mapAtlasItem;
         if (MapAtlasesMod.enableMultiDimMaps && mapState.dimension == World.END) {
@@ -81,10 +81,10 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
         } else {
             mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));
         }
-        CompoundTag compoundTag = new CompoundTag();
+        NbtCompound compoundTag = new NbtCompound();
         compoundTag.putIntArray("maps", new int[]{MapAtlasesAccessUtils.getMapIntFromState(mapState)});
         ItemStack atlasItemStack = new ItemStack(mapAtlasItem);
-        atlasItemStack.setTag(compoundTag);
+        atlasItemStack.setNbt(compoundTag);
         return atlasItemStack;
     }
 

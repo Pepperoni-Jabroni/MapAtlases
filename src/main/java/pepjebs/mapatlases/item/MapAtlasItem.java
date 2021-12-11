@@ -5,6 +5,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
@@ -90,9 +91,11 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.getInventory());
         Map<Integer, List<Integer>> idsToCenters = new HashMap<>();
-        List<MapState> mapStates = MapAtlasesAccessUtils.getAllMapStatesFromAtlas(player.world, atlas);
-        for (MapState state : mapStates) {
-            idsToCenters.put(MapAtlasesAccessUtils.getMapIntFromState(state), Arrays.asList(state.centerX, state.centerZ));
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
+        for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
+            idsToCenters.put(
+                    MapAtlasesAccessUtils.getMapIntFromString(state.getKey()),
+                    Arrays.asList(state.getValue().centerX, state.getValue().centerZ));
         }
         return new MapAtlasesAtlasOverviewScreenHandler(syncId, inv, idsToCenters);
     }
@@ -101,14 +104,13 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     public void writeScreenOpeningData(ServerPlayerEntity serverPlayerEntity, PacketByteBuf packetByteBuf) {
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(serverPlayerEntity.getInventory());
         if (atlas.isEmpty()) return;
-        List<MapState> mapStates =
-                MapAtlasesAccessUtils.getAllMapStatesFromAtlas(serverPlayerEntity.getServerWorld(), atlas);
-        if (mapStates.isEmpty()) return;
-        packetByteBuf.writeInt(mapStates.size());
-        for (MapState state : mapStates) {
-            packetByteBuf.writeInt(MapAtlasesAccessUtils.getMapIntFromState(state));
-            packetByteBuf.writeInt(state.centerX);
-            packetByteBuf.writeInt(state.centerZ);
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(serverPlayerEntity.world, atlas);
+        if (mapInfos.isEmpty()) return;
+        packetByteBuf.writeInt(mapInfos.size());
+        for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
+            packetByteBuf.writeInt(MapAtlasesAccessUtils.getMapIntFromString(state.getKey()));
+            packetByteBuf.writeInt(state.getValue().centerX);
+            packetByteBuf.writeInt(state.getValue().centerZ);
         }
     }
 

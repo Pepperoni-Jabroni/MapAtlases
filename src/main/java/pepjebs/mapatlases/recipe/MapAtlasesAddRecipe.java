@@ -6,7 +6,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapState;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.util.Identifier;
@@ -69,12 +69,12 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         Set<Integer> mapIds = MapAtlasesAccessUtils.getMapIdsFromItemStacks(world, itemStacks);
         // Set NBT Data
         int emptyMapCount = (int)itemStacks.stream().filter(i -> i.isItemEqual(new ItemStack(Items.MAP))).count();
-        CompoundTag compoundTag = atlas.getOrCreateTag();
+        NbtCompound compoundTag = atlas.getOrCreateNbt();
         Set<Integer> existingMaps = new HashSet<>(Ints.asList(compoundTag.getIntArray("maps")));
         existingMaps.addAll(mapIds);
         compoundTag.putIntArray("maps", existingMaps.stream().mapToInt(i->i).toArray());
         compoundTag.putInt("empty", emptyMapCount + compoundTag.getInt("empty"));
-        atlas.setTag(compoundTag);
+        atlas.setNbt(compoundTag);
         return atlas;
     }
 

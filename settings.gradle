@@ -13,6 +13,7 @@ pluginManagement {
             name = 'Cloth Config Api'
             url = 'https://maven.shedaniel.me/'
         }
+        mavenCentral()
         gradlePluginPortal()
     }
 }

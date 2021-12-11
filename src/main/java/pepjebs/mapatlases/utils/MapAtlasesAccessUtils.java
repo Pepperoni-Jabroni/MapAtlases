@@ -10,9 +10,12 @@ import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
+import pepjebs.mapatlases.mixin.MapStateIntrfc;
+import pepjebs.mapatlases.mixin.MapStateMemberAccessor;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,32 +37,61 @@ public class MapAtlasesAccessUtils {
     }
 
     public static MapState getMapStateByIndexFromAtlas(World world, ItemStack atlas, int i) {
-        if (atlas.getTag() == null) return null;
-        int[] mapIds = Arrays.stream(atlas.getTag().getIntArray("maps")).toArray();
+        if (atlas.getNbt() == null) return null;
+        int[] mapIds = Arrays.stream(atlas.getNbt().getIntArray("maps")).toArray();
         if (i < 0 || i >= mapIds.length) return null;
         ItemStack map = createMapItemStackFromId(mapIds[i]);
-        return FilledMapItem.getMapState(map, world);
+        return FilledMapItem.getMapState(FilledMapItem.getMapId(map), world);
     }
 
     public static ItemStack createMapItemStackFromId(int id) {
         ItemStack map = new ItemStack(Items.FILLED_MAP);
         NbtCompound tag = new NbtCompound();
         tag.putInt("map", id);
-        map.setTag(tag);
+        map.setNbt(tag);
         return map;
     }
 
     public static ItemStack createMapItemStackFromStrId(String id) {
         ItemStack map = new ItemStack(Items.FILLED_MAP);
         NbtCompound tag = new NbtCompound();
-        tag.putInt("map", Integer.parseInt(id.substring(4)));
-        map.setTag(tag);
+        tag.putInt("map", MapAtlasesAccessUtils.getMapIntFromString(id));
+        map.setNbt(tag);
         return map;
     }
 
+    public static int getMapIntFromString(String id) {
+        return Integer.parseInt(id.substring(4));
+    }
+
+    public static Map<String, MapState> getAllMapInfoFromAtlas(World world, ItemStack atlas) {
+        if (atlas.getNbt() == null) return new HashMap<>();
+        int[] mapIds = Arrays.stream(atlas.getNbt().getIntArray("maps")).toArray();
+        Map<String, MapState> mapStates = new HashMap<>();
+        for (int mapId : mapIds) {
+            String mapName = FilledMapItem.getMapName(mapId);
+            MapState state = world.getMapState(mapName);
+            if (state == null && world instanceof ServerWorld) {
+                ItemStack map = createMapItemStackFromId(mapId);
+                state = FilledMapItem.getOrCreateMapState(map, world);
+            }
+            if (state != null) {
+                mapStates.put(mapName, state);
+            }
+        }
+        return mapStates;
+    }
+
+    public static List<String> getAllMapIdsFromAtlas(World world, ItemStack atlas) {
+        if (atlas.getNbt() == null) return new ArrayList<>();
+        String[] mapIds = (String[]) Arrays.stream(atlas.getNbt().getIntArray("maps"))
+                .mapToObj(m -> FilledMapItem.getMapName(m)).toArray();
+        return List.of(mapIds);
+    }
+
     public static List<MapState> getAllMapStatesFromAtlas(World world, ItemStack atlas) {
-        if (atlas.getTag() == null) return new ArrayList<>();
-        int[] mapIds = Arrays.stream(atlas.getTag().getIntArray("maps")).toArray();
+        if (atlas.getNbt() == null) return new ArrayList<>();
+        int[] mapIds = Arrays.stream(atlas.getNbt().getIntArray("maps")).toArray();
         List<MapState> mapStates = new ArrayList<>();
         for (int mapId : mapIds) {
             MapState state = world.getMapState(FilledMapItem.getMapName(mapId));
@@ -116,8 +148,7 @@ public class MapAtlasesAccessUtils {
     }
 
     public static Set<Integer> getMapIdsFromItemStacks(World world, List<ItemStack> itemStacks) {
-        return getMapStatesFromItemStacks(world, itemStacks).stream()
-                .map(MapAtlasesAccessUtils::getMapIntFromState).collect(Collectors.toSet());
+        return itemStacks.stream().map(FilledMapItem::getMapId).collect(Collectors.toSet());
     }
 
     public static List<ItemStack> getItemStacksFromGrid(CraftingInventory inv) {
@@ -139,15 +170,15 @@ public class MapAtlasesAccessUtils {
         }).count() == itemStacks.size();
     }
 
-    public static int getMapIntFromState(MapState mapState) {
-        String mapId = mapState.getId();
-        return Integer.parseInt(mapId.substring(4));
-    }
+//    public static int getMapIntFromState(MapState mapState) {
+//        String mapId = mapState.getId();
+//        return Integer.parseInt(mapId.substring(4));
+//    }
 
     public static MapState getActiveAtlasMapState(World world, ItemStack atlas, String playerName) {
         List<MapState> mapStates = getAllMapStatesFromAtlas(world, atlas);
         for (MapState state : mapStates) {
-            for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
+            for (Map.Entry<String, MapIcon> entry : ((MapStateIntrfc) state).getFullIcons().entrySet()) {
                 MapIcon icon = entry.getValue();
                 // Entry.getKey is "icon-0" on client
                 if (icon.getType() == MapIcon.Type.PLAYER && entry.getKey().compareTo(playerName) == 0) {
@@ -158,7 +189,7 @@ public class MapAtlasesAccessUtils {
         }
         if (previousMapStates.containsKey(playerName)) return previousMapStates.get(playerName);
         for (MapState state : mapStates) {
-            for (Map.Entry<String, MapIcon> entry : state.icons.entrySet()) {
+            for (Map.Entry<String, MapIcon> entry : ((MapStateIntrfc) state).getFullIcons().entrySet()) {
                 if (entry.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP
                         && entry.getKey().compareTo(playerName) == 0) {
                     previousMapStates.put(playerName, state);
@@ -170,12 +201,12 @@ public class MapAtlasesAccessUtils {
     }
 
     public static int getEmptyMapCountFromItemStack(ItemStack atlas) {
-        NbtCompound tag = atlas.getTag();
+        NbtCompound tag = atlas.getNbt();
         return tag != null && tag.contains("empty") ? tag.getInt("empty") : 0;
     }
 
     public static int getMapCountFromItemStack(ItemStack atlas) {
-        NbtCompound tag = atlas.getTag();
+        NbtCompound tag = atlas.getNbt();
         return tag != null && tag.contains("maps") ? tag.getIntArray("maps").length : 0;
     }
 
@@ -188,7 +219,7 @@ public class MapAtlasesAccessUtils {
         for (int i = 0; i < size; i++) {
             if (itemStacks.get(i).getItem() == searchingItem
                     && itemStacks.get(i)
-                    .getOrCreateTag().toString().compareTo(searchingTag) == 0) {
+                    .getOrCreateNbt().toString().compareTo(searchingTag) == 0) {
                 itemStacks.set(i, newItemStack);
             }
         }

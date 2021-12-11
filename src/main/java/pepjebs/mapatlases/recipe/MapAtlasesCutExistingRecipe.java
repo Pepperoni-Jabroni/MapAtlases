@@ -56,9 +56,9 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
                 }
             }
         }
-        if (atlas.getTag() == null) return ItemStack.EMPTY;
+        if (atlas.getNbt() == null) return ItemStack.EMPTY;
         if (MapAtlasesAccessUtils.getMapCountFromItemStack(atlas) > 1) {
-            List<Integer> mapIds = Arrays.stream(atlas.getTag()
+            List<Integer> mapIds = Arrays.stream(atlas.getNbt()
                     .getIntArray("maps")).boxed().collect(Collectors.toList());
             if (mapIds.size() > 0) {
                 int lastId = mapIds.remove(mapIds.size() - 1);
@@ -71,33 +71,34 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
         return ItemStack.EMPTY;
     }
 
-    @Override
+    /*
     public DefaultedList<ItemStack> getRemainingStacks(CraftingInventory inv) {
         DefaultedList<ItemStack> list = DefaultedList.of();
         for(int i = 0; i < inv.size(); i++) {
             ItemStack cur = inv.getStack(i).copy();
             if (cur.getItem() == Items.SHEARS) {
                 cur.damage(1, new Random(), null);
-            } else if (cur.getItem() == MapAtlasesMod.MAP_ATLAS && cur.getTag() != null) {
+            } else if (cur.getItem() == MapAtlasesMod.MAP_ATLAS && cur.getNbt() != null) {
                 boolean didRemoveFilled = false;
                 if (MapAtlasesAccessUtils.getMapCountFromItemStack(cur) > 1) {
-                    List<Integer> mapIds = Arrays.stream(cur.getTag()
+                    List<Integer> mapIds = Arrays.stream(cur.getNbt()
                             .getIntArray("maps")).boxed().collect(Collectors.toList());
                     if (mapIds.size() > 0) {
                         mapIds.remove(mapIds.size() - 1);
-                        cur.getTag().putIntArray("maps", mapIds);
+                        cur.getNbt().putIntArray("maps", mapIds);
                         didRemoveFilled = true;
                     }
 
                 }
                 if (MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(cur) > 0 && !didRemoveFilled) {
-                    cur.getTag().putInt("empty", cur.getTag().getInt("empty") - 1);
+                    cur.getNbt().putInt("empty", cur.getNbt().getInt("empty") - 1);
                 }
             }
             list.add(cur);
         }
         return list;
     }
+     */
 
     @Override
     public boolean fits(int width, int height) {

@@ -9,6 +9,7 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
 import net.minecraft.sound.SoundCategory;
@@ -17,6 +18,9 @@ import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Environment(EnvType.CLIENT)
 public class MapAtlasesHUD extends DrawableHelper {
@@ -57,20 +61,21 @@ public class MapAtlasesHUD extends DrawableHelper {
             MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: Current map id - null (client.world)");
             return;
         }
+        String curMapId = MapAtlasesClient.currentMapStateId;
         MapState state = client.world.getMapState(MapAtlasesClient.currentMapStateId);
-        if (state == null) {
+        if (curMapId == null || state == null) {
             if (currentMapId != null) {
                 MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: Current map id - null (state)");
                 currentMapId = null;
             }
             return;
         }
-        if (currentMapId == null || state.getId().compareTo(currentMapId) != 0) {
+        if (currentMapId == null || curMapId.compareTo(currentMapId) != 0) {
             if (currentMapId != null && currentMapId.compareTo("") != 0) {
                 client.world.playSound(client.player.getX(), client.player.getY(), client.player.getZ(),
                         MapAtlasesMod.ATLAS_PAGE_TURN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F, false);
             }
-            currentMapId = state.getId();
+            currentMapId = curMapId;
         }
         // Draw map background
         int mapScaling = 64;
@@ -94,7 +99,14 @@ public class MapAtlasesHUD extends DrawableHelper {
         matrices.translate(x, y, 0.0);
         // Prepare yourself for some magic numbers
         matrices.scale((float) mapScaling / 142, (float) mapScaling / 142, 0);
-        mapRenderer.draw(matrices, vcp, state, false, Integer.parseInt("0000000011110000", 2));
+        mapRenderer.draw(
+                matrices,
+                vcp,
+                MapAtlasesAccessUtils.getMapIntFromString(curMapId),
+                state,
+                false,
+                Integer.parseInt("0000000011110000", 2)
+        );
         vcp.draw();
         matrices.pop();
     }

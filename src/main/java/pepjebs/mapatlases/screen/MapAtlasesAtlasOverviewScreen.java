@@ -68,7 +68,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         double y = (height - backgroundHeight) / 2.0;
         double x = (width - backgroundWidth) / 2.0;
         client.getTextureManager().bindTexture(MapAtlasesHUD.MAP_CHKRBRD);
-        drawTexture(matrices, (int) x, (int) y,0,0, 180, 180, 180, 180);
+        drawTexture(matrices, (int) x, (int) y, 0, 0, 180, 180, 180, 180);
         // Draw maps, putting active map in middle of grid
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(client.world, atlas);
         MapState activeState = client.world.getMapState(MapAtlasesClient.currentMapStateId);
@@ -100,8 +100,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 int reqXCenter = activeXCenter + (j * (1 << activeState.scale) * 128);
                 int reqZCenter = activeZCenter + (i * (1 << activeState.scale) * 128);
                 Map.Entry<String, MapState> state = mapInfos.entrySet().stream()
-                        .filter(m -> idsToCenters.get(m.getKey()).get(0) == reqXCenter
-                                && idsToCenters.get(m.getKey()).get(1) == reqZCenter)
+                        .filter(m -> idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).get(0) == reqXCenter
+                                && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).get(1) == reqZCenter)
                         .findFirst().orElse(null);
                 if (state == null) continue;
                 // Draw the map

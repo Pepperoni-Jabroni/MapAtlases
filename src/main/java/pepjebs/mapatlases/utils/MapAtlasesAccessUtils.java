@@ -170,7 +170,6 @@ public class MapAtlasesAccessUtils {
     public static Map.Entry<String, MapState> getActiveAtlasMapState(World world, ItemStack atlas, String playerName) {
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(world, atlas);
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
-            if (state == null || !(state.getValue() instanceof MapStateIntrfc)) continue;
             for (Map.Entry<String, MapIcon> entry : ((MapStateIntrfc) state.getValue()).getFullIcons().entrySet()) {
                 MapIcon icon = entry.getValue();
                 // Entry.getKey is "icon-0" on client
@@ -182,7 +181,6 @@ public class MapAtlasesAccessUtils {
         }
         if (previousMapStates.containsKey(playerName)) return previousMapStates.get(playerName);
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
-            if (state == null || !(state.getValue() instanceof MapStateIntrfc)) continue;
             for (Map.Entry<String, MapIcon> entry : ((MapStateIntrfc) state.getValue()).getFullIcons().entrySet()) {
                 if (entry.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP
                         && entry.getKey().compareTo(playerName) == 0) {

@@ -1,5 +1,6 @@
 package pepjebs.mapatlases.screen;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -67,7 +68,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         // Draw map background
         double y = (height - backgroundHeight) / 2.0;
         double x = (width - backgroundWidth) / 2.0;
-        client.getTextureManager().bindTexture(MapAtlasesHUD.MAP_CHKRBRD);
+        RenderSystem.setShaderTexture(0, MapAtlasesHUD.MAP_CHKRBRD);
         drawTexture(matrices, (int) x, (int) y, 0, 0, 180, 180, 180, 180);
         // Draw maps, putting active map in middle of grid
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(client.world, atlas);

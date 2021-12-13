@@ -1,5 +1,6 @@
 package pepjebs.mapatlases.client.ui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -9,7 +10,6 @@ import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
 import net.minecraft.sound.SoundCategory;
@@ -18,9 +18,6 @@ import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Environment(EnvType.CLIENT)
 public class MapAtlasesHUD extends DrawableHelper {
@@ -87,7 +84,7 @@ public class MapAtlasesHUD extends DrawableHelper {
             y = 26;
         }
         int x = client.getWindow().getScaledWidth()-mapScaling;
-        client.getTextureManager().bindTexture(MAP_CHKRBRD);
+        RenderSystem.setShaderTexture(0, MAP_CHKRBRD);
         drawTexture(matrices,x,y,0,0,mapScaling,mapScaling, mapScaling, mapScaling);
 
         // Draw map data

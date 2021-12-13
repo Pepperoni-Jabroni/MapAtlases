@@ -1,22 +1,16 @@
 package pepjebs.mapatlases.recipe;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.FilledMapItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.map.MapState;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.injection.struct.InjectorGroupInfo;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -71,8 +65,8 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
         return ItemStack.EMPTY;
     }
 
-    /*
-    public DefaultedList<ItemStack> getRemainingStacks(CraftingInventory inv) {
+    @Override
+    public DefaultedList<ItemStack> getRemainder(CraftingInventory inv) {
         DefaultedList<ItemStack> list = DefaultedList.of();
         for(int i = 0; i < inv.size(); i++) {
             ItemStack cur = inv.getStack(i).copy();
@@ -98,7 +92,6 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
         }
         return list;
     }
-     */
 
     @Override
     public boolean fits(int width, int height) {

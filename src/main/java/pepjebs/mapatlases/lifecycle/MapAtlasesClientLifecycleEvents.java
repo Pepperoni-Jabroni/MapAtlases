@@ -21,7 +21,7 @@ public class MapAtlasesClientLifecycleEvents {
     public static void mapAtlasClientTick(MinecraftClient client) {
         while (MapAtlasesClient.displayMapGUIBinding.wasPressed()) {
             if (client.world == null || client.player == null) return;
-            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByHotbar(client.player.getInventory());
+            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player.getInventory());
             if (atlas.isEmpty()) return;
             MapAtlasesOpenGUIC2SPacket p = new MapAtlasesOpenGUIC2SPacket(atlas);
             PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());

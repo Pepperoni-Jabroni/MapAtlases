@@ -31,19 +31,10 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     private int mouseYOffset = 0;
     private int zoomValue = ZOOM_BUCKET;
 
-    private Map<Integer, List<Double>> zoomMapping;
-
     public MapAtlasesAtlasOverviewScreen(ScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
         atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(inventory);
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
-        zoomMapping = new HashMap<Integer, List<Double>>() {{
-            // mapTextureTranslate, mapTextureScale
-            put(1, Arrays.asList(1.0, 1.29));
-            put(3, Arrays.asList(55.0, 0.43));
-            put(5, Arrays.asList(33.0, 0.26));
-            put(7, Arrays.asList(24.0, 0.19));
-        }};
     }
 
     @Override
@@ -56,20 +47,30 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
         if (client == null || client.player == null || client.world == null) return;
         // Handle zooming
+        int worldMapScaling = MapAtlasesMod.CONFIG.forceWorldMapScaling;
+        // zoomLevel can be any of 0,1,2,3
         int zoomLevel = round(zoomValue, ZOOM_BUCKET) / ZOOM_BUCKET;
         zoomLevel = Math.max(zoomLevel, 0);
-        zoomLevel = Math.min(zoomLevel, zoomMapping.size() - 1);
-        int loopBegin = -1 * zoomLevel;
-        int loopEnd = zoomLevel + 1;
-        zoomLevel = (2 * zoomLevel) + 1;
-        List<Double> zoomingInfo = zoomMapping.get(zoomLevel);
-        int mapTextureTranslate = zoomingInfo.get(0).intValue();
-        float mapTextureScale = zoomingInfo.get(1).floatValue();
+        zoomLevel = Math.min(zoomLevel, 3);
+        // zoomLevelDim can be any of 1,3,5,7
+        int zoomLevelDim = (2 * zoomLevel) + 1;
+        // a function of worldMapScaling, zoomLevel, and textureSize
+        float mapTextureScale = (float)((worldMapScaling-(worldMapScaling/8.0))/(128.0*zoomLevelDim));
         // Draw map background
-        double y = (height - backgroundHeight) / 2.0;
-        double x = (width - backgroundWidth) / 2.0;
+        double y = (height / 2.0)-(worldMapScaling/2.0);
+        double x = (width / 2.0)-(worldMapScaling/2.0);
         RenderSystem.setShaderTexture(0, MapAtlasesHUD.MAP_CHKRBRD);
-        drawTexture(matrices, (int) x, (int) y, 0, 0, 180, 180, 180, 180);
+        drawTexture(
+                matrices,
+                (int) x,
+                (int) y,
+                0,
+                0,
+                worldMapScaling,
+                worldMapScaling,
+                worldMapScaling,
+                worldMapScaling
+        );
         // Draw maps, putting active map in middle of grid
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(client.world, atlas);
         MapState activeState = client.world.getMapState(MapAtlasesClient.currentMapStateId);
@@ -93,25 +94,27 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 (round(mouseXOffset, PAN_BUCKET) / PAN_BUCKET * (1 << activeState.scale) * -128);
         activeZCenter = activeZCenter +
                 (round(mouseYOffset, PAN_BUCKET) / PAN_BUCKET * (1 << activeState.scale) * -128);
-        for (int i = loopBegin; i < loopEnd; i++) {
-            for (int j = loopBegin; j < loopEnd; j++) {
-                double mapTextY = (height - backgroundHeight) / 2.0 + 8;
-                double mapTextX = (width - backgroundWidth) / 2.0 + 8;
+        double mapTextY = y+(worldMapScaling/18.0);
+        double mapTextX = x+(worldMapScaling/18.0);
+        for (int i = 0; i < zoomLevelDim; i++) {
+            for (int j = 0; j < zoomLevelDim; j++) {
                 // Get the map for the GUI idx
-                int reqXCenter = activeXCenter + (j * (1 << activeState.scale) * 128);
-                int reqZCenter = activeZCenter + (i * (1 << activeState.scale) * 128);
+                int iXIdx = i-(zoomLevelDim/2);
+                int jYIdx = j-(zoomLevelDim/2);
+                int reqXCenter = activeXCenter + (jYIdx * (1 << activeState.scale) * 128);
+                int reqZCenter = activeZCenter + (iXIdx * (1 << activeState.scale) * 128);
                 Map.Entry<String, MapState> state = mapInfos.entrySet().stream()
                         .filter(m -> idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).get(0) == reqXCenter
                                 && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).get(1) == reqZCenter)
                         .findFirst().orElse(null);
                 if (state == null) continue;
                 // Draw the map
-                mapTextX += (mapTextureTranslate * (j + loopEnd - 1));
-                mapTextY += (mapTextureTranslate * (i + loopEnd - 1));
+                double curMapTextX = mapTextX + (mapTextureScale * 128 * j);
+                double curMapTextY = mapTextY + (mapTextureScale * 128 * i);
                 VertexConsumerProvider.Immediate vcp;
                 vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
                 matrices.push();
-                matrices.translate(mapTextX, mapTextY, 0.0);
+                matrices.translate(curMapTextX, curMapTextY, 0.0);
                 matrices.scale(mapTextureScale, mapTextureScale, 0);
                 // Remove the off-map player icons temporarily during render
                 Iterator<Map.Entry<String, MapIcon>> it = ((MapStateIntrfc) state.getValue())
@@ -161,7 +164,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         zoomValue += -1 * amount;
         zoomValue = Math.max(zoomValue, -1 * ZOOM_BUCKET);
-        zoomValue = Math.min(zoomValue, zoomMapping.size() * ZOOM_BUCKET);
+        zoomValue = Math.min(zoomValue, 4 * ZOOM_BUCKET);
         return true;
     }
 

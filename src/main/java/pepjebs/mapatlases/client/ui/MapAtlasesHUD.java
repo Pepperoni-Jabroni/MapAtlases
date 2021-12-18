@@ -83,7 +83,15 @@ public class MapAtlasesHUD extends DrawableHelper {
         if (!client.player.getStatusEffects().isEmpty()) {
             y = 26;
         }
+        if (MapAtlasesMod.CONFIG.miniMapAnchoring.contains("Lower")) {
+            y = client.getWindow().getScaledHeight() - mapScaling;
+        }
+        y += MapAtlasesMod.CONFIG.miniMapVerticalOffset;
         int x = client.getWindow().getScaledWidth()-mapScaling;
+        if (MapAtlasesMod.CONFIG.miniMapAnchoring.contains("Left")) {
+            x = 0;
+        }
+        x += MapAtlasesMod.CONFIG.miniMapHorizontalOffset;
         RenderSystem.setShaderTexture(0, MAP_CHKRBRD);
         drawTexture(matrices,x,y,0,0,mapScaling,mapScaling, mapScaling, mapScaling);
 
@@ -106,5 +114,9 @@ public class MapAtlasesHUD extends DrawableHelper {
         );
         vcp.draw();
         matrices.pop();
+    }
+
+    private double mapRange(double a1, double a2, double b1, double b2, double s){
+        return b1 + ((s - a1)*(b2 - b1))/(a2 - a1);
     }
 }

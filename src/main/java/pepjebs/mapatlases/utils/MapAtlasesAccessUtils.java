@@ -109,11 +109,17 @@ public class MapAtlasesAccessUtils {
                 .filter(i -> i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
                 .findFirst().orElse(null);
 
-        if (MapAtlasesMod.CONFIG != null && MapAtlasesMod.CONFIG.forceUseInHands ) {
-            itemStack = null;
-            ItemStack mainHand = inventory.main.get(inventory.selectedSlot);
-            if (mainHand.getItem() == MapAtlasesMod.MAP_ATLAS)
-                itemStack = mainHand;
+        if (MapAtlasesMod.CONFIG != null) {
+            if(MapAtlasesMod.CONFIG.activationLocation.equals("INVENTORY")) {
+                itemStack =  inventory.main.stream()
+                        .filter(i -> i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
+                        .findFirst().orElse(null);
+            } else if (MapAtlasesMod.CONFIG.activationLocation.equals("HANDS")) {
+                itemStack = null;
+                ItemStack mainHand = inventory.main.get(inventory.selectedSlot);
+                if (mainHand.getItem() == MapAtlasesMod.MAP_ATLAS)
+                    itemStack = mainHand;
+            }
         }
         if (itemStack == null && inventory.offHand.get(0).getItem() == MapAtlasesMod.MAP_ATLAS)
             itemStack = inventory.offHand.get(0);

@@ -14,7 +14,7 @@ public class MapAtlasesConfig implements ConfigData {
     public int maxMapCount = 128;
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("Scale the mini-map to a given pixel size. (Default is 64)")
+    @Comment("Scale the mini-map to a given pixel size.")
     public int forceMiniMapScaling = 64;
 
     @ConfigEntry.Gui.Tooltip()
@@ -26,6 +26,22 @@ public class MapAtlasesConfig implements ConfigData {
     public boolean enableEmptyMapEntryAndFill = true;
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("If 'true', Atlases will require to be held in Main or Off Hands to be displayed or updated.")
-    public boolean forceUseInHands = false;
+    @Comment("Controls location where mini-map displays. Any of: 'HANDS', 'HOTBAR', or 'INVENTORY'.")
+    public String activationLocation = "HOTBAR";
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Scale the world-map to a given pixel size.")
+    public int forceWorldMapScaling = 128;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Set to any of 'Upper'/'Lower' & 'Left'/'Right' to control anchor position of mini-map")
+    public String miniMapAnchoring = "UpperRight";
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Enter an integer which will offset the mini-map horizontally")
+    public int miniMapHorizontalOffset = 0;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Enter an integer which will offset the mini-map vertically")
+    public int miniMapVerticalOffset = 0;
 }

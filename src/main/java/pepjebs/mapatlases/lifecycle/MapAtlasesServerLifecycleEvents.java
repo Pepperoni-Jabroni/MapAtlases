@@ -55,23 +55,6 @@ public class MapAtlasesServerLifecycleEvents {
         p.read(buf);
         server.execute(() -> {
             ItemStack atlas = p.atlas;
-            if (!(player.getInventory().offHand.get(0).getNbt() != null && atlas.getNbt() != null &&
-                    player.getInventory().offHand.get(0).getNbt().toString().compareTo(atlas.getNbt().toString()) == 0)) {
-                int atlasIdx = player.getInventory().main.size();
-                for (int i = 0; i < player.getInventory().main.size(); i++) {
-                    if (player.getInventory().main.get(i).getItem() == atlas.getItem() &&
-                            player.getInventory().main.get(i).getNbt() != null &&
-                            atlas.getNbt() != null &&
-                            player.getInventory().main.get(i).getNbt().toString().compareTo(atlas.getNbt().toString()) == 0) {
-                        atlasIdx = i;
-                        break;
-                    }
-                }
-                if (atlasIdx < PlayerInventory.getHotbarSize()) {
-                    player.getInventory().selectedSlot = atlasIdx;
-                    player.networkHandler.sendPacket(new UpdateSelectedSlotS2CPacket(atlasIdx));
-                }
-            }
             player.openHandledScreen((MapAtlasItem) atlas.getItem());
             player.getWorld().playSound(null, player.getBlockPos(),
                     MapAtlasesMod.ATLAS_OPEN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F);

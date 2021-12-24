@@ -17,6 +17,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
+import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreen;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 @Environment(EnvType.CLIENT)
@@ -54,6 +55,7 @@ public class MapAtlasesHUD extends DrawableHelper {
     }
 
     private void renderMapHUDFromItemStack(MatrixStack matrices, ItemStack atlas) {
+        // Handle early returns
         if (client.world == null || client.player == null) {
             MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: Current map id - null (client.world)");
             return;
@@ -67,6 +69,7 @@ public class MapAtlasesHUD extends DrawableHelper {
             }
             return;
         }
+        // Update client current map id
         if (currentMapId == null || curMapId.compareTo(currentMapId) != 0) {
             if (currentMapId != null && currentMapId.compareTo("") != 0) {
                 client.world.playSound(client.player.getX(), client.player.getY(), client.player.getZ(),
@@ -74,6 +77,8 @@ public class MapAtlasesHUD extends DrawableHelper {
             }
             currentMapId = curMapId;
         }
+        // Set zoom-level for map icons
+        MapAtlasesAtlasOverviewScreen.worldMapZoomLevel.set(1);
         // Draw map background
         int mapScaling = 64;
         if (MapAtlasesMod.CONFIG != null) {

@@ -26,6 +26,7 @@
   "mixins": [
     "mapatlases.mixins.json"
   ],
+  "accessWidener": "mapatlases.accesswidener",
 
   "depends": {
     "fabricloader": ">=0.11.3",

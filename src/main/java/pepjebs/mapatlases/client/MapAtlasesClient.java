@@ -20,8 +20,8 @@ import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
 
 public class MapAtlasesClient implements ClientModInitializer {
 
+    private static final ThreadLocal<Integer> worldMapZoomLevel = new ThreadLocal<>();
     public static KeyBinding displayMapGUIBinding;
-
     public static String currentMapStateId = null;
 
     @Override
@@ -50,5 +50,14 @@ public class MapAtlasesClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_M,
                 "category.map_atlases.minimap"
         ));
+    }
+
+    public static int getWorldMapZoomLevel() {
+        if (worldMapZoomLevel.get() == null) return 1;
+        return worldMapZoomLevel.get();
+    }
+
+    public static void setWorldMapZoomLevel(int i) {
+        worldMapZoomLevel.set(i);
     }
 }

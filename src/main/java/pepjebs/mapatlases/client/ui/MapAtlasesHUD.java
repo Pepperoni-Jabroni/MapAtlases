@@ -17,7 +17,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
-import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreen;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 @Environment(EnvType.CLIENT)
@@ -78,7 +77,7 @@ public class MapAtlasesHUD extends DrawableHelper {
             currentMapId = curMapId;
         }
         // Set zoom-level for map icons
-        MapAtlasesAtlasOverviewScreen.worldMapZoomLevel.set(1);
+        MapAtlasesClient.setWorldMapZoomLevel(1);
         // Draw map background
         int mapScaling = 64;
         if (MapAtlasesMod.CONFIG != null) {

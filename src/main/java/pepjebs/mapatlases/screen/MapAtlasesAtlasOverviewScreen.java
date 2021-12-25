@@ -15,7 +15,6 @@ import net.minecraft.text.Text;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
-import pepjebs.mapatlases.mixin.MapRendererMixin;
 import pepjebs.mapatlases.utils.MapStateIntrfc;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
@@ -25,7 +24,6 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     private static final int ZOOM_BUCKET = 4;
     private static final int PAN_BUCKET = 25;
-    public static final ThreadLocal<Integer> worldMapZoomLevel = new ThreadLocal<>();
 
     private final ItemStack atlas;
     public Map<Integer, List<Integer>> idsToCenters;
@@ -37,11 +35,6 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         super(handler, inventory, title);
         atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(inventory);
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
-    }
-
-    public static int getWorldMapZoomLevel() {
-        if (worldMapZoomLevel.get() == null) return 1;
-        return worldMapZoomLevel.get();
     }
 
     @Override
@@ -61,7 +54,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         zoomLevel = Math.min(zoomLevel, 3);
         // zoomLevelDim can be any of 1,3,5,7
         int zoomLevelDim = (2 * zoomLevel) + 1;
-        worldMapZoomLevel.set(zoomLevelDim);
+        MapAtlasesClient.setWorldMapZoomLevel(zoomLevelDim);
         // a function of worldMapScaling, zoomLevel, and textureSize
         float mapTextureScale = (float)((worldMapScaling-(worldMapScaling/8.0))/(128.0*zoomLevelDim));
         // Draw map background

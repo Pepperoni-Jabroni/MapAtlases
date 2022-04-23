@@ -1,5 +1,6 @@
 package pepjebs.mapatlases.recipe;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -7,6 +8,7 @@ import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.random.AbstractRandom;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
@@ -71,7 +73,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
         for(int i = 0; i < inv.size(); i++) {
             ItemStack cur = inv.getStack(i).copy();
             if (cur.getItem() == Items.SHEARS) {
-                cur.damage(1, new Random(), null);
+                cur.damage(1, AbstractRandom.create(), null);
             } else if (cur.getItem() == MapAtlasesMod.MAP_ATLAS && cur.getNbt() != null) {
                 boolean didRemoveFilled = false;
                 if (MapAtlasesAccessUtils.getMapCountFromItemStack(cur) > 1) {

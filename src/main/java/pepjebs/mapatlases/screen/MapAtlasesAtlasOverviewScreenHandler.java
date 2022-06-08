@@ -31,6 +31,11 @@ public class MapAtlasesAtlasOverviewScreenHandler extends ScreenHandler {
     }
 
     @Override
+    public ItemStack transferSlot(PlayerEntity player, int index) {
+        return null;
+    }
+
+    @Override
     public boolean canUse(PlayerEntity player) {
         return MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.getInventory()) != ItemStack.EMPTY;
     }

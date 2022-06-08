@@ -15,8 +15,9 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.tag.BlockTags;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
@@ -52,23 +53,23 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         if (world != null && world.isClient) {
             MapState mapState = MapAtlasesAccessUtils.getFirstMapStateFromAtlas(world, stack);
             if (mapState == null) {
-                tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_err")
+                tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_err"))
                         .formatted(Formatting.ITALIC).formatted(Formatting.GRAY));
                 return;
             }
             int mapSize = MapAtlasesAccessUtils.getMapCountFromItemStack(stack);
             int empties = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(stack);
             if (mapSize + empties >= getMaxMapCount()) {
-                tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_full")
+                tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_full"))
                         .formatted(Formatting.ITALIC).formatted(Formatting.GRAY));
             }
-            tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_1", mapSize)
+            tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_1", mapSize))
                     .formatted(Formatting.GRAY));
             if (MapAtlasesMod.CONFIG == null || MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) {
-                tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_2", empties)
+                tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_2", empties))
                         .formatted(Formatting.GRAY));
             }
-            tooltip.add(new TranslatableText("item.map_atlases.atlas.tooltip_3", 1 << mapState.scale)
+            tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_3", 1 << mapState.scale))
                     .formatted(Formatting.GRAY));
         }
     }
@@ -83,7 +84,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
     @Override
     public Text getDisplayName() {
-        return new TranslatableText(getTranslationKey());
+        return MutableText.of(new TranslatableTextContent(getTranslationKey()));
     }
 
     @Nullable

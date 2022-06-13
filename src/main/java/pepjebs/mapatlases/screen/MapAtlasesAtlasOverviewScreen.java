@@ -48,11 +48,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         if (client == null || client.player == null || client.world == null) return;
         // Handle zooming
         int worldMapScaling = MapAtlasesMod.CONFIG.forceWorldMapScaling;
-        // zoomLevel can be any of 0,1,2,3
         int zoomLevel = round(zoomValue, ZOOM_BUCKET) / ZOOM_BUCKET;
         zoomLevel = Math.max(zoomLevel, 0);
-        zoomLevel = Math.min(zoomLevel, 3);
-        // zoomLevelDim can be any of 1,3,5,7
         int zoomLevelDim = (2 * zoomLevel) + 1;
         MapAtlasesClient.setWorldMapZoomLevel(zoomLevelDim);
         // a function of worldMapScaling, zoomLevel, and textureSize
@@ -74,80 +71,129 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         );
         // Draw maps, putting active map in middle of grid
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(client.world, atlas);
-        MapState activeState = client.world.getMapState(MapAtlasesClient.currentMapStateId);
-        ItemStack activeFilledMap = MapAtlasesAccessUtils.createMapItemStackFromStrId(MapAtlasesClient.currentMapStateId);
+        String activeMapIdStr = MapAtlasesClient.currentMapStateId;
+        MapState activeState = client.world.getMapState(activeMapIdStr);
         if (activeState == null) {
-            if (!mapInfos.isEmpty())
-                activeState = mapInfos.entrySet().stream().findFirst().get().getValue();
-            else
+            if (!mapInfos.isEmpty()) {
+                var info = mapInfos.entrySet().stream().findFirst().get();
+                activeMapIdStr = info.getKey();
+                activeState = info.getValue();
+            }
+            else {
+                MapAtlasesMod.LOGGER.warn("Client had no currentMapStateId or mapInfos");
                 return;
+            }
         }
-        int activeMapId = FilledMapItem.getMapId(activeFilledMap);
+        int activeMapId = MapAtlasesAccessUtils.getMapIntFromString(activeMapIdStr);
         if (!idsToCenters.containsKey(activeMapId)) {
             MapAtlasesMod.LOGGER.warn("Client didn't have idsToCenters entry.");
             if (idsToCenters.isEmpty())
                 return;
             activeMapId = idsToCenters.keySet().stream().findAny().get();
         }
+        double mapTextY = y+(worldMapScaling/18.0);
+        double mapTextX = x+(worldMapScaling/18.0);
+        for (int i = zoomLevelDim-1; i >= 0; i--) {
+            for (int j = zoomLevelDim-1; j >= 0; j--) {
+                var state = processMapState(i,j,zoomLevelDim,mapInfos,activeMapId,activeState);
+                if (state == null) continue;
+                if (!mapContainsMeaningfulIcons(state)) {
+                    drawMap(matrices,i,j,state,activeMapId,mapTextX,mapTextY,mapTextureScale);
+                }
+            }
+        }
+        // draw maps without icons first
+        // and then draw maps with icons (to avoid drawing over icons)
+        for (int i = zoomLevelDim-1; i >= 0; i--) {
+            for (int j = zoomLevelDim-1; j >= 0; j--) {
+                var state = processMapState(i,j,zoomLevelDim,mapInfos,activeMapId,activeState);
+                if (state == null) continue;
+                if (mapContainsMeaningfulIcons(state)) {
+                    drawMap(matrices,i,j,state,activeMapId,mapTextX,mapTextY,mapTextureScale);
+                }
+            }
+        }
+    }
+
+    private boolean mapContainsMeaningfulIcons(Map.Entry<String, MapState> state) {
+        return ((MapStateIntrfc) state.getValue()).getFullIcons().values().stream()
+                .anyMatch(p -> p.getType() != MapIcon.Type.PLAYER_OFF_MAP
+                    && p.getType() != MapIcon.Type.PLAYER_OFF_LIMITS);
+    }
+
+    private Map.Entry<String, MapState> processMapState(
+            int i,
+            int j,
+            int zoomLevelDim,
+            Map<String, MapState> mapInfos,
+            int activeMapId,
+            MapState activeState
+    ) {
         int activeXCenter = idsToCenters.get(activeMapId).get(0);
         int activeZCenter = idsToCenters.get(activeMapId).get(1);
         activeXCenter = activeXCenter +
                 (round(mouseXOffset, PAN_BUCKET) / PAN_BUCKET * (1 << activeState.scale) * -128);
         activeZCenter = activeZCenter +
                 (round(mouseYOffset, PAN_BUCKET) / PAN_BUCKET * (1 << activeState.scale) * -128);
-        double mapTextY = y+(worldMapScaling/18.0);
-        double mapTextX = x+(worldMapScaling/18.0);
-        for (int i = zoomLevelDim-1; i >= 0; i--) {
-            for (int j = zoomLevelDim-1; j >= 0; j--) {
-                // Get the map for the GUI idx
-                int iXIdx = i-(zoomLevelDim/2);
-                int jYIdx = j-(zoomLevelDim/2);
-                int reqXCenter = activeXCenter + (jYIdx * (1 << activeState.scale) * 128);
-                int reqZCenter = activeZCenter + (iXIdx * (1 << activeState.scale) * 128);
-                Map.Entry<String, MapState> state = mapInfos.entrySet().stream()
-                        .filter(m -> idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).get(0) == reqXCenter
-                                && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).get(1) == reqZCenter)
-                        .findFirst().orElse(null);
-                if (state == null) continue;
-                // Draw the map
-                double curMapTextX = mapTextX + (mapTextureScale * 128 * j);
-                double curMapTextY = mapTextY + (mapTextureScale * 128 * i);
-                VertexConsumerProvider.Immediate vcp;
-                vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
-                matrices.push();
-                matrices.translate(curMapTextX, curMapTextY, 0.0);
-                matrices.scale(mapTextureScale, mapTextureScale, 0);
-                // Remove the off-map player icons temporarily during render
-                Iterator<Map.Entry<String, MapIcon>> it = ((MapStateIntrfc) state.getValue())
-                        .getFullIcons().entrySet().iterator();
-                List<Map.Entry<String, MapIcon>> removed = new ArrayList<>();
-                if (state.getKey().compareTo(FilledMapItem.getMapName(activeMapId)) != 0) {
-                    // Only remove the off-map icon if it's not the active map
-                    while (it.hasNext()) {
-                        Map.Entry<String, MapIcon> e = it.next();
-                        if (e.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP
-                                || e.getValue().getType() == MapIcon.Type.PLAYER_OFF_LIMITS) {
-                            it.remove();
-                            removed.add(e);
-                        }
-                    }
-                }
-                client.gameRenderer.getMapRenderer()
-                        .draw(
-                                matrices,
-                                vcp,
-                                activeMapId,
-                                state.getValue(),
-                                false,
-                                Integer.parseInt("0000000011110000", 2)
-                        );
-                vcp.draw();
-                matrices.pop();
-                // Re-add the off-map player icons after render
-                for (Map.Entry<String, MapIcon> e : removed) {
-                    ((MapStateIntrfc) state.getValue()).getFullIcons().put(e.getKey(), e.getValue());
+        // Get the map for the GUI idx
+        int iXIdx = i-(zoomLevelDim/2);
+        int jYIdx = j-(zoomLevelDim/2);
+        int reqXCenter = activeXCenter + (jYIdx * (1 << activeState.scale) * 128);
+        int reqZCenter = activeZCenter + (iXIdx * (1 << activeState.scale) * 128);
+        return mapInfos.entrySet().stream()
+                .filter(m -> idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).get(0) == reqXCenter
+                        && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).get(1) == reqZCenter)
+                .findFirst().orElse(null);
+    }
+
+    private void drawMap(
+            MatrixStack matrices,
+            int i,
+            int j,
+            Map.Entry<String, MapState> state,
+            int activeMapId,
+            double mapTextX,
+            double mapTextY,
+            float mapTextureScale
+            ) {
+        if (state == null) return;
+        // Draw the map
+        double curMapTextX = mapTextX + (mapTextureScale * 128 * j);
+        double curMapTextY = mapTextY + (mapTextureScale * 128 * i);
+        VertexConsumerProvider.Immediate vcp;
+        vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
+        matrices.push();
+        matrices.translate(curMapTextX, curMapTextY, 0.0);
+        matrices.scale(mapTextureScale, mapTextureScale, 0);
+        // Remove the off-map player icons temporarily during render
+        Iterator<Map.Entry<String, MapIcon>> it = ((MapStateIntrfc) state.getValue())
+                .getFullIcons().entrySet().iterator();
+        List<Map.Entry<String, MapIcon>> removed = new ArrayList<>();
+        if (state.getKey().compareTo(FilledMapItem.getMapName(activeMapId)) != 0) {
+            // Only remove the off-map icon if it's not the active map
+            while (it.hasNext()) {
+                Map.Entry<String, MapIcon> e = it.next();
+                if (e.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP
+                        || e.getValue().getType() == MapIcon.Type.PLAYER_OFF_LIMITS) {
+                    it.remove();
+                    removed.add(e);
                 }
             }
+        }
+        client.gameRenderer.getMapRenderer()
+                .draw(
+                        matrices,
+                        vcp,
+                        activeMapId,
+                        state.getValue(),
+                        false,
+                        Integer.parseInt("0000000011110000", 2)
+                );
+        vcp.draw();
+        matrices.pop();
+        // Re-add the off-map player icons after render
+        for (Map.Entry<String, MapIcon> e : removed) {
+            ((MapStateIntrfc) state.getValue()).getFullIcons().put(e.getKey(), e.getValue());
         }
     }
 
@@ -165,7 +211,6 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
         zoomValue += -1 * amount;
         zoomValue = Math.max(zoomValue, -1 * ZOOM_BUCKET);
-        zoomValue = Math.min(zoomValue, 4 * ZOOM_BUCKET);
         return true;
     }
 

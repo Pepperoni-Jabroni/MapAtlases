@@ -1,5 +1,8 @@
 package pepjebs.mapatlases.utils;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.FilledMapItem;
@@ -10,6 +13,7 @@ import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
@@ -58,6 +62,11 @@ public class MapAtlasesAccessUtils {
     }
 
     public static int getMapIntFromString(String id) {
+        if (id == null) {
+            MapAtlasesMod.LOGGER.error("Encountered null id when fetching map name. Env: "
+                    + FabricLoader.getInstance().getEnvironmentType());
+            return 0;
+        }
         return Integer.parseInt(id.substring(4));
     }
 
@@ -82,7 +91,7 @@ public class MapAtlasesAccessUtils {
     public static List<String> getAllMapIdsFromAtlas(World world, ItemStack atlas) {
         if (atlas.getNbt() == null) return new ArrayList<>();
         String[] mapIds = (String[]) Arrays.stream(atlas.getNbt().getIntArray("maps"))
-                .mapToObj(m -> FilledMapItem.getMapName(m)).toArray();
+                .mapToObj(FilledMapItem::getMapName).toArray();
         return List.of(mapIds);
     }
 
@@ -222,5 +231,56 @@ public class MapAtlasesAccessUtils {
             }
         }
         return itemStacks;
+    }
+
+    public static boolean isPlayerOutsideSquareRegion(
+            int xCenter,
+            int zCenter,
+            int width,
+            int xPlayer,
+            int zPlayer,
+            int buffer) {
+        int halfWidth = width / 2;
+        return xPlayer < xCenter - halfWidth - buffer ||
+                xPlayer > xCenter + halfWidth + buffer ||
+                zPlayer < zCenter - halfWidth - buffer ||
+                zPlayer > zCenter + halfWidth + buffer;
+    }
+
+    public static ArrayList<Pair<Integer, Integer>> getPlayerDiscoveringMapEdges(
+            int xCenter,
+            int zCenter,
+            int width,
+            int xPlayer,
+            int zPlayer,
+            int playerRadius) {
+        int halfWidth = width / 2;
+        ArrayList<Pair<Integer, Integer>> results = new ArrayList<>();
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
+                if (i != 0 || j != 0) {
+                    int qI = xCenter;
+                    int qJ = zCenter;
+                    if (i == -1 && xPlayer - playerRadius < xCenter - halfWidth) {
+                        qI -= width;
+                    } else if (i == 1 && xPlayer + playerRadius > xCenter + halfWidth) {
+                        qI += width;
+                    }
+                    if (j == -1 && zPlayer - playerRadius < zCenter - halfWidth) {
+                        qJ -= width;
+                    } else if (j == 1 && zPlayer + playerRadius > zCenter + halfWidth) {
+                        qJ += width;
+                    }
+                    // Some lambda bullshit
+                    int finalQI = qI;
+                    int finalQJ = qJ;
+                    if ((qI != xCenter || qJ != zCenter) && results.stream()
+                            .noneMatch(p -> p.getLeft() == finalQI && p.getRight() == finalQJ)) {
+                        results.add(new Pair<>(qI, qJ));
+                    }
+                }
+            }
+        }
+        return results;
     }
 }

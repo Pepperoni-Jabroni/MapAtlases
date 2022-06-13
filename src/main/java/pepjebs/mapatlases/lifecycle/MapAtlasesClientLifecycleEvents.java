@@ -9,6 +9,7 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
+import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
 import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
@@ -52,9 +53,14 @@ public class MapAtlasesClientLifecycleEvents {
             ClientPlayNetworkHandler handler,
             PacketByteBuf buf,
             PacketSender _sender) {
-        MapUpdateS2CPacket p = new MapUpdateS2CPacket(buf);
-        client.execute(() -> {
-            handler.onMapUpdate(p);
-        });
+        try {
+            MapUpdateS2CPacket p = new MapUpdateS2CPacket(buf);
+            client.execute(() -> {
+                handler.onMapUpdate(p);
+            });
+        } catch (ArrayIndexOutOfBoundsException e) {
+            MapAtlasesMod.LOGGER.error("Bad Minecraft MapUpdate packet sent to client by server");
+            MapAtlasesMod.LOGGER.error(e);
+        }
     }
 }

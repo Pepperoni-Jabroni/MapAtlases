@@ -16,6 +16,7 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
@@ -24,10 +25,7 @@ import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 
@@ -111,11 +109,27 @@ public class MapAtlasesServerLifecycleEvents {
                 // Maps are 128x128
                 int playX = player.getBlockPos().getX();
                 int playZ = player.getBlockPos().getZ();
-                int minDist = Integer.MAX_VALUE;
+                boolean isPlayerOutsideAllMapRegions = true;
                 int scale = -1;
+                ArrayList<Pair<Integer, Integer>> discoveringEdges = new ArrayList<>();
+                if (activeInfo != null) {
+                    discoveringEdges = MapAtlasesAccessUtils.getPlayerDiscoveringMapEdges(
+                            activeInfo.getValue().centerX,
+                            activeInfo.getValue().centerZ,
+                            (1 << activeInfo.getValue().scale) * 128,
+                            playX,
+                            playZ,
+                            128
+                    );
+                }
 
                 for (Map.Entry<String, MapState> info : mapInfos.entrySet()) {
                     MapState state = info.getValue();
+                    // Only update active (based on discovery radius) map states
+                    if (discoveringEdges.stream().noneMatch(p -> p.getLeft()==state.centerX && p.getRight() == state.centerZ)
+                        && (activeInfo == null
+                        || !(activeInfo.getValue().centerX==state.centerX && activeInfo.getValue().centerZ==state.centerZ)))
+                        continue;
                     state.update(player, atlas);
                     ((FilledMapItem) Items.FILLED_MAP).updateColors(player.getWorld(), player, state);
                     int mapId = MapAtlasesAccessUtils.getMapIntFromString(info.getKey());
@@ -135,49 +149,75 @@ public class MapAtlasesServerLifecycleEvents {
 
                     int mapCX = state.centerX;
                     int mapCZ = state.centerZ;
-                    minDist = Math.min(minDist, (int) Math.hypot(playX-mapCX, playZ-mapCZ));
+                    isPlayerOutsideAllMapRegions = isPlayerOutsideAllMapRegions &&
+                            MapAtlasesAccessUtils.isPlayerOutsideSquareRegion(
+                                state.centerX,
+                                state.centerZ,
+                                (1 << state.scale) * 128,
+                                playX,
+                                playZ,
+                                0
+                            );
                     scale = state.scale;
                 }
 
                 if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) continue;
                 if (atlas.getNbt() == null) continue;
-                String oldAtlasTagState = atlas.getNbt().toString();
-                List<Integer> mapIds = Arrays.stream(
-                        atlas.getNbt().getIntArray("maps")).boxed().collect(Collectors.toList());
-                int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
-                if (mutex.availablePermits() > 0 && minDist != -1 &&
-                        scale != -1 && minDist > (NEW_MAP_CENTER_DISTANCE * (1 << scale)) && emptyCount > 0) {
-                    try {
-                        mutex.acquire();
-
-                        // Make the new map
-                        atlas.getNbt().putInt("empty", atlas.getNbt().getInt("empty") - 1);
-                        ItemStack newMap = FilledMapItem.createMap(
-                                player.getWorld(),
-                                MathHelper.floor(player.getX()),
-                                MathHelper.floor(player.getZ()),
-                                (byte) scale,
-                                true,
-                                false);
-                        mapIds.add(FilledMapItem.getMapId(newMap));
-                        atlas.getNbt().putIntArray("maps", mapIds);
-
-                        // Update the reference in the inventory
-                        MapAtlasesAccessUtils.setAllMatchingItemStacks(
-                                player.getInventory().offHand, 1, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
-                        MapAtlasesAccessUtils.setAllMatchingItemStacks(
-                                player.getInventory().main, 9, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
-
-                        // Play the sound
-                        player.getWorld().playSound(null, player.getBlockPos(),
-                                MapAtlasesMod.ATLAS_CREATE_MAP_SOUND_EVENT,
-                                SoundCategory.PLAYERS, 1.0F, 1.0F);
-                    } catch (InterruptedException e) {
-                        MapAtlasesMod.LOGGER.warn(e);
-                    } finally {
-                        mutex.release();
-                    }
+                if (isPlayerOutsideAllMapRegions) {
+                    maybeCreateNewMapEntry(player, atlas, scale, MathHelper.floor(player.getX()),
+                            MathHelper.floor(player.getZ()));
                 }
+                discoveringEdges.removeIf(p -> mapInfos.values().stream().anyMatch(i -> p.getLeft() == i.centerX
+                        && p.getRight() == i.centerZ));
+                for (var p : discoveringEdges) {
+                    maybeCreateNewMapEntry(player, atlas, scale, p.getLeft(), p.getRight());
+                }
+            }
+        }
+    }
+
+    private static void maybeCreateNewMapEntry(
+            ServerPlayerEntity player,
+            ItemStack atlas,
+            int scale,
+            int destX,
+            int destZ
+    ) {
+        String oldAtlasTagState = atlas.getNbt().toString();
+        List<Integer> mapIds = Arrays.stream(
+                atlas.getNbt().getIntArray("maps")).boxed().collect(Collectors.toList());
+        int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
+        if (mutex.availablePermits() > 0 && emptyCount > 0) {
+            try {
+                mutex.acquire();
+
+                // Make the new map
+                MapAtlasesMod.LOGGER.info("Creating map for "+destX+", "+destZ);
+                atlas.getNbt().putInt("empty", atlas.getNbt().getInt("empty") - 1);
+                ItemStack newMap = FilledMapItem.createMap(
+                        player.getWorld(),
+                        destX,
+                        destZ,
+                        (byte) scale,
+                        true,
+                        false);
+                mapIds.add(FilledMapItem.getMapId(newMap));
+                atlas.getNbt().putIntArray("maps", mapIds);
+
+                // Update the reference in the inventory
+                MapAtlasesAccessUtils.setAllMatchingItemStacks(
+                        player.getInventory().offHand, 1, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
+                MapAtlasesAccessUtils.setAllMatchingItemStacks(
+                        player.getInventory().main, 9, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
+
+                // Play the sound
+                player.getWorld().playSound(null, player.getBlockPos(),
+                        MapAtlasesMod.ATLAS_CREATE_MAP_SOUND_EVENT,
+                        SoundCategory.PLAYERS, 1.0F, 1.0F);
+            } catch (InterruptedException e) {
+                MapAtlasesMod.LOGGER.warn(e);
+            } finally {
+                mutex.release();
             }
         }
     }

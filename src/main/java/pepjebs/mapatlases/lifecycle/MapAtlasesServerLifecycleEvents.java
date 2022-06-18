@@ -2,7 +2,6 @@ package pepjebs.mapatlases.lifecycle;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -10,7 +9,6 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
-import net.minecraft.network.packet.s2c.play.UpdateSelectedSlotS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -24,7 +22,6 @@ import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
 import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
@@ -65,20 +62,22 @@ public class MapAtlasesServerLifecycleEvents {
             MinecraftServer _server
     ) {
         ServerPlayerEntity player = serverPlayNetworkHandler.player;
-        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.getInventory());
-        if (atlas.isEmpty()) return;
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
-        for (Map.Entry<String, MapState> info : mapInfos.entrySet()) {
-            String mapId = info.getKey();
-            MapState state = info.getValue();
-            state.update(player, atlas);
-            state.getPlayerSyncData(player);
-            PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-            (new MapAtlasesInitAtlasS2CPacket(mapId, state)).write(packetByteBuf);
-            player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                    MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
-                    packetByteBuf));
-            MapAtlasesMod.LOGGER.info("Server Sent MapState: " + mapId);
+        for (ItemStack stack : player.getInventory().main) {
+            if (stack.getItem() instanceof MapAtlasItem) {
+                Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, stack);
+                for (Map.Entry<String, MapState> info : mapInfos.entrySet()) {
+                    String mapId = info.getKey();
+                    MapState state = info.getValue();
+                    state.update(player, stack);
+                    state.getPlayerSyncData(player);
+                    PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+                    (new MapAtlasesInitAtlasS2CPacket(mapId, state)).write(packetByteBuf);
+                    player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                            MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
+                            packetByteBuf));
+                    MapAtlasesMod.LOGGER.info("Server Sent MapState: " + mapId);
+                }
+            }
         }
     }
 
@@ -87,8 +86,8 @@ public class MapAtlasesServerLifecycleEvents {
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.getInventory());
             if (!atlas.isEmpty()) {
                 Map.Entry<String, MapState> activeInfo =
-                        MapAtlasesAccessUtils.getActiveAtlasMapState(
-                                player.getWorld(), atlas, player.getName().getString());
+                        MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
+                                player.getWorld(), atlas, player);
                 if (activeInfo != null) {
                     String playerName = player.getName().getString();
                     if (!playerToActiveMapId.containsKey(playerName)

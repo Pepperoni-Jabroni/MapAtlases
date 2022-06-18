@@ -12,6 +12,7 @@ import net.minecraft.item.Items;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
@@ -182,7 +183,8 @@ public class MapAtlasesAccessUtils {
         }).count() == itemStacks.size();
     }
 
-    public static Map.Entry<String, MapState> getActiveAtlasMapState(World world, ItemStack atlas, String playerName) {
+    @Environment(EnvType.CLIENT)
+    public static Map.Entry<String, MapState> getActiveAtlasMapStateClient(World world, ItemStack atlas, String playerName) {
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(world, atlas);
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
             for (Map.Entry<String, MapIcon> entry : ((MapStateIntrfc) state.getValue()).getFullIcons().entrySet()) {
@@ -205,6 +207,22 @@ public class MapAtlasesAccessUtils {
             }
         }
         return null;
+    }
+
+    public static Map.Entry<String, MapState> getActiveAtlasMapStateServer(World world, ItemStack atlas, ServerPlayerEntity player) {
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(world, atlas);
+        Map.Entry<String, MapState> minDistState = null;
+        for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
+            if (minDistState == null) {
+                minDistState = state;
+                continue;
+            }
+            if (Math.hypot(Math.abs(minDistState.getValue().centerX - player.getX()),Math.abs(minDistState.getValue().centerZ - player.getZ()))
+                > Math.hypot(Math.abs(state.getValue().centerX - player.getX()),Math.abs(state.getValue().centerZ - player.getZ())) ) {
+                minDistState = state;
+            }
+        }
+        return minDistState;
     }
 
     public static int getEmptyMapCountFromItemStack(ItemStack atlas) {

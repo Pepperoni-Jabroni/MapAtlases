@@ -5,7 +5,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
@@ -121,10 +120,10 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         if (blockState.isIn(BlockTags.BANNERS)) {
             if (!context.getWorld().isClient) {
                 MapState mapState =
-                        MapAtlasesAccessUtils.getActiveAtlasMapState(
+                        MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
                                 context.getWorld(),
                                 context.getStack(),
-                                context.getPlayer().getName().getString()).getValue();
+                                (ServerPlayerEntity) context.getPlayer()).getValue();
                 if (mapState != null) {
                     mapState.addBanner(context.getWorld(), context.getBlockPos());
                 }

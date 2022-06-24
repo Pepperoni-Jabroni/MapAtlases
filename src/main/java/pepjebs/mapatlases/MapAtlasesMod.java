@@ -75,6 +75,8 @@ public class MapAtlasesMod implements ModInitializer {
         Registry.register(Registry.ITEM, new Identifier(MOD_ID,"atlas"),
                 new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(16)));
         if (enableMultiDimMaps) {
+            Registry.register(Registry.ITEM, new Identifier(MOD_ID,"overworld_atlas"),
+                    new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(16)));
             Registry.register(Registry.ITEM, new Identifier(MOD_ID,"end_atlas"),
                     new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(16)));
             Registry.register(Registry.ITEM, new Identifier(MOD_ID,"nether_atlas"),

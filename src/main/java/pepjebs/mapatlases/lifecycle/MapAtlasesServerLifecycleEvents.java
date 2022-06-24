@@ -88,10 +88,12 @@ public class MapAtlasesServerLifecycleEvents {
                 Map.Entry<String, MapState> activeInfo =
                         MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
                                 player.getWorld(), atlas, player);
+                String changedMapState = null;
                 if (activeInfo != null) {
                     String playerName = player.getName().getString();
                     if (!playerToActiveMapId.containsKey(playerName)
                             || playerToActiveMapId.get(playerName).compareTo(activeInfo.getKey()) != 0) {
+                        changedMapState = playerToActiveMapId.get(playerName);
                         playerToActiveMapId.put(playerName, activeInfo.getKey());
                         PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
                         packetByteBuf.writeString(activeInfo.getKey());
@@ -103,7 +105,6 @@ public class MapAtlasesServerLifecycleEvents {
                 }
 
 
-                Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
 
                 // Maps are 128x128
                 int playX = player.getBlockPos().getX();
@@ -122,12 +123,15 @@ public class MapAtlasesServerLifecycleEvents {
                     );
                 }
 
+                Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
                 for (Map.Entry<String, MapState> info : mapInfos.entrySet()) {
                     MapState state = info.getValue();
                     // Only update active (based on discovery radius) map states
                     if (discoveringEdges.stream().noneMatch(p -> p.getLeft()==state.centerX && p.getRight() == state.centerZ)
                         && (activeInfo == null
-                        || !(activeInfo.getValue().centerX==state.centerX && activeInfo.getValue().centerZ==state.centerZ)))
+                        || !(activeInfo.getValue().centerX==state.centerX && activeInfo.getValue().centerZ==state.centerZ))
+                        && (changedMapState == null || info.getKey().compareTo(changedMapState) != 0)
+                    )
                         continue;
                     state.update(player, atlas);
                     ((FilledMapItem) Items.FILLED_MAP).updateColors(player.getWorld(), player, state);

@@ -17,6 +17,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
@@ -195,7 +196,10 @@ public class MapAtlasesServerLifecycleEvents {
         List<Integer> mapIds = Arrays.stream(
                 atlas.getNbt().getIntArray("maps")).boxed().collect(Collectors.toList());
         int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
-        if (mutex.availablePermits() > 0 && emptyCount > 0) {
+        // Only allow Map creation in the Overworld
+        if (mutex.availablePermits() > 0 && emptyCount > 0
+                && player.world.getRegistryKey() == World.OVERWORLD
+        ) {
             try {
                 mutex.acquire();
 

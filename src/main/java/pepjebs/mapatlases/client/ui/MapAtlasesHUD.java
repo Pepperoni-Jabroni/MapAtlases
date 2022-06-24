@@ -41,7 +41,9 @@ public class MapAtlasesHUD extends DrawableHelper {
     }
 
     private ItemStack shouldDraw(MinecraftClient client) {
-        if (client.player == null) return ItemStack.EMPTY;
+        // Forcibly only render on Overworld since player trackers don't disappear from Overworld
+        // in other dimensions in vanilla MC
+        if (client.player == null || client.player.world.getRegistryKey() != World.OVERWORLD) return ItemStack.EMPTY;
         PlayerInventory inv = client.player.getInventory();
         // Check config disable
         if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.drawMiniMapHUD) return ItemStack.EMPTY;

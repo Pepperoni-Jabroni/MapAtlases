@@ -7,6 +7,7 @@
     "MapStateMemberAccessor",
     "MixinCartographyTableScreenHandlerFirstSlot",
     "MixinCartographyTableScreenHandlerSecondSlot",
+    "MixinCartographyTableScreenHandlerSecondSlotMaps",
     "CartographyTableScreenHandlerMixin"
   ],
   "client": [

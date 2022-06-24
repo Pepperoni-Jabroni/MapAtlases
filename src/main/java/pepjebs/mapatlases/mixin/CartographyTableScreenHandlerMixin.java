@@ -8,6 +8,8 @@ package pepjebs.mapatlases.mixin;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.CartographyTableScreenHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -43,6 +45,16 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
             this.sendContentUpdates();
 
             info.cancel();
+        } else if (atlasTop.getItem() == MapAtlasesMod.MAP_ATLAS && atlasBottom.getItem() == Items.MAP) {
+            ItemStack result = atlasTop.copy();
+            NbtCompound nbt = result.getNbt() != null ? result.getNbt() : new NbtCompound();
+            nbt.putInt("empty", nbt.getInt("empty") + atlasBottom.getCount());
+            result.setNbt(nbt);
+            this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
+
+            this.sendContentUpdates();
+
+            info.cancel();
         }
     }
 
@@ -52,7 +64,7 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
 
         Slot slot = this.slots.get(index);
 
-        if (slot != null && slot.hasStack()) {
+        if (slot.hasStack()) {
             ItemStack stack = slot.getStack();
 
             if (stack.getItem() != MapAtlasesMod.MAP_ATLAS) return;

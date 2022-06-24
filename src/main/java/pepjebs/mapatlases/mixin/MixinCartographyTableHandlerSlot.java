@@ -6,10 +6,17 @@
  */
 package pepjebs.mapatlases.mixin;
 
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.screen.CartographyTableScreenHandler;
+import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.screen.slot.Slot;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import pepjebs.mapatlases.MapAtlasesMod;
 
@@ -17,7 +24,7 @@ import pepjebs.mapatlases.MapAtlasesMod;
 class MixinCartographyTableScreenHandlerFirstSlot {
 
     @Inject(method = "canInsert", at = @At("RETURN"), cancellable = true)
-    void antiqueatlas_canInsert(ItemStack stack, CallbackInfoReturnable<Boolean> info) {
+    void mapAtlasCanInsert(ItemStack stack, CallbackInfoReturnable<Boolean> info) {
         info.setReturnValue(stack.getItem() == MapAtlasesMod.MAP_ATLAS || info.getReturnValueZ());
     }
 }
@@ -26,7 +33,27 @@ class MixinCartographyTableScreenHandlerFirstSlot {
 class MixinCartographyTableScreenHandlerSecondSlot {
 
     @Inject(method = "canInsert", at = @At("RETURN"), cancellable = true)
-    void antiqueatlas_canInsert(ItemStack stack, CallbackInfoReturnable<Boolean> info) {
+    void mapAtlasCanInsert(ItemStack stack, CallbackInfoReturnable<Boolean> info) {
         info.setReturnValue(stack.getItem() == MapAtlasesMod.MAP_ATLAS || info.getReturnValueZ());
+    }
+}
+
+@Mixin(targets = "net.minecraft.screen.CartographyTableScreenHandler$5")
+class MixinCartographyTableScreenHandlerSecondSlotMaps  {
+
+    CartographyTableScreenHandler cartographyHandler;
+
+    @Inject(method = "<init>", at = @At("TAIL"))
+    void mapAtlasInit(CartographyTableScreenHandler handler, Inventory inventory, int index, int x, int y, ScreenHandlerContext context, CallbackInfo info) {
+        cartographyHandler = handler;
+    }
+
+    @Inject(method = "onTakeItem", at = @At("HEAD"))
+    void mapAtlasOnTakeItem(PlayerEntity player, ItemStack stack, CallbackInfo info) {
+        Slot slotOne = cartographyHandler.slots.get(1);
+        if (cartographyHandler.slots.get(0).getStack().getItem() == MapAtlasesMod.MAP_ATLAS
+                && slotOne.getStack().getItem() == Items.MAP) {
+            slotOne.takeStack(slotOne.getStack().getCount() - 1);
+        }
     }
 }

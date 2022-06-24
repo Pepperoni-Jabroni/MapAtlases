@@ -133,7 +133,7 @@ public class MapAtlasesAccessUtils {
         }
         if (itemStack == null && inventory.offHand.get(0).getItem() == MapAtlasesMod.MAP_ATLAS)
             itemStack = inventory.offHand.get(0);
-        return itemStack != null ? itemStack.copy() : ItemStack.EMPTY;
+        return itemStack != null ? itemStack : ItemStack.EMPTY;
     }
 
     public static ItemStack getAtlasFromPlayerByHotbar(PlayerInventory inventory) {

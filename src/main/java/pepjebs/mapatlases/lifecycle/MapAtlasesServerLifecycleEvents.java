@@ -6,6 +6,7 @@ import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapState;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
@@ -110,7 +111,7 @@ public class MapAtlasesServerLifecycleEvents {
                 int playX = player.getBlockPos().getX();
                 int playZ = player.getBlockPos().getZ();
                 boolean isPlayerOutsideAllMapRegions = true;
-                int scale = -1;
+                int scale = 0;
                 ArrayList<Pair<Integer, Integer>> discoveringEdges = new ArrayList<>();
                 if (activeInfo != null) {
                     discoveringEdges = MapAtlasesAccessUtils.getPlayerDiscoveringMapEdges(
@@ -165,7 +166,11 @@ public class MapAtlasesServerLifecycleEvents {
                 }
 
                 if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) continue;
-                if (atlas.getNbt() == null) continue;
+                if (atlas.getNbt() == null) {
+                    NbtCompound nbt = new NbtCompound();
+                    nbt.putInt("empty", 9);
+                    atlas.setNbt(nbt);
+                }
                 if (isPlayerOutsideAllMapRegions) {
                     maybeCreateNewMapEntry(player, atlas, scale, MathHelper.floor(player.getX()),
                             MathHelper.floor(player.getZ()));

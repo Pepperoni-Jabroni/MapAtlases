@@ -44,7 +44,7 @@ Future ideas:
 ![2022-06-24_19 47 43](https://user-images.githubusercontent.com/17690401/175755619-576688bb-2103-4f52-8b6a-a4264b790e93.png)
 
 ## Custom Tooltip
-![2022-06-24_19 47 16](https://user-images.githubusercontent.com/17690401/175755622-4186e58b-ce72-4f75-86de-f847bbc8c1d7.png)
+![2022-06-24_19 48 21](https://user-images.githubusercontent.com/17690401/175755670-3819eca7-cbc4-4be5-a7c8-3d4286dacd19.png)
 
 ## World Map View
 ![2022-06-24_19 45 39](https://user-images.githubusercontent.com/17690401/175755623-3583c96f-606d-4bf8-9912-98e567b4fad4.png)

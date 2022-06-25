@@ -197,9 +197,7 @@ public class MapAtlasesServerLifecycleEvents {
                 atlas.getNbt().getIntArray("maps")).boxed().collect(Collectors.toList());
         int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
         // Only allow Map creation in the Overworld
-        if (mutex.availablePermits() > 0 && emptyCount > 0
-                && player.world.getRegistryKey() == World.OVERWORLD
-        ) {
+        if (mutex.availablePermits() > 0 && emptyCount > 0 && player.world.getRegistryKey() == World.OVERWORLD) {
             try {
                 mutex.acquire();
 

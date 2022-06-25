@@ -107,14 +107,14 @@ public class MapAtlasesHUD extends DrawableHelper {
         matrices.push();
         matrices.translate(x, y, 0.0);
         // Prepare yourself for some magic numbers
-        matrices.scale((float) mapScaling / 142, (float) mapScaling / 142, 0);
+        matrices.scale((float) mapScaling / 142, (float) mapScaling / 142, -1);
         mapRenderer.draw(
                 matrices,
                 vcp,
                 MapAtlasesAccessUtils.getMapIntFromString(curMapId),
                 state,
                 false,
-                Integer.parseInt("0000000011110000", 2)
+                Integer.parseInt("F000F0", 16)
         );
         vcp.draw();
         matrices.pop();

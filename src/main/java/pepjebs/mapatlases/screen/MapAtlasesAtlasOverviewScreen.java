@@ -164,7 +164,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         matrices.push();
         matrices.translate(curMapTextX, curMapTextY, 0.0);
-        matrices.scale(mapTextureScale, mapTextureScale, 0);
+        matrices.scale(mapTextureScale, mapTextureScale, -1);
         // Remove the off-map player icons temporarily during render
         Iterator<Map.Entry<String, MapIcon>> it = ((MapStateIntrfc) state.getValue())
                 .getFullIcons().entrySet().iterator();
@@ -187,7 +187,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                         activeMapId,
                         state.getValue(),
                         false,
-                        Integer.parseInt("0000000011110000", 2)
+                        Integer.parseInt("F000F0", 16)
                 );
         vcp.draw();
         matrices.pop();

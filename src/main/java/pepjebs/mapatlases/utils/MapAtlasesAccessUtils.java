@@ -1,8 +1,10 @@
 package pepjebs.mapatlases.utils;
 
+import dev.emi.trinkets.api.TrinketsApi;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.FilledMapItem;
@@ -113,7 +115,8 @@ public class MapAtlasesAccessUtils {
         return mapStates;
     }
 
-    public static ItemStack getAtlasFromPlayerByConfig(PlayerInventory inventory) {
+    public static ItemStack getAtlasFromPlayerByConfig(PlayerEntity entity) {
+        PlayerInventory inventory = entity.getInventory();
         ItemStack itemStack =  inventory.main.stream()
                 .limit(9)
                 .filter(i -> i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
@@ -133,18 +136,12 @@ public class MapAtlasesAccessUtils {
         }
         if (itemStack == null && inventory.offHand.get(0).getItem() == MapAtlasesMod.MAP_ATLAS)
             itemStack = inventory.offHand.get(0);
+        if (itemStack == null && TrinketsApi.getTrinketComponent(entity).isPresent() && TrinketsApi.getTrinketComponent(entity)
+                .get().getEquipped(MapAtlasesMod.MAP_ATLAS).size() > 0) {
+            itemStack = TrinketsApi.getTrinketComponent(entity)
+                    .get().getEquipped(MapAtlasesMod.MAP_ATLAS).get(0).getRight();
+        }
         return itemStack != null ? itemStack : ItemStack.EMPTY;
-    }
-
-    public static ItemStack getAtlasFromPlayerByHotbar(PlayerInventory inventory) {
-        ItemStack itemStack =  inventory.main.stream()
-                .limit(9)
-                .filter(i -> i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
-                .findFirst().orElse(null);
-
-        if (itemStack == null && inventory.offHand.get(0).getItem() == MapAtlasesMod.MAP_ATLAS)
-            itemStack = inventory.offHand.get(0);
-        return itemStack != null ? itemStack.copy() : ItemStack.EMPTY;
     }
 
     public static ItemStack getAtlasFromItemStacks(List<ItemStack> itemStacks) {

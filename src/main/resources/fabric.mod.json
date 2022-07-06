@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "map_atlases",
-  "version": "1.6.0",
+  "version": "${version}",
 
   "name": "Map Atlases",
   "description": "A vanilla-friendly mini-map/world-map mod using vanilla Maps!",

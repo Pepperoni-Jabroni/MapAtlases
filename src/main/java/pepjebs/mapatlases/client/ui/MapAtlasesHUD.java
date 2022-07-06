@@ -50,7 +50,7 @@ public class MapAtlasesHUD extends DrawableHelper {
         // Check F3 menu displayed
         if (client.options.debugEnabled) return ItemStack.EMPTY;
         // Check the hot-bar for an Atlas
-        return MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player.getInventory());
+        return MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player);
     }
 
     private void renderMapHUDFromItemStack(MatrixStack matrices, ItemStack atlas) {

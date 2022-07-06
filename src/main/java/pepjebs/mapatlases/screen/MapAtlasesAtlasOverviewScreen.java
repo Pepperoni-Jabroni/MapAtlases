@@ -33,7 +33,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     public MapAtlasesAtlasOverviewScreen(ScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
-        atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(inventory);
+        atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(inventory.player);
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
     }
 

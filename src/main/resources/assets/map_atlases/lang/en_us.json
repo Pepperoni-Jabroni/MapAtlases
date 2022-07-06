@@ -33,5 +33,6 @@
   "text.autoconfig.map_atlases.option.forceWorldMapScaling.@Tooltip": "Scale the world-map to a given pixel size.",
   "text.autoconfig.map_atlases.option.miniMapAnchoring.@Tooltip": "Set to any of 'Upper'/'Lower' & 'Left'/'Right' to control anchor position of mini-map",
   "text.autoconfig.map_atlases.option.miniMapHorizontalOffset.@Tooltip": "Enter an integer which will offset the mini-map horizontally",
-  "text.autoconfig.map_atlases.option.miniMapVerticalOffset.@Tooltip": "Enter an integer which will offset the mini-map vertically"
+  "text.autoconfig.map_atlases.option.miniMapVerticalOffset.@Tooltip": "Enter an integer which will offset the mini-map vertically",
+  "trinkets.slot.hand.atlas": "Atlas"
 }

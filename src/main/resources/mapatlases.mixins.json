@@ -4,11 +4,11 @@
   "package": "pepjebs.mapatlases.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "MapStateMemberAccessor",
+    "CartographyTableScreenHandlerMixin",
+    "MapStateMixin",
     "MixinCartographyTableScreenHandlerFirstSlot",
     "MixinCartographyTableScreenHandlerSecondSlot",
-    "MixinCartographyTableScreenHandlerSecondSlotMaps",
-    "CartographyTableScreenHandlerMixin"
+    "MixinCartographyTableScreenHandlerSecondSlotMaps"
   ],
   "client": [
     "MapAtlasesHUDMixin",

@@ -83,9 +83,12 @@ public class MapAtlasesServerLifecycleEvents {
         }
     }
 
+    // @TODO: Fix Trinkets slot not displaying user map icon
+    // The active map state selection still works though,
+    // so its likely a client-side issue
     public static void mapAtlasServerTick(MinecraftServer server) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player.getInventory());
+            ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
             if (!atlas.isEmpty()) {
                 Map.Entry<String, MapState> activeInfo =
                         MapAtlasesAccessUtils.getActiveAtlasMapStateServer(

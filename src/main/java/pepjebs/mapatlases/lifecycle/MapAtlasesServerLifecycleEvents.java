@@ -83,9 +83,6 @@ public class MapAtlasesServerLifecycleEvents {
         }
     }
 
-    // @TODO: Fix Trinkets slot not displaying user map icon
-    // The active map state selection still works though,
-    // so its likely a client-side issue
     public static void mapAtlasServerTick(MinecraftServer server) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
@@ -170,11 +167,6 @@ public class MapAtlasesServerLifecycleEvents {
                 }
 
                 if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) continue;
-                if (atlas.getNbt() == null) {
-                    NbtCompound nbt = new NbtCompound();
-                    nbt.putInt("empty", 9);
-                    atlas.setNbt(nbt);
-                }
                 if (isPlayerOutsideAllMapRegions) {
                     maybeCreateNewMapEntry(player, atlas, scale, MathHelper.floor(player.getX()),
                             MathHelper.floor(player.getZ()));
@@ -195,18 +187,28 @@ public class MapAtlasesServerLifecycleEvents {
             int destX,
             int destZ
     ) {
-        String oldAtlasTagState = atlas.getNbt().toString();
-        List<Integer> mapIds = Arrays.stream(
-                atlas.getNbt().getIntArray("maps")).boxed().collect(Collectors.toList());
+        List<Integer> mapIds = new ArrayList<>();
+        if (atlas.getNbt() != null) {
+            mapIds = Arrays.stream(
+                    atlas.getNbt().getIntArray("maps")).boxed().collect(Collectors.toList());
+        } else {
+            atlas.setNbt(new NbtCompound());
+        }
         int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
         // Only allow Map creation in the Overworld
-        if (mutex.availablePermits() > 0 && emptyCount > 0 && player.world.getRegistryKey() == World.OVERWORLD) {
+        if (
+                mutex.availablePermits() > 0
+                        && player.world.getRegistryKey() == World.OVERWORLD
+                        && (emptyCount > 0 || player.isCreative())
+        ) {
             try {
                 mutex.acquire();
 
                 // Make the new map
                 MapAtlasesMod.LOGGER.info("Creating map for "+destX+", "+destZ);
-                atlas.getNbt().putInt("empty", atlas.getNbt().getInt("empty") - 1);
+                if (!player.isCreative()) {
+                    atlas.getNbt().putInt("empty", atlas.getNbt().getInt("empty") - 1);
+                }
                 ItemStack newMap = FilledMapItem.createMap(
                         player.getWorld(),
                         destX,
@@ -216,12 +218,6 @@ public class MapAtlasesServerLifecycleEvents {
                         false);
                 mapIds.add(FilledMapItem.getMapId(newMap));
                 atlas.getNbt().putIntArray("maps", mapIds);
-
-                // Update the reference in the inventory
-                MapAtlasesAccessUtils.setAllMatchingItemStacks(
-                        player.getInventory().offHand, 1, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
-                MapAtlasesAccessUtils.setAllMatchingItemStacks(
-                        player.getInventory().main, 9, MapAtlasesMod.MAP_ATLAS, oldAtlasTagState, atlas);
 
                 // Play the sound
                 player.getWorld().playSound(null, player.getBlockPos(),

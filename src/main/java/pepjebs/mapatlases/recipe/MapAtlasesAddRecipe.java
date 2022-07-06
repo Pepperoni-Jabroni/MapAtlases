@@ -53,9 +53,9 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         List<MapState> mapStates = MapAtlasesAccessUtils.getMapStatesFromItemStacks(world, itemStacks);
 
         // Ensure we're not trying to add too many Maps
-        int empties = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
-        int mapCount = MapAtlasesAccessUtils.getMapCountFromItemStack(atlas);
-        if (empties + mapCount + itemStacks.size() - 1 > MapAtlasItem.getMaxMapCount()) {
+        int mapCount = MapAtlasesAccessUtils.getMapCountFromItemStack(atlas)
+                + MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
+        if (MapAtlasItem.getMaxMapCount() != -1 && mapCount + itemStacks.size() - 1 > MapAtlasItem.getMaxMapCount()) {
             return false;
         }
 

@@ -19,6 +19,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import pepjebs.mapatlases.MapAtlasesMod;
+import pepjebs.mapatlases.item.MapAtlasItem;
+import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 @Mixin(targets = "net.minecraft.screen.CartographyTableScreenHandler$3")
 class MixinCartographyTableScreenHandlerFirstSlot {
@@ -50,10 +52,13 @@ class MixinCartographyTableScreenHandlerSecondSlotMaps  {
 
     @Inject(method = "onTakeItem", at = @At("HEAD"))
     void mapAtlasOnTakeItem(PlayerEntity player, ItemStack stack, CallbackInfo info) {
+        ItemStack atlas = cartographyHandler.slots.get(0).getStack();
         Slot slotOne = cartographyHandler.slots.get(1);
         if (cartographyHandler.slots.get(0).getStack().getItem() == MapAtlasesMod.MAP_ATLAS
                 && slotOne.getStack().getItem() == Items.MAP) {
-            slotOne.takeStack(slotOne.getStack().getCount() - 1);
+            int amountToTake = MapAtlasesAccessUtils.getMapCountToAdd(atlas, slotOne.getStack());
+            // onTakeItem already calls takeStack(1) so we subtract that out
+            slotOne.takeStack(amountToTake - 1);
         }
     }
 }

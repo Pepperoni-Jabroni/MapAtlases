@@ -10,7 +10,7 @@ import pepjebs.mapatlases.MapAtlasesMod;
 public class MapAtlasesConfig implements ConfigData {
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("The maximum number of Maps (Filled & Empty combined) allowed to be inside an Atlas.")
+    @Comment("The maximum number of Maps (Filled & Empty combined) allowed to be inside an Atlas (-1 to disable).")
     public int maxMapCount = 128;
 
     @ConfigEntry.Gui.Tooltip()

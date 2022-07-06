@@ -20,6 +20,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
+import pepjebs.mapatlases.item.MapAtlasItem;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -297,5 +298,16 @@ public class MapAtlasesAccessUtils {
             }
         }
         return results;
+    }
+
+    public static int getMapCountToAdd(ItemStack atlas, ItemStack bottomItem) {
+        int amountToAdd = bottomItem.getCount();
+        int mapCount = MapAtlasesAccessUtils.getMapCountFromItemStack(atlas)
+                + MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
+        if (MapAtlasItem.getMaxMapCount() != -1
+                && mapCount + bottomItem.getCount() > MapAtlasItem.getMaxMapCount()) {
+            amountToAdd = MapAtlasItem.getMaxMapCount() - mapCount;
+        }
+        return amountToAdd;
     }
 }

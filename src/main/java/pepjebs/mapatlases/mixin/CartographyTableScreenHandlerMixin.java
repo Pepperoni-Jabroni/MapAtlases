@@ -23,6 +23,8 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Shadow;
+import pepjebs.mapatlases.item.MapAtlasItem;
+import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 
 @Mixin(CartographyTableScreenHandler.class)
@@ -36,19 +38,20 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
     }
 
     @Inject(method = "updateResult", at = @At("HEAD"), cancellable = true)
-    void antiqueatlas_call(ItemStack atlasTop, ItemStack atlasBottom, ItemStack oldResult, CallbackInfo info) {
-        if (atlasTop.getItem() == MapAtlasesMod.MAP_ATLAS && atlasBottom.getItem() == MapAtlasesMod.MAP_ATLAS) {
-            ItemStack result = atlasTop.copy();
+    void antiqueatlas_call(ItemStack atlas, ItemStack bottomItem, ItemStack oldResult, CallbackInfo info) {
+        if (atlas.getItem() == MapAtlasesMod.MAP_ATLAS && bottomItem.getItem() == MapAtlasesMod.MAP_ATLAS) {
+            ItemStack result = atlas.copy();
             result.increment(1);
             this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
 
             this.sendContentUpdates();
 
             info.cancel();
-        } else if (atlasTop.getItem() == MapAtlasesMod.MAP_ATLAS && atlasBottom.getItem() == Items.MAP) {
-            ItemStack result = atlasTop.copy();
+        } else if (atlas.getItem() == MapAtlasesMod.MAP_ATLAS && bottomItem.getItem() == Items.MAP) {
+            ItemStack result = atlas.copy();
             NbtCompound nbt = result.getNbt() != null ? result.getNbt() : new NbtCompound();
-            nbt.putInt("empty", nbt.getInt("empty") + atlasBottom.getCount());
+            int amountToAdd = MapAtlasesAccessUtils.getMapCountToAdd(atlas, bottomItem);
+            nbt.putInt("empty", nbt.getInt("empty") + amountToAdd);
             result.setNbt(nbt);
             this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
 

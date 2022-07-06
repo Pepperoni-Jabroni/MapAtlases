@@ -59,7 +59,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             }
             int mapSize = MapAtlasesAccessUtils.getMapCountFromItemStack(stack);
             int empties = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(stack);
-            if (mapSize + empties >= getMaxMapCount()) {
+            if (getMaxMapCount() != -1 && mapSize + empties >= getMaxMapCount()) {
                 tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_full"))
                         .formatted(Formatting.ITALIC).formatted(Formatting.GRAY));
             }

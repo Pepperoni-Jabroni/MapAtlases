@@ -47,7 +47,10 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
         if (client == null || client.player == null || client.world == null) return;
         // Handle zooming
-        int worldMapScaling = MapAtlasesMod.CONFIG.forceWorldMapScaling;
+        int worldMapScaling = (int)Math.floor(.8 * client.getWindow().getScaledHeight());
+        if (MapAtlasesMod.CONFIG != null) {
+            worldMapScaling = (int)Math.floor(MapAtlasesMod.CONFIG.forceWorldMapScaling/100.0 * client.getWindow().getScaledHeight());
+        }
         int zoomLevel = round(zoomValue, ZOOM_BUCKET) / ZOOM_BUCKET;
         zoomLevel = Math.max(zoomLevel, 0);
         int zoomLevelDim = (2 * zoomLevel) + 1;

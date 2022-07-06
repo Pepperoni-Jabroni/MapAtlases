@@ -79,9 +79,9 @@ public class MapAtlasesHUD extends DrawableHelper {
         // Set zoom-level for map icons
         MapAtlasesClient.setWorldMapZoomLevel(1);
         // Draw map background
-        int mapScaling = 64;
+        int mapScaling = (int)Math.floor(.2 * client.getWindow().getScaledHeight());
         if (MapAtlasesMod.CONFIG != null) {
-            mapScaling = MapAtlasesMod.CONFIG.forceMiniMapScaling;
+            mapScaling = (int)Math.floor(MapAtlasesMod.CONFIG.forceMiniMapScaling/100.0 * client.getWindow().getScaledHeight());
         }
         int y = 0;
         if (!client.player.getStatusEffects().isEmpty()) {

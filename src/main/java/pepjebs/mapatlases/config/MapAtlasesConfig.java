@@ -14,11 +14,11 @@ public class MapAtlasesConfig implements ConfigData {
     public int maxMapCount = 128;
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("Scale the mini-map to a given pixel size.")
-    public int forceMiniMapScaling = 64;
+    @Comment("Scale the mini-map to a given % of the height of your screen.")
+    public int forceMiniMapScaling = 35;
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("If 'true', the Mini-Map of the Active Map will be drawn on the HUD while the Atlas is on your hot-bar or off-hand.")
+    @Comment("If 'true', the Mini-Map of the Active Map will be drawn on the HUD while the Atlas is active.")
     public boolean drawMiniMapHUD = true;
 
     @ConfigEntry.Gui.Tooltip()
@@ -30,12 +30,12 @@ public class MapAtlasesConfig implements ConfigData {
     public String activationLocation = "HOTBAR";
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("Scale the world-map to a given pixel size.")
-    public int forceWorldMapScaling = 128;
+    @Comment("Scale the world-map to a given % of the height of your screen.")
+    public int forceWorldMapScaling = 90;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("Set to any of 'Upper'/'Lower' & 'Left'/'Right' to control anchor position of mini-map")
-    public String miniMapAnchoring = "UpperRight";
+    public String miniMapAnchoring = "UpperLeft";
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("Enter an integer which will offset the mini-map horizontally")

@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
@@ -93,9 +94,11 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         Map<Integer, List<Integer>> idsToCenters = new HashMap<>();
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
-            idsToCenters.put(
-                    MapAtlasesAccessUtils.getMapIntFromString(state.getKey()),
-                    Arrays.asList(state.getValue().centerX, state.getValue().centerZ));
+            if (state.getValue().dimension.getValue().compareTo(player.world.getRegistryKey().getValue()) == 0) {
+                idsToCenters.put(
+                        MapAtlasesAccessUtils.getMapIntFromString(state.getKey()),
+                        Arrays.asList(state.getValue().centerX, state.getValue().centerZ));
+            }
         }
         return new MapAtlasesAtlasOverviewScreenHandler(syncId, inv, idsToCenters);
     }
@@ -104,7 +107,11 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     public void writeScreenOpeningData(ServerPlayerEntity serverPlayerEntity, PacketByteBuf packetByteBuf) {
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(serverPlayerEntity);
         if (atlas.isEmpty()) return;
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(serverPlayerEntity.world, atlas);
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(serverPlayerEntity.world, atlas)
+                .entrySet()
+                .stream()
+                .filter(state -> state.getValue().dimension.getValue().compareTo(serverPlayerEntity.world.getRegistryKey().getValue()) == 0)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         if (mapInfos.isEmpty()) return;
         packetByteBuf.writeInt(mapInfos.size());
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {

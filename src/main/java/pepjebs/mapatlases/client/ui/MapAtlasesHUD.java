@@ -39,9 +39,7 @@ public class MapAtlasesHUD extends DrawableHelper {
     }
 
     private boolean shouldDraw(MinecraftClient client) {
-        // Forcibly only render on Overworld since player trackers don't disappear from Overworld
-        // in other dimensions in vanilla MC
-        if (client.player == null || client.player.world.getRegistryKey() != World.OVERWORLD) return false;
+        if (client.player == null) return false;
         // Check config disable
         if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.drawMiniMapHUD) return false;
         // Check F3 menu displayed

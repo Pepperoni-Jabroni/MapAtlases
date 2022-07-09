@@ -17,6 +17,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
@@ -97,8 +98,11 @@ public class MapAtlasesServerLifecycleEvents {
                         player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
                                 MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
                     }
-                } else if (MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas) != 0) {
-                    MapAtlasesMod.LOGGER.info("Null active MapState with non-empty Atlas");
+                } else {
+                    PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+                    packetByteBuf.writeString("null");
+                    player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                            MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
                 }
 
                 // Maps are 128x128
@@ -111,9 +115,11 @@ public class MapAtlasesServerLifecycleEvents {
                     discoveringEdges = getPlayerDiscoveringMapEdges(
                             activeInfo.getValue().centerX,
                             activeInfo.getValue().centerZ,
+                            activeInfo.getValue().dimension,
                             (1 << activeInfo.getValue().scale) * 128,
                             playX,
-                            playZ
+                            playZ,
+                            player.world.getRegistryKey()
                     );
                 }
 
@@ -148,9 +154,11 @@ public class MapAtlasesServerLifecycleEvents {
                             isPlayerOutsideSquareRegion(
                                 state.centerX,
                                 state.centerZ,
+                                state.dimension,
                                 (1 << state.scale) * 128,
                                 playX,
-                                playZ
+                                playZ,
+                                player.world.getRegistryKey()
                             );
                     scale = state.scale;
                 }
@@ -184,12 +192,8 @@ public class MapAtlasesServerLifecycleEvents {
             atlas.setNbt(new NbtCompound());
         }
         int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
-        // Only allow Map creation in the Overworld
-        if (
-                mutex.availablePermits() > 0
-                        && player.world.getRegistryKey() == World.OVERWORLD
-                        && (emptyCount > 0 || player.isCreative())
-        ) {
+        if (mutex.availablePermits() > 0
+                && (emptyCount > 0 || player.isCreative())) {
             try {
                 mutex.acquire();
 
@@ -223,10 +227,13 @@ public class MapAtlasesServerLifecycleEvents {
     private static boolean isPlayerOutsideSquareRegion(
             int xCenter,
             int zCenter,
+            RegistryKey<World> dim,
             int width,
             int xPlayer,
-            int zPlayer) {
+            int zPlayer,
+            RegistryKey<World> dimPlayer) {
         int halfWidth = width / 2;
+        if (dim.getValue().compareTo(dimPlayer.getValue()) != 0) return true;
         return xPlayer < xCenter - halfWidth ||
                 xPlayer > xCenter + halfWidth ||
                 zPlayer < zCenter - halfWidth ||
@@ -236,9 +243,12 @@ public class MapAtlasesServerLifecycleEvents {
     private static ArrayList<Pair<Integer, Integer>> getPlayerDiscoveringMapEdges(
             int xCenter,
             int zCenter,
+            RegistryKey<World> dim,
             int width,
             int xPlayer,
-            int zPlayer) {
+            int zPlayer,
+            RegistryKey<World> dimPlayer) {
+        if (dim.getValue().compareTo(dimPlayer.getValue()) != 0) return new ArrayList<>();
         int halfWidth = width / 2;
         ArrayList<Pair<Integer, Integer>> results = new ArrayList<>();
         for (int i = -1; i < 2; i++) {

@@ -144,7 +144,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         int reqXCenter = activeXCenter + (jYIdx * (1 << activeState.scale) * 128);
         int reqZCenter = activeZCenter + (iXIdx * (1 << activeState.scale) * 128);
         return mapInfos.entrySet().stream()
-                .filter(m -> idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).get(0) == reqXCenter
+                .filter(m ->
+                        idsToCenters.containsKey(MapAtlasesAccessUtils.getMapIntFromString(m.getKey()))
+                        && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).get(0) == reqXCenter
                         && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).get(1) == reqZCenter)
                 .findFirst().orElse(null);
     }

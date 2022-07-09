@@ -78,21 +78,30 @@ public class MapAtlasesHUD extends DrawableHelper {
         // Draw map background
         int mapScaling = (int)Math.floor(.2 * client.getWindow().getScaledHeight());
         if (MapAtlasesMod.CONFIG != null) {
-            mapScaling = (int)Math.floor(MapAtlasesMod.CONFIG.forceMiniMapScaling/100.0 * client.getWindow().getScaledHeight());
+            mapScaling = (int) Math.floor(MapAtlasesMod.CONFIG.forceMiniMapScaling / 100.0 * client.getWindow().getScaledHeight());
         }
-        int y = 0;
-        if (!client.player.getStatusEffects().isEmpty()) {
-            y = 26;
+        String anchorLocation = "UpperLeft";
+        if (MapAtlasesMod.CONFIG != null) {
+            anchorLocation = MapAtlasesMod.CONFIG.miniMapAnchoring;
         }
-        if (MapAtlasesMod.CONFIG.miniMapAnchoring.contains("Lower")) {
-            y = client.getWindow().getScaledHeight() - mapScaling;
+        int x = anchorLocation.contains("Left") ? 0 : client.getWindow().getScaledWidth()-mapScaling;
+        int y = anchorLocation.contains("Lower") ? client.getWindow().getScaledHeight()-mapScaling : 0;
+        if (MapAtlasesMod.CONFIG != null) {
+            x += MapAtlasesMod.CONFIG.miniMapHorizontalOffset;
+            y += MapAtlasesMod.CONFIG.miniMapVerticalOffset;
         }
-        y += MapAtlasesMod.CONFIG.miniMapVerticalOffset;
-        int x = client.getWindow().getScaledWidth()-mapScaling;
-        if (MapAtlasesMod.CONFIG.miniMapAnchoring.contains("Left")) {
-            x = 0;
+        if (anchorLocation.contentEquals("UpperRight")) {
+            boolean hasBeneficial =
+                    client.player.getStatusEffects().stream().anyMatch(p -> p.getEffectType().isBeneficial());
+            boolean hasNegative =
+                    client.player.getStatusEffects().stream().anyMatch(p -> !p.getEffectType().isBeneficial());
+
+            if (hasNegative && y < 52) {
+                y += (52 - y);
+            } else if (hasBeneficial && y < 26) {
+                y += (25 - y);
+            }
         }
-        x += MapAtlasesMod.CONFIG.miniMapHorizontalOffset;
         RenderSystem.setShaderTexture(0, MAP_CHKRBRD);
         drawTexture(matrices,x,y,0,0,mapScaling,mapScaling, mapScaling, mapScaling);
 

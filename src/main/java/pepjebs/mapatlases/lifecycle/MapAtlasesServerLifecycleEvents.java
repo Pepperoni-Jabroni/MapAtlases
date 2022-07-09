@@ -75,7 +75,7 @@ public class MapAtlasesServerLifecycleEvents {
                     MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
                     packetByteBuf));
         }
-        MapAtlasesMod.LOGGER.info("Server initialized "+mapInfos.size()+" MapStates for "+player.getName());
+        MapAtlasesMod.LOGGER.info("Server initialized "+mapInfos.size()+" MapStates for "+player.getDisplayName());
     }
 
     public static void mapAtlasServerTick(MinecraftServer server) {

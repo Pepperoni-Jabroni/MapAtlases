@@ -99,7 +99,7 @@ public class MapAtlasesHUD extends DrawableHelper {
             if (hasNegative && y < 52) {
                 y += (52 - y);
             } else if (hasBeneficial && y < 26) {
-                y += (25 - y);
+                y += (26 - y);
             }
         }
         RenderSystem.setShaderTexture(0, MAP_CHKRBRD);

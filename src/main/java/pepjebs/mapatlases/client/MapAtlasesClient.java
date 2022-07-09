@@ -7,10 +7,16 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
+import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import org.lwjgl.glfw.GLFW;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.lifecycle.MapAtlasesClientLifecycleEvents;
@@ -54,6 +60,12 @@ public class MapAtlasesClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_M,
                 "category.map_atlases.minimap"
         ));
+
+        // Register ModelPredicate
+        ModelPredicateProviderRegistry.register(
+                MapAtlasesMod.MAP_ATLAS,
+                new Identifier("atlas"),
+                this::getPredicateForAtlas);
     }
 
     public static int getWorldMapZoomLevel() {
@@ -63,5 +75,18 @@ public class MapAtlasesClient implements ClientModInitializer {
 
     public static void setWorldMapZoomLevel(int i) {
         worldMapZoomLevel.set(i);
+    }
+
+    public float getPredicateForAtlas(
+            ItemStack _stack,
+            ClientWorld _world,
+            LivingEntity entity,
+            int _seed) {
+        // Using ClientWorld will render default Atlas in inventories
+        if (entity.world == null) return 0.0f;
+        if (entity.world.getRegistryKey() == World.OVERWORLD) return 0.1f;
+        if (entity.world.getRegistryKey() == World.NETHER) return 0.2f;
+        if (entity.world.getRegistryKey() == World.END) return 0.3f;
+        return 0.0f;
     }
 }

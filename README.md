@@ -71,3 +71,11 @@ Sound Sources
 - [Atlas open sound](https://freesound.org/people/InspectorJ/sounds/416179/)
 - [Atlas page flip sound](https://freesound.org/people/flag2/sounds/63318/)
 - [Atlas new map creation sound](https://freesound.org/people/Tomoyo%20Ichijouji/sounds/211247/)
+
+Required Dependencies:
+- Fabric API: https://www.curseforge.com/minecraft/mc-mods/fabric-api
+- Cloth Config: https://www.curseforge.com/minecraft/mc-mods/cloth-config
+
+Optional Dependencies:
+- Mod Menu: https://www.curseforge.com/minecraft/mc-mods/modmenu
+- Trinkets: https://www.curseforge.com/minecraft/mc-mods/trinkets

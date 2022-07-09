@@ -11,7 +11,7 @@ public class MapAtlasesConfig implements ConfigData {
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("The maximum number of Maps (Filled & Empty combined) allowed to be inside an Atlas (-1 to disable).")
-    public int maxMapCount = 128;
+    public int maxMapCount = 512;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("Scale the mini-map to a given % of the height of your screen.")

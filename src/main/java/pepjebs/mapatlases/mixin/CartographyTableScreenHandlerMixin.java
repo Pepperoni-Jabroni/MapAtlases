@@ -23,7 +23,6 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Shadow;
-import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 
@@ -38,7 +37,7 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
     }
 
     @Inject(method = "updateResult", at = @At("HEAD"), cancellable = true)
-    void antiqueatlas_call(ItemStack atlas, ItemStack bottomItem, ItemStack oldResult, CallbackInfo info) {
+    void mapAtlasUpdateResult(ItemStack atlas, ItemStack bottomItem, ItemStack oldResult, CallbackInfo info) {
         if (atlas.getItem() == MapAtlasesMod.MAP_ATLAS && bottomItem.getItem() == MapAtlasesMod.MAP_ATLAS) {
             ItemStack result = atlas.copy();
             result.increment(1);
@@ -62,7 +61,7 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
     }
 
     @Inject(method = "transferSlot", at = @At("HEAD"), cancellable = true)
-    void antiqueatlas_transferSlot(PlayerEntity player, int index, CallbackInfoReturnable<ItemStack> info) {
+    void mapAtlasTransferSlot(PlayerEntity player, int index, CallbackInfoReturnable<ItemStack> info) {
         if (index >= 0 && index <= 2) return;
 
         Slot slot = this.slots.get(index);

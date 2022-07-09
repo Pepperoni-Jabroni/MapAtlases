@@ -14,12 +14,18 @@ public class MapAtlasesInitAtlasS2CPacket implements Packet<ClientPlayPacketList
     public static final Identifier MAP_ATLAS_INIT = new Identifier(MapAtlasesMod.MOD_ID, "map_atlas_init");
     public static final Identifier MAP_ATLAS_SYNC = new Identifier(MapAtlasesMod.MOD_ID, "map_atlas_sync");
 
-    private String mapId;
-    private MapState mapState;
+    private final String mapId;
+    private final MapState mapState;
 
     public MapAtlasesInitAtlasS2CPacket(PacketByteBuf buf) {
         mapId = buf.readString();
-        mapState = MapState.fromNbt(buf.readNbt());
+        NbtCompound nbt = buf.readNbt();
+        if (nbt == null) {
+            MapAtlasesMod.LOGGER.warn("Null MapState NBT received by client");
+            mapState = null;
+        } else {
+            mapState = MapState.fromNbt(nbt);
+        }
     }
 
     public MapAtlasesInitAtlasS2CPacket(String mapId1, MapState mapState1) {

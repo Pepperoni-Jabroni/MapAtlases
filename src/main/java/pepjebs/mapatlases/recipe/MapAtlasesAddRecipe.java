@@ -2,6 +2,7 @@ package pepjebs.mapatlases.recipe;
 
 import com.google.common.primitives.Ints;
 import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -16,6 +17,7 @@ import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
 
@@ -33,7 +35,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
                 .stream()
                 .map(ItemStack::copy)
                 .toList();
-        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(itemStacks).copy();
+        ItemStack atlas = getAtlasFromItemStacks(itemStacks).copy();
 
         // Ensure there's an Atlas
         if (atlas.isEmpty()) {
@@ -45,12 +47,12 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         List<Item> additems = new ArrayList<>(Arrays.asList(Items.FILLED_MAP, MapAtlasesMod.MAP_ATLAS));
         if (MapAtlasesMod.CONFIG == null || MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill)
             additems.add(Items.MAP);
-        if (!(itemStacks.size() > 1 && MapAtlasesAccessUtils.isListOnlyIngredients(
+        if (!(itemStacks.size() > 1 && isListOnlyIngredients(
                 itemStacks,
                 additems))) {
             return false;
         }
-        List<MapState> mapStates = MapAtlasesAccessUtils.getMapStatesFromItemStacks(world, itemStacks);
+        List<MapState> mapStates = getMapStatesFromItemStacks(world, itemStacks);
 
         // Ensure we're not trying to add too many Maps
         int mapCount = MapAtlasesAccessUtils.getMapCountFromItemStack(atlas)
@@ -60,8 +62,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         }
 
         // Ensure Filled Maps are all same Scale & Dimension
-        if(!(MapAtlasesAccessUtils.areMapsSameScale(sampleMap, mapStates) &&
-                MapAtlasesAccessUtils.areMapsSameDimension(sampleMap, mapStates))) return false;
+        if(!(areMapsSameScale(sampleMap, mapStates) && areMapsSameDimension(sampleMap, mapStates))) return false;
 
         // Ensure there's only one Atlas
         long atlasCount = itemStacks.stream().filter(i ->
@@ -77,9 +78,9 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
                 .map(ItemStack::copy)
                 .toList();
         // Grab the Atlas in the Grid
-        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromItemStacks(itemStacks).copy();
+        ItemStack atlas = getAtlasFromItemStacks(itemStacks).copy();
         // Get the Map Ids in the Grid
-        Set<Integer> mapIds = MapAtlasesAccessUtils.getMapIdsFromItemStacks(world, itemStacks);
+        Set<Integer> mapIds = getMapIdsFromItemStacks(itemStacks);
         // Set NBT Data
         int emptyMapCount = (int)itemStacks.stream().filter(i -> i != null && i.isItemEqual(new ItemStack(Items.MAP))).count();
         NbtCompound compoundTag = atlas.getOrCreateNbt();
@@ -99,5 +100,39 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
     @Override
     public boolean fits(int width, int height) {
         return width * height >= 2;
+    }
+
+    private boolean areMapsSameScale(MapState testAgainst, List<MapState> newMaps) {
+        return newMaps.stream().filter(m -> m.scale == testAgainst.scale).count() == newMaps.size();
+    }
+
+    private boolean areMapsSameDimension(MapState testAgainst, List<MapState> newMaps) {
+        return newMaps.stream().filter(m -> m.dimension == testAgainst.dimension).count() == newMaps.size();
+    }
+
+    private ItemStack getAtlasFromItemStacks(List<ItemStack> itemStacks) {
+        Optional<ItemStack> item =  itemStacks.stream()
+                .filter(i -> i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findFirst();
+        return item.orElse(ItemStack.EMPTY).copy();
+    }
+
+    private List<MapState> getMapStatesFromItemStacks(World world, List<ItemStack> itemStacks) {
+        return itemStacks.stream()
+                .filter(i -> i.isItemEqual(new ItemStack(Items.FILLED_MAP)))
+                .map(m -> FilledMapItem.getOrCreateMapState(m, world))
+                .collect(Collectors.toList());
+    }
+
+    private Set<Integer> getMapIdsFromItemStacks(List<ItemStack> itemStacks) {
+        return itemStacks.stream().map(FilledMapItem::getMapId).collect(Collectors.toSet());
+    }
+
+    private boolean isListOnlyIngredients(List<ItemStack> itemStacks, List<Item> items) {
+        return itemStacks.stream().filter(is -> {
+            for (Item i : items) {
+                if (i == is.getItem()) return true;
+            }
+            return false;
+        }).count() == itemStacks.size();
     }
 }

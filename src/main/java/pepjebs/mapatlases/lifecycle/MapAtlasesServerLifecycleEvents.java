@@ -33,9 +33,6 @@ public class MapAtlasesServerLifecycleEvents {
     public static final Identifier MAP_ATLAS_ACTIVE_STATE_CHANGE = new Identifier(
             MapAtlasesMod.MOD_ID, "active_state_change");
 
-    // Value minimum of 64, since maps are 128
-    private static final int NEW_MAP_CENTER_DISTANCE = 90;
-
     // Used to prevent Map creation spam consuming all Empty Maps on auto-create
     private static final Semaphore mutex = new Semaphore(1);
 
@@ -64,23 +61,21 @@ public class MapAtlasesServerLifecycleEvents {
             MinecraftServer _server
     ) {
         ServerPlayerEntity player = serverPlayNetworkHandler.player;
-        for (ItemStack stack : player.getInventory().main) {
-            if (stack.getItem() instanceof MapAtlasItem) {
-                Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, stack);
-                for (Map.Entry<String, MapState> info : mapInfos.entrySet()) {
-                    String mapId = info.getKey();
-                    MapState state = info.getValue();
-                    state.update(player, stack);
-                    state.getPlayerSyncData(player);
-                    PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-                    (new MapAtlasesInitAtlasS2CPacket(mapId, state)).write(packetByteBuf);
-                    player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                            MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
-                            packetByteBuf));
-                    MapAtlasesMod.LOGGER.info("Server Sent MapState: " + mapId);
-                }
-            }
+        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
+        if (atlas.isEmpty()) return;
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
+        for (Map.Entry<String, MapState> info : mapInfos.entrySet()) {
+            String mapId = info.getKey();
+            MapState state = info.getValue();
+            state.update(player, atlas);
+            state.getPlayerSyncData(player);
+            PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+            (new MapAtlasesInitAtlasS2CPacket(mapId, state)).write(packetByteBuf);
+            player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                    MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
+                    packetByteBuf));
         }
+        MapAtlasesMod.LOGGER.info("Server initialized "+mapInfos.size()+" MapStates for "+player.getName());
     }
 
     public static void mapAtlasServerTick(MinecraftServer server) {
@@ -106,8 +101,6 @@ public class MapAtlasesServerLifecycleEvents {
                     MapAtlasesMod.LOGGER.info("Null active MapState with non-empty Atlas");
                 }
 
-
-
                 // Maps are 128x128
                 int playX = player.getBlockPos().getX();
                 int playZ = player.getBlockPos().getZ();
@@ -115,13 +108,12 @@ public class MapAtlasesServerLifecycleEvents {
                 int scale = 0;
                 ArrayList<Pair<Integer, Integer>> discoveringEdges = new ArrayList<>();
                 if (activeInfo != null) {
-                    discoveringEdges = MapAtlasesAccessUtils.getPlayerDiscoveringMapEdges(
+                    discoveringEdges = getPlayerDiscoveringMapEdges(
                             activeInfo.getValue().centerX,
                             activeInfo.getValue().centerZ,
                             (1 << activeInfo.getValue().scale) * 128,
                             playX,
-                            playZ,
-                            128
+                            playZ
                     );
                 }
 
@@ -152,16 +144,13 @@ public class MapAtlasesServerLifecycleEvents {
                                 packetByteBuf));
                     }
 
-                    int mapCX = state.centerX;
-                    int mapCZ = state.centerZ;
                     isPlayerOutsideAllMapRegions = isPlayerOutsideAllMapRegions &&
-                            MapAtlasesAccessUtils.isPlayerOutsideSquareRegion(
+                            isPlayerOutsideSquareRegion(
                                 state.centerX,
                                 state.centerZ,
                                 (1 << state.scale) * 128,
                                 playX,
-                                playZ,
-                                0
+                                playZ
                             );
                     scale = state.scale;
                 }
@@ -229,5 +218,54 @@ public class MapAtlasesServerLifecycleEvents {
                 mutex.release();
             }
         }
+    }
+
+    private static boolean isPlayerOutsideSquareRegion(
+            int xCenter,
+            int zCenter,
+            int width,
+            int xPlayer,
+            int zPlayer) {
+        int halfWidth = width / 2;
+        return xPlayer < xCenter - halfWidth ||
+                xPlayer > xCenter + halfWidth ||
+                zPlayer < zCenter - halfWidth ||
+                zPlayer > zCenter + halfWidth;
+    }
+
+    private static ArrayList<Pair<Integer, Integer>> getPlayerDiscoveringMapEdges(
+            int xCenter,
+            int zCenter,
+            int width,
+            int xPlayer,
+            int zPlayer) {
+        int halfWidth = width / 2;
+        ArrayList<Pair<Integer, Integer>> results = new ArrayList<>();
+        for (int i = -1; i < 2; i++) {
+            for (int j = -1; j < 2; j++) {
+                if (i != 0 || j != 0) {
+                    int qI = xCenter;
+                    int qJ = zCenter;
+                    if (i == -1 && xPlayer - 128 < xCenter - halfWidth) {
+                        qI -= width;
+                    } else if (i == 1 && xPlayer + 128 > xCenter + halfWidth) {
+                        qI += width;
+                    }
+                    if (j == -1 && zPlayer - 128 < zCenter - halfWidth) {
+                        qJ -= width;
+                    } else if (j == 1 && zPlayer + 128 > zCenter + halfWidth) {
+                        qJ += width;
+                    }
+                    // Some lambda bullshit
+                    int finalQI = qI;
+                    int finalQJ = qJ;
+                    if ((qI != xCenter || qJ != zCenter) && results.stream()
+                            .noneMatch(p -> p.getLeft() == finalQI && p.getRight() == finalQJ)) {
+                        results.add(new Pair<>(qI, qJ));
+                    }
+                }
+            }
+        }
+        return results;
     }
 }

@@ -15,8 +15,6 @@ import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
 import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
-import java.io.IOException;
-
 public class MapAtlasesClientLifecycleEvents {
 
     public static void mapAtlasClientTick(MinecraftClient client) {
@@ -55,9 +53,7 @@ public class MapAtlasesClientLifecycleEvents {
             PacketSender _sender) {
         try {
             MapUpdateS2CPacket p = new MapUpdateS2CPacket(buf);
-            client.execute(() -> {
-                handler.onMapUpdate(p);
-            });
+            client.execute(() -> handler.onMapUpdate(p));
         } catch (ArrayIndexOutOfBoundsException e) {
             MapAtlasesMod.LOGGER.error("Bad Minecraft MapUpdate packet sent to client by server");
             MapAtlasesMod.LOGGER.error(e);

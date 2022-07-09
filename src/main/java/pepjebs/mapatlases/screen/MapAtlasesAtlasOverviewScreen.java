@@ -159,7 +159,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             double mapTextY,
             float mapTextureScale
             ) {
-        if (state == null) return;
+        if (state == null || client == null) return;
         // Draw the map
         double curMapTextX = mapTextX + (mapTextureScale * 128 * j);
         double curMapTextY = mapTextY + (mapTextureScale * 128 * i);

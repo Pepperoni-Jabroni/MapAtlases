@@ -12,7 +12,7 @@
     "MixinCartographyTableScreenHandlerSecondSlotMaps"
   ],
   "client": [
-    "MapAtlasesHUDMixin",
+    "InGameHudMixin",
     "MapRendererMixin"
   ],
   "plugin": "pepjebs.mapatlases.mixin.plugin.MapAtlasesMixinPlugin",

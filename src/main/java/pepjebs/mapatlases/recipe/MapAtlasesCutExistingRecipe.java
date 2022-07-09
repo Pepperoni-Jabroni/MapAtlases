@@ -1,6 +1,5 @@
 package pepjebs.mapatlases.recipe;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;

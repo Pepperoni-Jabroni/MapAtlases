@@ -9,9 +9,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
 
 @Mixin(InGameHud.class)
-public class MapAtlasesHUDMixin {
+public class InGameHudMixin {
 
-    private static MapAtlasesHUD mapAtlasesAtlasHUD = new MapAtlasesHUD();
+    private static final MapAtlasesHUD mapAtlasesAtlasHUD = new MapAtlasesHUD();
 
     @Inject(
             method = "render",

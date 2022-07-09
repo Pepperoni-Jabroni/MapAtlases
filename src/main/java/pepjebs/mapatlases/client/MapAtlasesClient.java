@@ -39,9 +39,7 @@ public class MapAtlasesClient implements ClientModInitializer {
             MinecraftClient _client,
             ClientPlayNetworkHandler _handler,
             PacketByteBuf buf,
-            PacketSender _sender) -> {
-                currentMapStateId = buf.readString();
-        });
+            PacketSender _sender) -> currentMapStateId = buf.readString());
 
         // Register Keybind
         displayMapGUIBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(

@@ -13,12 +13,10 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
-import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
 
@@ -42,7 +40,7 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
             }
         }
         if (itemStacks.size() == 3) {
-            List<Item> items = itemStacks.stream().map(ItemStack::getItem).collect(Collectors.toList());
+            List<Item> items = itemStacks.stream().map(ItemStack::getItem).toList();
             boolean hasAllCrafting =
                     items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.SLIME_BALL, Items.BOOK)) ||
                             items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.HONEY_BOTTLE, Items.BOOK));
@@ -82,7 +80,13 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
             mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));
         }
         NbtCompound compoundTag = new NbtCompound();
-        compoundTag.putIntArray("maps", new int[]{FilledMapItem.getMapId(mapItemStack)});
+        Integer mapId = FilledMapItem.getMapId(mapItemStack);
+        if (mapId == null) {
+            MapAtlasesMod.LOGGER.warn("MapAtlasCreateRecipe found null Map ID from Filled Map");
+            compoundTag.putIntArray("maps", new int[]{});
+        }
+        else
+            compoundTag.putIntArray("maps", new int[]{mapId});
         ItemStack atlasItemStack = new ItemStack(mapAtlasItem);
         atlasItemStack.setNbt(compoundTag);
         return atlasItemStack;

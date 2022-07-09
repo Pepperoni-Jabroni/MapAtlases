@@ -9,7 +9,6 @@ import net.minecraft.client.render.MapRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
 import net.minecraft.sound.SoundCategory;
@@ -34,26 +33,24 @@ public class MapAtlasesHUD extends DrawableHelper {
     }
 
     public void render(MatrixStack matrices) {
-        ItemStack atlas;
-        if (!(atlas = shouldDraw(client)).isEmpty()) {
-            renderMapHUDFromItemStack(matrices, atlas);
+        if (shouldDraw(client)) {
+            renderMapHUD(matrices);
         }
     }
 
-    private ItemStack shouldDraw(MinecraftClient client) {
+    private boolean shouldDraw(MinecraftClient client) {
         // Forcibly only render on Overworld since player trackers don't disappear from Overworld
         // in other dimensions in vanilla MC
-        if (client.player == null || client.player.world.getRegistryKey() != World.OVERWORLD) return ItemStack.EMPTY;
-        PlayerInventory inv = client.player.getInventory();
+        if (client.player == null || client.player.world.getRegistryKey() != World.OVERWORLD) return false;
         // Check config disable
-        if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.drawMiniMapHUD) return ItemStack.EMPTY;
+        if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.drawMiniMapHUD) return false;
         // Check F3 menu displayed
-        if (client.options.debugEnabled) return ItemStack.EMPTY;
+        if (client.options.debugEnabled) return false;
         // Check the hot-bar for an Atlas
-        return MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player);
+        return MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player) != ItemStack.EMPTY;
     }
 
-    private void renderMapHUDFromItemStack(MatrixStack matrices, ItemStack atlas) {
+    private void renderMapHUD(MatrixStack matrices) {
         // Handle early returns
         if (client.world == null || client.player == null) {
             MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: Current map id - null (client.world)");
@@ -118,9 +115,5 @@ public class MapAtlasesHUD extends DrawableHelper {
         );
         vcp.draw();
         matrices.pop();
-    }
-
-    private double mapRange(double a1, double a2, double b1, double b2, double s){
-        return b1 + ((s - a1)*(b2 - b1))/(a2 - a1);
     }
 }

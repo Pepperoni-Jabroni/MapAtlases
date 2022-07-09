@@ -18,6 +18,7 @@ import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.mixin.plugin.MapAtlasesMixinPlugin;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MapAtlasesAccessUtils {
 
@@ -68,6 +69,14 @@ public class MapAtlasesAccessUtils {
         return mapStates;
     }
 
+    public static Map<String, MapState> getCurrentDimMapInfoFromAtlas(World world, ItemStack atlas) {
+        return getAllMapInfoFromAtlas(world, atlas)
+                .entrySet()
+                .stream()
+                .filter(state -> state.getValue().dimension.getValue().compareTo(world.getRegistryKey().getValue()) == 0)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
     public static ItemStack getAtlasFromPlayerByConfig(PlayerEntity entity) {
         PlayerInventory inventory = entity.getInventory();
         ItemStack itemStack =  inventory.main.stream()
@@ -109,8 +118,11 @@ public class MapAtlasesAccessUtils {
         return itemStacks;
     }
 
-    public static Map.Entry<String, MapState> getActiveAtlasMapStateServer(World world, ItemStack atlas, ServerPlayerEntity player) {
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(world, atlas);
+    public static Map.Entry<String, MapState> getActiveAtlasMapStateServer(
+            World world,
+            ItemStack atlas,
+            ServerPlayerEntity player) {
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(world, atlas);
         Map.Entry<String, MapState> minDistState = null;
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
             if (minDistState == null) {

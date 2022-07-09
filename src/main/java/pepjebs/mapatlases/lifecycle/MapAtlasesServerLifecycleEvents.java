@@ -17,8 +17,6 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
@@ -115,15 +113,14 @@ public class MapAtlasesServerLifecycleEvents {
                     discoveringEdges = getPlayerDiscoveringMapEdges(
                             activeInfo.getValue().centerX,
                             activeInfo.getValue().centerZ,
-                            activeInfo.getValue().dimension,
                             (1 << activeInfo.getValue().scale) * 128,
                             playX,
-                            playZ,
-                            player.world.getRegistryKey()
+                            playZ
                     );
                 }
 
-                Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
+                Map<String, MapState> mapInfos =
+                        MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
                 for (Map.Entry<String, MapState> info : mapInfos.entrySet()) {
                     MapState state = info.getValue();
                     // Only update active (based on discovery radius) map states
@@ -154,11 +151,9 @@ public class MapAtlasesServerLifecycleEvents {
                             isPlayerOutsideSquareRegion(
                                 state.centerX,
                                 state.centerZ,
-                                state.dimension,
                                 (1 << state.scale) * 128,
                                 playX,
-                                playZ,
-                                player.world.getRegistryKey()
+                                playZ
                             );
                     scale = state.scale;
                 }
@@ -227,13 +222,10 @@ public class MapAtlasesServerLifecycleEvents {
     private static boolean isPlayerOutsideSquareRegion(
             int xCenter,
             int zCenter,
-            RegistryKey<World> dim,
             int width,
             int xPlayer,
-            int zPlayer,
-            RegistryKey<World> dimPlayer) {
+            int zPlayer) {
         int halfWidth = width / 2;
-        if (dim.getValue().compareTo(dimPlayer.getValue()) != 0) return true;
         return xPlayer < xCenter - halfWidth ||
                 xPlayer > xCenter + halfWidth ||
                 zPlayer < zCenter - halfWidth ||
@@ -243,12 +235,9 @@ public class MapAtlasesServerLifecycleEvents {
     private static ArrayList<Pair<Integer, Integer>> getPlayerDiscoveringMapEdges(
             int xCenter,
             int zCenter,
-            RegistryKey<World> dim,
             int width,
             int xPlayer,
-            int zPlayer,
-            RegistryKey<World> dimPlayer) {
-        if (dim.getValue().compareTo(dimPlayer.getValue()) != 0) return new ArrayList<>();
+            int zPlayer) {
         int halfWidth = width / 2;
         ArrayList<Pair<Integer, Integer>> results = new ArrayList<>();
         for (int i = -1; i < 2; i++) {

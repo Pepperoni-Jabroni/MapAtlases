@@ -92,13 +92,11 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
         Map<Integer, List<Integer>> idsToCenters = new HashMap<>();
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
-            if (state.getValue().dimension.getValue().compareTo(player.world.getRegistryKey().getValue()) == 0) {
-                idsToCenters.put(
-                        MapAtlasesAccessUtils.getMapIntFromString(state.getKey()),
-                        Arrays.asList(state.getValue().centerX, state.getValue().centerZ));
-            }
+            idsToCenters.put(
+                    MapAtlasesAccessUtils.getMapIntFromString(state.getKey()),
+                    Arrays.asList(state.getValue().centerX, state.getValue().centerZ));
         }
         return new MapAtlasesAtlasOverviewScreenHandler(syncId, inv, idsToCenters);
     }
@@ -107,11 +105,8 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     public void writeScreenOpeningData(ServerPlayerEntity serverPlayerEntity, PacketByteBuf packetByteBuf) {
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(serverPlayerEntity);
         if (atlas.isEmpty()) return;
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(serverPlayerEntity.world, atlas)
-                .entrySet()
-                .stream()
-                .filter(state -> state.getValue().dimension.getValue().compareTo(serverPlayerEntity.world.getRegistryKey().getValue()) == 0)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(
+                serverPlayerEntity.world, atlas);
         if (mapInfos.isEmpty()) return;
         packetByteBuf.writeInt(mapInfos.size());
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {

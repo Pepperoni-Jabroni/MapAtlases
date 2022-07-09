@@ -6,6 +6,7 @@
   "mixins": [
     "CartographyTableScreenHandlerMixin",
     "MapStateMixin",
+    "MapStateTrinketsMixin",
     "MixinCartographyTableScreenHandlerFirstSlot",
     "MixinCartographyTableScreenHandlerSecondSlot",
     "MixinCartographyTableScreenHandlerSecondSlotMaps"
@@ -14,6 +15,7 @@
     "MapAtlasesHUDMixin",
     "MapRendererMixin"
   ],
+  "plugin": "pepjebs.mapatlases.mixin.plugin.MapAtlasesMixinPlugin",
   "injectors": {
     "defaultRequire": 1
   }

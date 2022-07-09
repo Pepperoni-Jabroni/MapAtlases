@@ -21,6 +21,7 @@ import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
+import pepjebs.mapatlases.mixin.plugin.MapAtlasesMixinPlugin;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -137,8 +138,10 @@ public class MapAtlasesAccessUtils {
         }
         if (itemStack == null && inventory.offHand.get(0).getItem() == MapAtlasesMod.MAP_ATLAS)
             itemStack = inventory.offHand.get(0);
-        if (itemStack == null && TrinketsApi.getTrinketComponent(entity).isPresent() && TrinketsApi.getTrinketComponent(entity)
-                .get().getEquipped(MapAtlasesMod.MAP_ATLAS).size() > 0) {
+        if (itemStack == null
+                && MapAtlasesMixinPlugin.isTrinketsLoaded()
+                && TrinketsApi.getTrinketComponent(entity).isPresent()
+                && TrinketsApi.getTrinketComponent(entity).get().getEquipped(MapAtlasesMod.MAP_ATLAS).size() > 0) {
             itemStack = TrinketsApi.getTrinketComponent(entity)
                     .get().getEquipped(MapAtlasesMod.MAP_ATLAS).get(0).getRight();
         }

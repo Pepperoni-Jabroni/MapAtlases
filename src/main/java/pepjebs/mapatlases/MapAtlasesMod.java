@@ -6,7 +6,8 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.*;
 import net.minecraft.recipe.SpecialRecipeSerializer;
 import net.minecraft.screen.ScreenHandlerType;
@@ -47,6 +48,8 @@ public class MapAtlasesMod implements ModInitializer {
     private static final Identifier ATLAS_CREATE_MAP_SOUND_ID = new Identifier(MOD_ID, "atlas_create_map");
     public static SoundEvent ATLAS_CREATE_MAP_SOUND_EVENT = new SoundEvent(ATLAS_CREATE_MAP_SOUND_ID);
 
+    public static final String TRINKETS_MOD_ID = "trinkets";
+
     @Override
     public void onInitialize() {
         // Register config
@@ -61,10 +64,12 @@ public class MapAtlasesMod implements ModInitializer {
         MAP_ATLAS_CUT_RECIPE = Registry.register(Registry.RECIPE_SERIALIZER,
                 new Identifier(MOD_ID, "cutting_atlas"), new SpecialRecipeSerializer<>(MapAtlasesCutExistingRecipe::new));
 
-        ATLAS_OVERVIEW_HANDLER =
-                ScreenHandlerRegistry.registerExtended(
-                        new Identifier(MOD_ID, "atlas_overview"),
-                        MapAtlasesAtlasOverviewScreenHandler::new);
+        // Register screen
+        ATLAS_OVERVIEW_HANDLER = Registry.register(
+                Registry.SCREEN_HANDLER,
+                new Identifier(MOD_ID, "atlas_overview"),
+                new ExtendedScreenHandlerType<>(MapAtlasesAtlasOverviewScreenHandler::new)
+        );
 
         // Register sounds
         Registry.register(Registry.SOUND_EVENT, ATLAS_OPEN_SOUND_ID, ATLAS_OPEN_SOUND_EVENT);

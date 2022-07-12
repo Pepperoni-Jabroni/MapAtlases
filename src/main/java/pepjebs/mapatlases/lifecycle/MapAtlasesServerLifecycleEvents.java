@@ -17,14 +17,11 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
 import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
-import pepjebs.mapatlases.utils.MapStateIntrfc;
 
 import java.util.*;
 import java.util.concurrent.Semaphore;
@@ -39,7 +36,7 @@ public class MapAtlasesServerLifecycleEvents {
     private static final Semaphore mutex = new Semaphore(1);
 
     // Holds the current MapState ID for each player
-    private static final Map<String, Pair<RegistryKey<World>, String>> playerToActiveMapId = new HashMap<>();
+    private static final Map<String, String> playerToActiveMapId = new HashMap<>();
 
     public static void openGuiEvent(
             MinecraftServer server,
@@ -82,22 +79,19 @@ public class MapAtlasesServerLifecycleEvents {
 
     public static void mapAtlasServerTick(MinecraftServer server) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            if (player.isRemoved() || player.isInTeleportationState()) continue;
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
             if (!atlas.isEmpty()) {
                 Map.Entry<String, MapState> activeInfo =
                         MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
                                 player.getWorld(), atlas, player);
-                Pair<RegistryKey<World>, String> changedLocation = null;
+                String changedMapState = null;
                 if (activeInfo != null) {
                     String playerName = player.getName().getString();
-                    // Handle player active MapState change
                     if (!playerToActiveMapId.containsKey(playerName)
-                            || playerToActiveMapId.get(playerName).getLeft() != player.world.getRegistryKey()
-                            || playerToActiveMapId.get(playerName).getRight().compareTo(activeInfo.getKey()) != 0) {
-                        changedLocation = playerToActiveMapId.get(playerName);
-                        playerToActiveMapId.put(playerName, new Pair<>(
-                                player.world.getRegistryKey(),
-                                activeInfo.getKey()));
+                            || playerToActiveMapId.get(playerName).compareTo(activeInfo.getKey()) != 0) {
+                        changedMapState = playerToActiveMapId.get(playerName);
+                        playerToActiveMapId.put(playerName, activeInfo.getKey());
                         PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
                         packetByteBuf.writeString(activeInfo.getKey());
                         player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
@@ -128,28 +122,14 @@ public class MapAtlasesServerLifecycleEvents {
 
                 Map<String, MapState> mapInfos =
                         MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
-                // If previous MapState is from different dimension, we still want to iterate over it
-                if (changedLocation != null && changedLocation.getLeft() != player.world.getRegistryKey()) {
-                    try {
-                        World changedWorld = player.world.getServer().getWorld(changedLocation.getLeft());
-                        MapState changedState = changedWorld.getMapState(changedLocation.getRight());
-                        mapInfos.put(changedLocation.getRight(), changedState);
-                        // Vanilla MC Maps fail to remove the Player Icon on inter-dimensional teleport,
-                        // so we remove it by force here :P
-                        // MC-46345 is closed as Resolved but repros in 1.19
-                        ((MapStateIntrfc) changedState).getFullIcons().remove(player.getName().getString());
-                    } catch (NullPointerException e) {
-                        MapAtlasesMod.LOGGER.warn(e);
-                    }
-                }
                 for (Map.Entry<String, MapState> info : mapInfos.entrySet()) {
                     MapState state = info.getValue();
+                    boolean isDiscoveringEdgeMap =
+                            discoveringEdges.stream().anyMatch(p -> p.getLeft()==state.centerX && p.getRight() == state.centerZ);
+                    boolean isActiveMap = activeInfo != null
+                            && activeInfo.getValue().centerX==state.centerX && activeInfo.getValue().centerZ==state.centerZ;
                     // Only update active (based on discovery radius) map states
-                    if (discoveringEdges.stream().noneMatch(p -> p.getLeft()==state.centerX && p.getRight() == state.centerZ)
-                        && (activeInfo == null
-                        || !(activeInfo.getValue().centerX==state.centerX && activeInfo.getValue().centerZ==state.centerZ))
-                        && (changedLocation == null || info.getKey().compareTo(changedLocation.getRight()) != 0)
-                    )
+                    if (!isDiscoveringEdgeMap && !isActiveMap && changedMapState == null)
                         continue;
                     state.update(player, atlas);
                     ((FilledMapItem) Items.FILLED_MAP).updateColors(player.getWorld(), player, state);
@@ -170,11 +150,11 @@ public class MapAtlasesServerLifecycleEvents {
 
                     isPlayerOutsideAllMapRegions = isPlayerOutsideAllMapRegions &&
                             isPlayerOutsideSquareRegion(
-                                state.centerX,
-                                state.centerZ,
-                                (1 << state.scale) * 128,
-                                playX,
-                                playZ
+                                    state.centerX,
+                                    state.centerZ,
+                                    (1 << state.scale) * 128,
+                                    playX,
+                                    playZ
                             );
                     scale = state.scale;
                 }

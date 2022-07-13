@@ -83,7 +83,7 @@ public class MapAtlasesClient implements ClientModInitializer {
             LivingEntity entity,
             int _seed) {
         // Using ClientWorld will render default Atlas in inventories
-        if (entity.world == null) return 0.0f;
+        if (entity == null || entity.world == null) return 0.0f;
         if (entity.world.getRegistryKey() == World.OVERWORLD) return 0.1f;
         if (entity.world.getRegistryKey() == World.NETHER) return 0.2f;
         if (entity.world.getRegistryKey() == World.END) return 0.3f;

@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 
-@Mixin(MapRenderer.MapTexture.class)
+@Mixin(value = MapRenderer.MapTexture.class, priority = 1100)
 public class MapRendererMixin {
 
     @Redirect(method = "draw(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ZI)V",

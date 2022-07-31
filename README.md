@@ -47,7 +47,7 @@ The "Atlas" features and details:
 ![2022-06-24_19 48 21](https://user-images.githubusercontent.com/17690401/175755670-3819eca7-cbc4-4be5-a7c8-3d4286dacd19.png)
 
 ## World Map View
-![2022-06-24_19 45 39](https://user-images.githubusercontent.com/17690401/175755623-3583c96f-606d-4bf8-9912-98e567b4fad4.png)
+![untitled](https://user-images.githubusercontent.com/17690401/182009108-f87ca806-a698-4c4f-a62b-ab10ca328ead.GIF)
 
 ## Cutting a Map out of an Atlas
 ![2022-06-24_19 48 45](https://user-images.githubusercontent.com/17690401/175755627-bf5ff6b5-752d-4bfd-85d2-82c863bc1257.png)

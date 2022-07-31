@@ -41,7 +41,7 @@ The "Atlas" features and details:
 ![2022-06-24_19 48 05](https://user-images.githubusercontent.com/17690401/175755596-5895ebab-b1a2-4c58-bc70-dcb03083762f.png)
 
 ## Current Map is rendered when you move locations
-![2022-06-24_19 47 43](https://user-images.githubusercontent.com/17690401/175755619-576688bb-2103-4f52-8b6a-a4264b790e93.png)
+![java_VKNugiTAlO (online-video-cutter](https://user-images.githubusercontent.com/17690401/182008727-dd3a0d38-b493-4367-8b9e-cf873442373a.gif)
 
 ## Custom Tooltip
 ![2022-06-24_19 48 21](https://user-images.githubusercontent.com/17690401/175755670-3819eca7-cbc4-4be5-a7c8-3d4286dacd19.png)

@@ -28,7 +28,7 @@ public class MapAtlasesAccessUtils {
 
     public static MapState getMapStateByIndexFromAtlas(World world, ItemStack atlas, int i) {
         if (atlas.getNbt() == null) return null;
-        int[] mapIds = Arrays.stream(atlas.getNbt().getIntArray("maps")).toArray();
+        int[] mapIds = Arrays.stream(atlas.getNbt().getIntArray(MapAtlasItem.MAP_LIST_NBT)).toArray();
         if (i < 0 || i >= mapIds.length) return null;
         ItemStack map = createMapItemStackFromId(mapIds[i]);
         return FilledMapItem.getMapState(FilledMapItem.getMapId(map), world);
@@ -37,7 +37,7 @@ public class MapAtlasesAccessUtils {
     public static ItemStack createMapItemStackFromId(int id) {
         ItemStack map = new ItemStack(Items.FILLED_MAP);
         NbtCompound tag = new NbtCompound();
-        tag.putInt("map", id);
+        tag.putInt(MapAtlasItem.MAP_LIST_NBT, id);
         map.setNbt(tag);
         return map;
     }
@@ -53,7 +53,7 @@ public class MapAtlasesAccessUtils {
 
     public static Map<String, MapState> getAllMapInfoFromAtlas(World world, ItemStack atlas) {
         if (atlas.getNbt() == null) return new HashMap<>();
-        int[] mapIds = Arrays.stream(atlas.getNbt().getIntArray("maps")).toArray();
+        int[] mapIds = Arrays.stream(atlas.getNbt().getIntArray(MapAtlasItem.MAP_LIST_NBT)).toArray();
         Map<String, MapState> mapStates = new HashMap<>();
         for (int mapId : mapIds) {
             String mapName = FilledMapItem.getMapName(mapId);
@@ -139,12 +139,14 @@ public class MapAtlasesAccessUtils {
 
     public static int getEmptyMapCountFromItemStack(ItemStack atlas) {
         NbtCompound tag = atlas.getNbt();
-        return tag != null && tag.contains("empty") ? tag.getInt("empty") : 0;
+        return tag != null && tag.contains(MapAtlasItem.EMPTY_MAP_NBT) ? tag.getInt(MapAtlasItem.EMPTY_MAP_NBT) : 0;
     }
 
     public static int getMapCountFromItemStack(ItemStack atlas) {
         NbtCompound tag = atlas.getNbt();
-        return tag != null && tag.contains("maps") ? tag.getIntArray("maps").length : 0;
+        return tag != null && tag.contains(MapAtlasItem.MAP_LIST_NBT)
+                ? tag.getIntArray(MapAtlasItem.MAP_LIST_NBT).length
+                : 0;
     }
 
     public static int getMapCountToAdd(ItemStack atlas, ItemStack bottomItem) {

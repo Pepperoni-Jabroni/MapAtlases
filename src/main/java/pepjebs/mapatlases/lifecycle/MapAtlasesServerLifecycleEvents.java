@@ -183,9 +183,12 @@ public class MapAtlasesServerLifecycleEvents {
         List<Integer> mapIds = new ArrayList<>();
         if (atlas.getNbt() != null) {
             mapIds = Arrays.stream(
-                    atlas.getNbt().getIntArray("maps")).boxed().collect(Collectors.toList());
+                    atlas.getNbt().getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());
         } else {
-            atlas.setNbt(new NbtCompound());
+            // If the Atlas is "inactive", give it a pity 1 Empty Map
+            NbtCompound defaultAtlasNbt = new NbtCompound();
+            defaultAtlasNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, 1);
+            atlas.setNbt(defaultAtlasNbt);
         }
         int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
         if (mutex.availablePermits() > 0
@@ -194,9 +197,11 @@ public class MapAtlasesServerLifecycleEvents {
                 mutex.acquire();
 
                 // Make the new map
-                MapAtlasesMod.LOGGER.info("Creating map for "+destX+", "+destZ);
                 if (!player.isCreative()) {
-                    atlas.getNbt().putInt("empty", atlas.getNbt().getInt("empty") - 1);
+                    atlas.getNbt().putInt(
+                            MapAtlasItem.EMPTY_MAP_NBT,
+                            atlas.getNbt().getInt(MapAtlasItem.EMPTY_MAP_NBT) - 1
+                    );
                 }
                 ItemStack newMap = FilledMapItem.createMap(
                         player.getWorld(),
@@ -206,7 +211,7 @@ public class MapAtlasesServerLifecycleEvents {
                         true,
                         false);
                 mapIds.add(FilledMapItem.getMapId(newMap));
-                atlas.getNbt().putIntArray("maps", mapIds);
+                atlas.getNbt().putIntArray(MapAtlasItem.MAP_LIST_NBT, mapIds);
 
                 // Play the sound
                 player.getWorld().playSound(null, player.getBlockPos(),

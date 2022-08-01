@@ -32,7 +32,6 @@ public class MapAtlasesMod implements ModInitializer {
     public static MapAtlasesConfig CONFIG = null;
 
     public static MapAtlasItem MAP_ATLAS;
-    public static boolean enableMultiDimMaps = false;
 
     public static SpecialRecipeSerializer<MapAtlasCreateRecipe> MAP_ATLAS_CREATE_RECIPE;
     public static SpecialRecipeSerializer<MapAtlasesAddRecipe> MAP_ATLAS_ADD_RECIPE;
@@ -78,14 +77,6 @@ public class MapAtlasesMod implements ModInitializer {
         // Register items
         Registry.register(Registry.ITEM, new Identifier(MOD_ID,"atlas"),
                 new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(16)));
-        if (enableMultiDimMaps) {
-            Registry.register(Registry.ITEM, new Identifier(MOD_ID,"overworld_atlas"),
-                    new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(16)));
-            Registry.register(Registry.ITEM, new Identifier(MOD_ID,"end_atlas"),
-                    new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(16)));
-            Registry.register(Registry.ITEM, new Identifier(MOD_ID,"nether_atlas"),
-                    new MapAtlasItem(new Item.Settings().group(ItemGroup.MISC).maxCount(16)));
-        }
         MAP_ATLAS = (MapAtlasItem) Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));
         Registry.register(Registry.ITEM, new Identifier(MOD_ID,"dummy_filled_map"),
                 new DummyFilledMap(new Item.Settings()));

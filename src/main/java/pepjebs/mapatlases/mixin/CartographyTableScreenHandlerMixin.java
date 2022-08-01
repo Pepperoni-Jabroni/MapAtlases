@@ -23,6 +23,7 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Shadow;
+import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 
@@ -50,7 +51,7 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
             ItemStack result = atlas.copy();
             NbtCompound nbt = result.getNbt() != null ? result.getNbt() : new NbtCompound();
             int amountToAdd = MapAtlasesAccessUtils.getMapCountToAdd(atlas, bottomItem);
-            nbt.putInt("empty", nbt.getInt("empty") + amountToAdd);
+            nbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, nbt.getInt(MapAtlasItem.EMPTY_MAP_NBT) + amountToAdd);
             result.setNbt(nbt);
             this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
 

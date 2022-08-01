@@ -24,6 +24,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import pepjebs.mapatlases.MapAtlasesMod;
+import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
@@ -31,9 +32,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
+
+    public static final String EMPTY_MAP_NBT = "empty";
+    public static final String MAP_LIST_NBT = "maps";
 
     public MapAtlasItem(Settings settings) {
         super(settings);
@@ -51,7 +54,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         super.appendTooltip(stack, world, tooltip, context);
 
         if (world != null && world.isClient) {
-            MapState mapState = MapAtlasesAccessUtils.getFirstMapStateFromAtlas(world, stack);
+            MapState mapState = world.getMapState(MapAtlasesClient.currentMapStateId);
             if (mapState == null) {
                 tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_err"))
                         .formatted(Formatting.ITALIC).formatted(Formatting.GRAY));

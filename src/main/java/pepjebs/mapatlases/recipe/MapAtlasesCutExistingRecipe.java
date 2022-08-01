@@ -10,6 +10,7 @@ import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
+import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.Arrays;
@@ -53,7 +54,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
         if (atlas.getNbt() == null) return ItemStack.EMPTY;
         if (MapAtlasesAccessUtils.getMapCountFromItemStack(atlas) > 1) {
             List<Integer> mapIds = Arrays.stream(atlas.getNbt()
-                    .getIntArray("maps")).boxed().collect(Collectors.toList());
+                    .getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());
             if (mapIds.size() > 0) {
                 int lastId = mapIds.remove(mapIds.size() - 1);
                 return MapAtlasesAccessUtils.createMapItemStackFromId(lastId);
@@ -76,16 +77,17 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
                 boolean didRemoveFilled = false;
                 if (MapAtlasesAccessUtils.getMapCountFromItemStack(cur) > 1) {
                     List<Integer> mapIds = Arrays.stream(cur.getNbt()
-                            .getIntArray("maps")).boxed().collect(Collectors.toList());
+                            .getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());
                     if (mapIds.size() > 0) {
                         mapIds.remove(mapIds.size() - 1);
-                        cur.getNbt().putIntArray("maps", mapIds);
+                        cur.getNbt().putIntArray(MapAtlasItem.MAP_LIST_NBT, mapIds);
                         didRemoveFilled = true;
                     }
 
                 }
                 if (MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(cur) > 0 && !didRemoveFilled) {
-                    cur.getNbt().putInt("empty", cur.getNbt().getInt("empty") - 1);
+                    cur.getNbt().putInt(
+                            MapAtlasItem.EMPTY_MAP_NBT, cur.getNbt().getInt(MapAtlasItem.EMPTY_MAP_NBT) - 1);
                 }
             }
             list.add(cur);

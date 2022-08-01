@@ -62,7 +62,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         }
 
         // Ensure Filled Maps are all same Scale & Dimension
-        if(!(areMapsSameScale(sampleMap, mapStates) && areMapsSameDimension(sampleMap, mapStates))) return false;
+        if(mapStates.size() > 0 && sampleMap != null && !areMapsSameScale(sampleMap, mapStates)) return false;
 
         // Ensure there's only one Atlas
         long atlasCount = itemStacks.stream().filter(i ->
@@ -84,10 +84,11 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         // Set NBT Data
         int emptyMapCount = (int)itemStacks.stream().filter(i -> i != null && i.isItemEqual(new ItemStack(Items.MAP))).count();
         NbtCompound compoundTag = atlas.getOrCreateNbt();
-        Set<Integer> existingMaps = new HashSet<>(Ints.asList(compoundTag.getIntArray("maps")));
+        Set<Integer> existingMaps = new HashSet<>(Ints.asList(compoundTag.getIntArray(MapAtlasItem.MAP_LIST_NBT)));
         existingMaps.addAll(mapIds);
-        compoundTag.putIntArray("maps", existingMaps.stream().filter(Objects::nonNull).mapToInt(i->i).toArray());
-        compoundTag.putInt("empty", emptyMapCount + compoundTag.getInt("empty"));
+        compoundTag.putIntArray(
+                MapAtlasItem.MAP_LIST_NBT, existingMaps.stream().filter(Objects::nonNull).mapToInt(i->i).toArray());
+        compoundTag.putInt(MapAtlasItem.EMPTY_MAP_NBT, emptyMapCount + compoundTag.getInt(MapAtlasItem.EMPTY_MAP_NBT));
         atlas.setNbt(compoundTag);
         return atlas;
     }

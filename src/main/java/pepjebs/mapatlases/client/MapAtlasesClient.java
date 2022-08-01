@@ -79,14 +79,18 @@ public class MapAtlasesClient implements ClientModInitializer {
 
     public float getPredicateForAtlas(
             ItemStack _stack,
-            ClientWorld _world,
+            ClientWorld world,
             LivingEntity entity,
             int _seed) {
         // Using ClientWorld will render default Atlas in inventories
-        if (entity == null || entity.world == null) return 0.0f;
-        if (entity.world.getRegistryKey() == World.OVERWORLD) return 0.1f;
-        if (entity.world.getRegistryKey() == World.NETHER) return 0.2f;
-        if (entity.world.getRegistryKey() == World.END) return 0.3f;
+        World queryWorld = world;
+        if (queryWorld == null && entity != null)
+            queryWorld = entity.world;
+        if (queryWorld == null)
+            return 0.0f;
+        if (queryWorld.getRegistryKey() == World.OVERWORLD) return 0.1f;
+        if (queryWorld.getRegistryKey() == World.NETHER) return 0.2f;
+        if (queryWorld.getRegistryKey() == World.END) return 0.3f;
         return 0.0f;
     }
 }

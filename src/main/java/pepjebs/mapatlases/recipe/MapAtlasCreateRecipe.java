@@ -13,6 +13,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
+import pepjebs.mapatlases.item.MapAtlasItem;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,23 +66,15 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
         }
         MapState mapState = FilledMapItem.getMapState(mapItemStack.getNbt().getInt("map"), world);
         if (mapState == null) return ItemStack.EMPTY;
-        Item mapAtlasItem;
-        if (MapAtlasesMod.enableMultiDimMaps && mapState.dimension == World.END) {
-            mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "end_atlas"));
-        } else if (MapAtlasesMod.enableMultiDimMaps && mapState.dimension == World.NETHER) {
-            mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "nether_atlas"));
-        } else {
-            mapAtlasItem = Registry.ITEM.get(new Identifier(MapAtlasesMod.MOD_ID, "atlas"));
-        }
         NbtCompound compoundTag = new NbtCompound();
         Integer mapId = FilledMapItem.getMapId(mapItemStack);
         if (mapId == null) {
             MapAtlasesMod.LOGGER.warn("MapAtlasCreateRecipe found null Map ID from Filled Map");
-            compoundTag.putIntArray("maps", new int[]{});
+            compoundTag.putIntArray(MapAtlasItem.MAP_LIST_NBT, new int[]{});
         }
         else
-            compoundTag.putIntArray("maps", new int[]{mapId});
-        ItemStack atlasItemStack = new ItemStack(mapAtlasItem);
+            compoundTag.putIntArray(MapAtlasItem.MAP_LIST_NBT, new int[]{mapId});
+        ItemStack atlasItemStack = new ItemStack(MapAtlasesMod.MAP_ATLAS);
         atlasItemStack.setNbt(compoundTag);
         return atlasItemStack;
     }

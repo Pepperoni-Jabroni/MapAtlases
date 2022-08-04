@@ -26,6 +26,9 @@ import org.spongepowered.asm.mixin.Shadow;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 
 @Mixin(CartographyTableScreenHandler.class)
 public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
@@ -40,7 +43,20 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
     @Inject(method = "updateResult", at = @At("HEAD"), cancellable = true)
     void mapAtlasUpdateResult(ItemStack atlas, ItemStack bottomItem, ItemStack oldResult, CallbackInfo info) {
         if (atlas.getItem() == MapAtlasesMod.MAP_ATLAS && bottomItem.getItem() == MapAtlasesMod.MAP_ATLAS) {
-            ItemStack result = atlas.copy();
+            // @TODO: Ensure duplicate X,Z maps are removed (use this.context)
+            int[] allMapIds = Stream.of(Arrays.stream(MapAtlasesAccessUtils.getMapIdsFromItemStack(atlas)),
+                    Arrays.stream(MapAtlasesAccessUtils.getMapIdsFromItemStack(bottomItem)))
+                    .flatMapToInt(x -> x)
+                    .distinct()
+                    .toArray();
+            ItemStack result = new ItemStack(MapAtlasesMod.MAP_ATLAS);
+            NbtCompound mergedNbt = new NbtCompound();
+            int halfEmptyCount = (int) Math.ceil((MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas)
+                    + MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(bottomItem)) / 2.0);
+            mergedNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, halfEmptyCount);
+            mergedNbt.putIntArray(MapAtlasItem.MAP_LIST_NBT, allMapIds);
+            result.setNbt(mergedNbt);
+
             result.increment(1);
             this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
 

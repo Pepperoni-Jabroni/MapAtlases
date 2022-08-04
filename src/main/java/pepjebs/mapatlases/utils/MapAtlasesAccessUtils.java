@@ -142,11 +142,15 @@ public class MapAtlasesAccessUtils {
         return tag != null && tag.contains(MapAtlasItem.EMPTY_MAP_NBT) ? tag.getInt(MapAtlasItem.EMPTY_MAP_NBT) : 0;
     }
 
-    public static int getMapCountFromItemStack(ItemStack atlas) {
+    public static int[] getMapIdsFromItemStack(ItemStack atlas) {
         NbtCompound tag = atlas.getNbt();
         return tag != null && tag.contains(MapAtlasItem.MAP_LIST_NBT)
-                ? tag.getIntArray(MapAtlasItem.MAP_LIST_NBT).length
-                : 0;
+                ? tag.getIntArray(MapAtlasItem.MAP_LIST_NBT)
+                : new int[]{};
+    }
+
+    public static int getMapCountFromItemStack(ItemStack atlas) {
+        return getMapIdsFromItemStack(atlas).length;
     }
 
     public static int getMapCountToAdd(ItemStack atlas, ItemStack bottomItem) {

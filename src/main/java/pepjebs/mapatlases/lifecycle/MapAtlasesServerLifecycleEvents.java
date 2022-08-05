@@ -185,9 +185,12 @@ public class MapAtlasesServerLifecycleEvents {
             mapIds = Arrays.stream(
                     atlas.getNbt().getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());
         } else {
-            // If the Atlas is "inactive", give it a pity 1 Empty Map
+            // If the Atlas is "inactive", give it a pity Empty Map count
             NbtCompound defaultAtlasNbt = new NbtCompound();
-            defaultAtlasNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, 1);
+            if (MapAtlasesMod.CONFIG != null)
+                defaultAtlasNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, MapAtlasesMod.CONFIG.pityActivationMapCount);
+            else
+                defaultAtlasNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, 1);
             atlas.setNbt(defaultAtlasNbt);
         }
         int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);

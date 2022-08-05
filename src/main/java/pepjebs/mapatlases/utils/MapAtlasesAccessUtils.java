@@ -155,11 +155,14 @@ public class MapAtlasesAccessUtils {
 
     public static int getMapCountToAdd(ItemStack atlas, ItemStack bottomItem) {
         int amountToAdd = bottomItem.getCount();
-        int mapCount = MapAtlasesAccessUtils.getMapCountFromItemStack(atlas)
+        int existingMapCount = MapAtlasesAccessUtils.getMapCountFromItemStack(atlas)
                 + MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
+        if (MapAtlasesMod.CONFIG != null) {
+            amountToAdd *= MapAtlasesMod.CONFIG.mapEntryValueMultiplier;
+        }
         if (MapAtlasItem.getMaxMapCount() != -1
-                && mapCount + bottomItem.getCount() > MapAtlasItem.getMaxMapCount()) {
-            amountToAdd = MapAtlasItem.getMaxMapCount() - mapCount;
+                && existingMapCount + bottomItem.getCount() > MapAtlasItem.getMaxMapCount()) {
+            amountToAdd = MapAtlasItem.getMaxMapCount() - existingMapCount;
         }
         return amountToAdd;
     }

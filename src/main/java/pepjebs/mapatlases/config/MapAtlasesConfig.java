@@ -44,4 +44,12 @@ public class MapAtlasesConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip()
     @Comment("Enter an integer which will offset the mini-map vertically")
     public int miniMapVerticalOffset = 0;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Controls how many usable Maps are added when you add a single Map to the Atlas")
+    public int mapEntryValueMultiplier = 1;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Controls how many free Empty Maps you get for 'activating' an Inactive Atlas")
+    public int pityActivationMapCount = 9;
 }

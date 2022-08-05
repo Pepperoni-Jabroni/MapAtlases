@@ -82,7 +82,11 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         // Get the Map Ids in the Grid
         Set<Integer> mapIds = getMapIdsFromItemStacks(itemStacks);
         // Set NBT Data
-        int emptyMapCount = (int)itemStacks.stream().filter(i -> i != null && i.isItemEqual(new ItemStack(Items.MAP))).count();
+        int emptyMapCount = (int)itemStacks.stream()
+                .filter(i -> i != null && i.isItemEqual(new ItemStack(Items.MAP))).count();
+        if (MapAtlasesMod.CONFIG != null) {
+            emptyMapCount *= MapAtlasesMod.CONFIG.mapEntryValueMultiplier;
+        }
         NbtCompound compoundTag = atlas.getOrCreateNbt();
         Set<Integer> existingMaps = new HashSet<>(Ints.asList(compoundTag.getIntArray(MapAtlasItem.MAP_LIST_NBT)));
         existingMaps.addAll(mapIds);

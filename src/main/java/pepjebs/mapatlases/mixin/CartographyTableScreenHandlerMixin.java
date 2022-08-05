@@ -9,8 +9,15 @@ package pepjebs.mapatlases.mixin;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.CartographyTableScreenHandler;
+import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,14 +26,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import pepjebs.mapatlases.MapAtlasesMod;
 import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Shadow;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
-import java.util.Arrays;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -36,6 +43,9 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
     @Shadow
     CraftingResultInventory resultInventory;
 
+    @Shadow
+    ScreenHandlerContext context;
+
     protected CartographyTableScreenHandlerMixin(@Nullable ScreenHandlerType<?> type, int syncId) {
         super(type, syncId);
     }
@@ -43,22 +53,34 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
     @Inject(method = "updateResult", at = @At("HEAD"), cancellable = true)
     void mapAtlasUpdateResult(ItemStack atlas, ItemStack bottomItem, ItemStack oldResult, CallbackInfo info) {
         if (atlas.getItem() == MapAtlasesMod.MAP_ATLAS && bottomItem.getItem() == MapAtlasesMod.MAP_ATLAS) {
-            // @TODO: Ensure duplicate X,Z maps are removed (use this.context)
-            int[] allMapIds = Stream.of(Arrays.stream(MapAtlasesAccessUtils.getMapIdsFromItemStack(atlas)),
+            final int[] allMapIds = Stream.of(Arrays.stream(MapAtlasesAccessUtils.getMapIdsFromItemStack(atlas)),
                     Arrays.stream(MapAtlasesAccessUtils.getMapIdsFromItemStack(bottomItem)))
                     .flatMapToInt(x -> x)
                     .distinct()
                     .toArray();
-            ItemStack result = new ItemStack(MapAtlasesMod.MAP_ATLAS);
-            NbtCompound mergedNbt = new NbtCompound();
-            int halfEmptyCount = (int) Math.ceil((MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas)
-                    + MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(bottomItem)) / 2.0);
-            mergedNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, halfEmptyCount);
-            mergedNbt.putIntArray(MapAtlasItem.MAP_LIST_NBT, allMapIds);
-            result.setNbt(mergedNbt);
+            this.context.run((world, blockPos) -> {
+                // Ensure duplicate X,Z maps are removed (as adding duplicate maps is bad practice)
+                Map<String, Pair<Integer, MapState>> uniqueXZMapIds =
+                                Arrays.stream(allMapIds)
+                                        .mapToObj(mId -> new Pair<>(mId, world.getMapState("map_" + mId)))
+                                        .filter(m -> m.getRight() != null)
+                                        .collect(Collectors.toMap(
+                                                m -> m.getRight().centerX + ":" + m.getRight().centerZ
+                                                        + ":"  + m.getRight().dimension,
+                                                m -> m,
+                                                (m1, m2) -> m1));
+                int[] filteredMapIds = uniqueXZMapIds.values().stream().mapToInt(Pair::getLeft).toArray();
+                ItemStack result = new ItemStack(MapAtlasesMod.MAP_ATLAS);
+                NbtCompound mergedNbt = new NbtCompound();
+                int halfEmptyCount = (int) Math.ceil((MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas)
+                        + MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(bottomItem)) / 2.0);
+                mergedNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, halfEmptyCount);
+                mergedNbt.putIntArray(MapAtlasItem.MAP_LIST_NBT, filteredMapIds);
+                result.setNbt(mergedNbt);
 
-            result.increment(1);
-            this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
+                result.increment(1);
+                this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
+            });
 
             this.sendContentUpdates();
 

@@ -74,12 +74,14 @@ public class MapAtlasesServerLifecycleEvents {
                     MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
                     packetByteBuf));
         }
-        MapAtlasesMod.LOGGER.info("Server initialized "+mapInfos.size()+" MapStates for "+player.getName().getString());
     }
 
     public static void mapAtlasServerTick(MinecraftServer server) {
+        ArrayList<String> seenPlayers = new ArrayList<>();
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            if (player.isRemoved() || player.isInTeleportationState()) continue;
+            String playerName = player.getName().getString();
+            seenPlayers.add(playerName);
+            if (player.isRemoved() || player.isInTeleportationState() || player.isDisconnected()) continue;
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
             if (!atlas.isEmpty()) {
                 Map.Entry<String, MapState> activeInfo =
@@ -87,9 +89,9 @@ public class MapAtlasesServerLifecycleEvents {
                                 player.getWorld(), atlas, player);
                 String changedMapState = null;
                 if (activeInfo != null) {
-                    String playerName = player.getName().getString();
                     if (!playerToActiveMapId.containsKey(playerName)
-                            || playerToActiveMapId.get(playerName).compareTo(activeInfo.getKey()) != 0) {
+                            || playerToActiveMapId.get(playerName) == null
+                            || activeInfo.getKey().compareTo(playerToActiveMapId.get(playerName)) != 0) {
                         changedMapState = playerToActiveMapId.get(playerName);
                         playerToActiveMapId.put(playerName, activeInfo.getKey());
                         PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
@@ -97,11 +99,12 @@ public class MapAtlasesServerLifecycleEvents {
                         player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
                                 MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
                     }
-                } else {
+                } else if (playerToActiveMapId.get(playerName) != null){
                     PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
                     packetByteBuf.writeString("null");
                     player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
                             MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
+                    playerToActiveMapId.put(playerName, null);
                 }
 
                 // Maps are 128x128
@@ -127,7 +130,7 @@ public class MapAtlasesServerLifecycleEvents {
                     boolean isDiscoveringEdgeMap =
                             discoveringEdges.stream().anyMatch(p -> p.getLeft()==state.centerX && p.getRight() == state.centerZ);
                     boolean isActiveMap = activeInfo != null
-                            && activeInfo.getValue().centerX==state.centerX && activeInfo.getValue().centerZ==state.centerZ;
+                            && activeInfo.getKey().compareTo(info.getKey()) == 0;
                     // Only update active (based on discovery radius) map states
                     if (!isDiscoveringEdgeMap && !isActiveMap && changedMapState == null)
                         continue;
@@ -169,6 +172,14 @@ public class MapAtlasesServerLifecycleEvents {
                 for (var p : discoveringEdges) {
                     maybeCreateNewMapEntry(player, atlas, scale, p.getLeft(), p.getRight());
                 }
+            }
+        }
+        // Clean up disconnected players in server tick
+        // since when using Disconnect event, the tick will sometimes
+        // re-add the Player after they disconnect
+        for (String playerName : playerToActiveMapId.keySet()) {
+            if (!seenPlayers.contains(playerName)) {
+                playerToActiveMapId.remove(playerName);
             }
         }
     }

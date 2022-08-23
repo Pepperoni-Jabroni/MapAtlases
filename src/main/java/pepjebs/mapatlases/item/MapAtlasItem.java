@@ -54,12 +54,6 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         super.appendTooltip(stack, world, tooltip, context);
 
         if (world != null && world.isClient) {
-            MapState mapState = world.getMapState(MapAtlasesClient.currentMapStateId);
-            if (mapState == null) {
-                tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_err"))
-                        .formatted(Formatting.ITALIC).formatted(Formatting.GRAY));
-                return;
-            }
             int mapSize = MapAtlasesAccessUtils.getMapCountFromItemStack(stack);
             int empties = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(stack);
             if (getMaxMapCount() != -1 && mapSize + empties >= getMaxMapCount()) {
@@ -72,6 +66,8 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
                 tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_2", empties))
                         .formatted(Formatting.GRAY));
             }
+            MapState mapState = world.getMapState(MapAtlasesClient.currentMapStateId);
+            if (mapState == null) return;
             tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_3", 1 << mapState.scale))
                     .formatted(Formatting.GRAY));
         }
@@ -110,7 +106,6 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         if (atlas.isEmpty()) return;
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(
                 serverPlayerEntity.world, atlas);
-        if (mapInfos.isEmpty()) return;
         packetByteBuf.writeInt(mapInfos.size());
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
             packetByteBuf.writeInt(MapAtlasesAccessUtils.getMapIntFromString(state.getKey()));

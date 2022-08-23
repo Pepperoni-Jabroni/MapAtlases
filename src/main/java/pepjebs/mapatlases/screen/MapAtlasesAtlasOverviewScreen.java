@@ -73,7 +73,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 worldMapScaling
         );
         // Draw maps, putting active map in middle of grid
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(client.world, atlas);
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(client.world, atlas);
         String activeMapIdStr = MapAtlasesClient.currentMapStateId;
         MapState activeState = client.world.getMapState(activeMapIdStr);
         if (activeState == null) {
@@ -83,13 +83,11 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 activeState = info.getValue();
             }
             else {
-                MapAtlasesMod.LOGGER.warn("Client had no currentMapStateId or mapInfos");
                 return;
             }
         }
         int activeMapId = MapAtlasesAccessUtils.getMapIntFromString(activeMapIdStr);
         if (!idsToCenters.containsKey(activeMapId)) {
-            MapAtlasesMod.LOGGER.warn("Client didn't have idsToCenters entry.");
             if (idsToCenters.isEmpty())
                 return;
             activeMapId = idsToCenters.keySet().stream().findAny().get();

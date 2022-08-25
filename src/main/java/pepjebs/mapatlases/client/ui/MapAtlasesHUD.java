@@ -13,7 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
@@ -21,8 +20,8 @@ import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 @Environment(EnvType.CLIENT)
 public class MapAtlasesHUD extends DrawableHelper {
 
-    public static final Identifier MAP_CHKRBRD =
-            new Identifier("minecraft:textures/map/map_background_checkerboard.png");
+    public static final Identifier MAP_BACKGROUND =
+            new Identifier("map_atlases:textures/gui/hud/map_background.png");
     private static MinecraftClient client;
     private static MapRenderer mapRenderer;
     private static String currentMapId = "";
@@ -100,7 +99,7 @@ public class MapAtlasesHUD extends DrawableHelper {
                 y += (26 - y);
             }
         }
-        RenderSystem.setShaderTexture(0, MAP_CHKRBRD);
+        RenderSystem.setShaderTexture(0, MAP_BACKGROUND);
         drawTexture(matrices,x,y,0,0,mapScaling,mapScaling, mapScaling, mapScaling);
 
         // Draw map data

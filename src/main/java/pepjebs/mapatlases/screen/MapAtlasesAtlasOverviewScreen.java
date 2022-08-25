@@ -12,6 +12,7 @@ import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
@@ -22,6 +23,8 @@ import java.util.*;
 
 public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> {
 
+    public static final Identifier ATLAS_BACKGROUND =
+            new Identifier("map_atlases:textures/gui/screen/atlas_background.png");
     private static final int ZOOM_BUCKET = 4;
     private static final int PAN_BUCKET = 25;
 
@@ -60,7 +63,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         // Draw map background
         double y = (height / 2.0)-(worldMapScaling/2.0);
         double x = (width / 2.0)-(worldMapScaling/2.0);
-        RenderSystem.setShaderTexture(0, MapAtlasesHUD.MAP_CHKRBRD);
+        RenderSystem.setShaderTexture(0, ATLAS_BACKGROUND);
         drawTexture(
                 matrices,
                 (int) x,

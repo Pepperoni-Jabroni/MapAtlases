@@ -92,11 +92,15 @@ public class MapAtlasesHUD extends DrawableHelper {
                     client.player.getStatusEffects().stream().anyMatch(p -> p.getEffectType().isBeneficial());
             boolean hasNegative =
                     client.player.getStatusEffects().stream().anyMatch(p -> !p.getEffectType().isBeneficial());
+            int offsetForEffects = 26;
 
-            if (hasNegative && y < 52) {
-                y += (52 - y);
-            } else if (hasBeneficial && y < 26) {
-                y += (26 - y);
+            if (MapAtlasesMod.CONFIG != null) {
+                offsetForEffects = MapAtlasesMod.CONFIG.activePotionVerticalOffset;
+            }
+            if (hasNegative && y < 2 * offsetForEffects) {
+                y += (2  * offsetForEffects - y);
+            } else if (hasBeneficial && y < offsetForEffects) {
+                y += (offsetForEffects - y);
             }
         }
         RenderSystem.setShaderTexture(0, MAP_BACKGROUND);

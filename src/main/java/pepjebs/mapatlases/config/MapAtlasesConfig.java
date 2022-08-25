@@ -52,4 +52,8 @@ public class MapAtlasesConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip()
     @Comment("Controls how many free Empty Maps you get for 'activating' an Inactive Atlas")
     public int pityActivationMapCount = 9;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("The number of pixels to shift vertically when there's an active effect")
+    public int activePotionVerticalOffset = 26;
 }

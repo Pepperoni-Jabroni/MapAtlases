@@ -38,5 +38,7 @@
   "text.autoconfig.map_atlases.option.mapEntryValueMultiplier.@Tooltip": "Controls how many usable Maps are added when you add a single Map to the Atlas",
   "text.autoconfig.map_atlases.option.pityActivationMapCount": "Pity Activation Map Count",
   "text.autoconfig.map_atlases.option.pityActivationMapCount.@Tooltip": "Controls how many free Empty Maps you get for 'activating' an Inactive Atlas",
+  "text.autoconfig.map_atlases.option.activePotionVerticalOffset": "Active Potion Vertical Offset",
+  "text.autoconfig.map_atlases.option.activePotionVerticalOffset.@Tooltip": "The number of pixels to shift vertically when there's an active effect",
   "trinkets.slot.hand.atlas": "Atlas"
 }

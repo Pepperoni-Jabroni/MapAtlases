@@ -1,5 +1,6 @@
 package pepjebs.mapatlases.recipe;
 
+import net.minecraft.data.server.RecipeProvider;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
@@ -7,8 +8,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.RecipeType;
 import net.minecraft.recipe.SpecialCraftingRecipe;
+import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -43,8 +47,8 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
         if (itemStacks.size() == 3) {
             List<Item> items = itemStacks.stream().map(ItemStack::getItem).toList();
             boolean hasAllCrafting =
-                    items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.SLIME_BALL, Items.BOOK)) ||
-                            items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.HONEY_BOTTLE, Items.BOOK));
+                    items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.BOOK)) && itemStacks.stream()
+                            .anyMatch(i -> i.isIn(TagKey.of(Registry.ITEM_KEY, MapAtlasesMod.STICKY_ITEMS_ID)));
             if (hasAllCrafting && !filledMap.isEmpty()) {
                 MapState state = FilledMapItem.getOrCreateMapState(filledMap, world);
                 return state != null;

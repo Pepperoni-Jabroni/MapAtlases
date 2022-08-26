@@ -45,6 +45,7 @@ public class MapAtlasesMod implements ModInitializer {
     public static SoundEvent ATLAS_PAGE_TURN_SOUND_EVENT = new SoundEvent(ATLAS_PAGE_TURN_SOUND_ID);
     private static final Identifier ATLAS_CREATE_MAP_SOUND_ID = new Identifier(MOD_ID, "atlas_create_map");
     public static SoundEvent ATLAS_CREATE_MAP_SOUND_EVENT = new SoundEvent(ATLAS_CREATE_MAP_SOUND_ID);
+    public static final Identifier STICKY_ITEMS_ID = new Identifier(MapAtlasesMod.MOD_ID, "sticky_crafting_items");
 
     public static final String TRINKETS_MOD_ID = "trinkets";
 

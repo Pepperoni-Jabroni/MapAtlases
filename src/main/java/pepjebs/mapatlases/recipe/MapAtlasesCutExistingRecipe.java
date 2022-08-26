@@ -38,7 +38,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
                 }
             }
         }
-        return !atlas.isEmpty() && !shears.isEmpty() && size == 2;
+        return !atlas.isEmpty() && !shears.isEmpty() && shears.getDamage() < shears.getMaxDamage() - 1 && size == 2;
     }
 
     @Override
@@ -86,8 +86,12 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
 
                 }
                 if (MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(cur) > 0 && !didRemoveFilled) {
-                    cur.getNbt().putInt(
-                            MapAtlasItem.EMPTY_MAP_NBT, cur.getNbt().getInt(MapAtlasItem.EMPTY_MAP_NBT) - 1);
+                    int multiplier = 1;
+                    if (MapAtlasesMod.CONFIG != null) {
+                        multiplier = MapAtlasesMod.CONFIG.mapEntryValueMultiplier;
+                    }
+                    int amountToSet = Math.max(cur.getNbt().getInt(MapAtlasItem.EMPTY_MAP_NBT) - multiplier, 0);
+                    cur.getNbt().putInt(MapAtlasItem.EMPTY_MAP_NBT, amountToSet);
                 }
             }
             list.add(cur);

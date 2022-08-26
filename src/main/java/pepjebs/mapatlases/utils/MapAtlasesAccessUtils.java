@@ -37,7 +37,7 @@ public class MapAtlasesAccessUtils {
     public static ItemStack createMapItemStackFromId(int id) {
         ItemStack map = new ItemStack(Items.FILLED_MAP);
         NbtCompound tag = new NbtCompound();
-        tag.putInt(MapAtlasItem.MAP_LIST_NBT, id);
+        tag.putInt("map", id);
         map.setNbt(tag);
         return map;
     }

@@ -15,7 +15,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
-import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
 import pepjebs.mapatlases.utils.MapStateIntrfc;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
@@ -23,6 +22,8 @@ import java.util.*;
 
 public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> {
 
+    public static final Identifier ATLAS_FOREGROUND =
+            new Identifier("map_atlases:textures/gui/screen/atlas_foreground.png");
     public static final Identifier ATLAS_BACKGROUND =
             new Identifier("map_atlases:textures/gui/screen/atlas_background.png");
     private static final int ZOOM_BUCKET = 4;
@@ -117,6 +118,18 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 }
             }
         }
+        RenderSystem.setShaderTexture(0, ATLAS_FOREGROUND);
+        drawTexture(
+                matrices,
+                (int) x,
+                (int) y,
+                0,
+                0,
+                worldMapScaling,
+                worldMapScaling,
+                worldMapScaling,
+                worldMapScaling
+        );
     }
 
     private boolean mapContainsMeaningfulIcons(Map.Entry<String, MapState> state) {

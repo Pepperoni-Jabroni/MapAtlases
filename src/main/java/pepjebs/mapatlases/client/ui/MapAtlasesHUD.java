@@ -22,6 +22,8 @@ public class MapAtlasesHUD extends DrawableHelper {
 
     public static final Identifier MAP_BACKGROUND =
             new Identifier("map_atlases:textures/gui/hud/map_background.png");
+    public static final Identifier MAP_FOREGROUND =
+            new Identifier("map_atlases:textures/gui/hud/map_foreground.png");
     private static MinecraftClient client;
     private static MapRenderer mapRenderer;
     private static String currentMapId = "";
@@ -107,12 +109,12 @@ public class MapAtlasesHUD extends DrawableHelper {
         drawTexture(matrices,x,y,0,0,mapScaling,mapScaling, mapScaling, mapScaling);
 
         // Draw map data
-        x += (mapScaling / 16) - (mapScaling / 64);
-        y += (mapScaling / 16) - (mapScaling / 64);
+        int mapDrawX = x + (mapScaling / 16) - (mapScaling / 64);
+        int mapDrawY = y + (mapScaling / 16) - (mapScaling / 64);
         VertexConsumerProvider.Immediate vcp;
         vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         matrices.push();
-        matrices.translate(x, y, 0.0);
+        matrices.translate(mapDrawX, mapDrawY, 0.0);
         // Prepare yourself for some magic numbers
         matrices.scale((float) mapScaling / 142, (float) mapScaling / 142, -1);
         mapRenderer.draw(
@@ -125,5 +127,7 @@ public class MapAtlasesHUD extends DrawableHelper {
         );
         vcp.draw();
         matrices.pop();
+        RenderSystem.setShaderTexture(0, MAP_FOREGROUND);
+        drawTexture(matrices,x,y,0,0,mapScaling,mapScaling, mapScaling, mapScaling);
     }
 }

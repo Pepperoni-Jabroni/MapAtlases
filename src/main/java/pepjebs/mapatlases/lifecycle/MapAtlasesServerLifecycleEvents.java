@@ -39,8 +39,6 @@ public class MapAtlasesServerLifecycleEvents {
     // Holds the current MapState ID for each player
     private static final Map<String, String> playerToActiveMapId = new HashMap<>();
 
-    private static int tickInt = 1;
-
     public static void openGuiEvent(
             MinecraftServer server,
             ServerPlayerEntity player,
@@ -152,10 +150,6 @@ public class MapAtlasesServerLifecycleEvents {
             if (!seenPlayers.contains(playerName)) {
                 playerToActiveMapId.remove(playerName);
             }
-        }
-        tickInt++;
-        if (tickInt > 20) {
-            tickInt = 1;
         }
     }
 

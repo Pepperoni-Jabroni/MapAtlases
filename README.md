@@ -77,8 +77,11 @@ Sound Sources
 
 Required Dependencies:
 - [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
-- [Cloth Confi](https://www.curseforge.com/minecraft/mc-mods/cloth-config)
+- [Cloth Config](https://www.curseforge.com/minecraft/mc-mods/cloth-config)
 
 Optional Dependencies:
 - [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu)
 - [Trinkets](https://www.curseforge.com/minecraft/mc-mods/trinkets)
+
+**Known Incompatiblities**:
+- Immersive Portals

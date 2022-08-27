@@ -9,7 +9,7 @@ import pepjebs.mapatlases.utils.MapStateIntrfc;
 
 import java.util.Map;
 
-@Mixin(MapState.class)
+@Mixin(value = MapState.class, priority = 1100)
 public class MapStateMixin implements MapStateIntrfc {
     @Shadow
     Map<String, MapIcon> icons = Maps.newLinkedHashMap();

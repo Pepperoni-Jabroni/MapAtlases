@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import pepjebs.mapatlases.MapAtlasesMod;
 
-@Mixin(MapState.class)
+@Mixin(value = MapState.class, priority = 1100)
 public class MapStateTrinketsMixin {
 
     @Redirect(

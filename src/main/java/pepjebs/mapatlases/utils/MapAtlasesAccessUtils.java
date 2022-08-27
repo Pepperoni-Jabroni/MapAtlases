@@ -118,19 +118,24 @@ public class MapAtlasesAccessUtils {
         return itemStacks;
     }
 
+    public static double distanceBetweenMapStateAndPlayer(
+            MapState mapState,
+            ServerPlayerEntity player
+    ) {
+        return Math.hypot(Math.abs(mapState.centerX - player.getX()),Math.abs(mapState.centerZ - player.getZ()));
+    }
+
     public static Map.Entry<String, MapState> getActiveAtlasMapStateServer(
-            World world,
-            ItemStack atlas,
+            Map<String, MapState> currentDimMapInfos,
             ServerPlayerEntity player) {
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(world, atlas);
         Map.Entry<String, MapState> minDistState = null;
-        for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
+        for (Map.Entry<String, MapState> state : currentDimMapInfos.entrySet()) {
             if (minDistState == null) {
                 minDistState = state;
                 continue;
             }
-            if (Math.hypot(Math.abs(minDistState.getValue().centerX - player.getX()),Math.abs(minDistState.getValue().centerZ - player.getZ()))
-                > Math.hypot(Math.abs(state.getValue().centerX - player.getX()),Math.abs(state.getValue().centerZ - player.getZ())) ) {
+            if (distanceBetweenMapStateAndPlayer(minDistState.getValue(), player) >
+                    distanceBetweenMapStateAndPlayer(state.getValue(), player)) {
                 minDistState = state;
             }
         }

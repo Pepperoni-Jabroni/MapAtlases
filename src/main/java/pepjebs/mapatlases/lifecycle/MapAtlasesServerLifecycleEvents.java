@@ -17,6 +17,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.random.Random;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
@@ -37,6 +38,8 @@ public class MapAtlasesServerLifecycleEvents {
 
     // Holds the current MapState ID for each player
     private static final Map<String, String> playerToActiveMapId = new HashMap<>();
+
+    private static int tickInt = 1;
 
     public static void openGuiEvent(
             MinecraftServer server,
@@ -79,96 +82,64 @@ public class MapAtlasesServerLifecycleEvents {
     public static void mapAtlasServerTick(MinecraftServer server) {
         ArrayList<String> seenPlayers = new ArrayList<>();
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            String playerName = player.getName().getString();
-            seenPlayers.add(playerName);
+            seenPlayers.add(player.getName().getString());
             if (player.isRemoved() || player.isInTeleportationState() || player.isDisconnected()) continue;
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
             if (!atlas.isEmpty()) {
-                Map.Entry<String, MapState> activeInfo =
-                        MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
-                                player.getWorld(), atlas, player);
-                String changedMapState = null;
-                if (activeInfo != null) {
-                    if (!playerToActiveMapId.containsKey(playerName)
-                            || playerToActiveMapId.get(playerName) == null
-                            || activeInfo.getKey().compareTo(playerToActiveMapId.get(playerName)) != 0) {
-                        changedMapState = playerToActiveMapId.get(playerName);
-                        playerToActiveMapId.put(playerName, activeInfo.getKey());
-                        PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-                        packetByteBuf.writeString(activeInfo.getKey());
-                        player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                                MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
-                    }
-                } else if (playerToActiveMapId.get(playerName) != null){
-                    PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-                    packetByteBuf.writeString("null");
-                    player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                            MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
-                    playerToActiveMapId.put(playerName, null);
+                Map<String, MapState> currentMapInfos =
+                        MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
+                Map.Entry<String, MapState> activeInfo = MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
+                        currentMapInfos, player);
+                // changedMapState has non-null value if player has a new active Map ID
+                String changedMapState = relayActiveMapIdToPlayerClient(activeInfo, player);
+                if (activeInfo == null) {
+                    maybeCreateNewMapEntry(player, atlas, 0, MathHelper.floor(player.getX()),
+                            MathHelper.floor(player.getZ()));
+                    continue;
                 }
+                MapState activeState = activeInfo.getValue();
 
-                // Maps are 128x128
                 int playX = player.getBlockPos().getX();
                 int playZ = player.getBlockPos().getZ();
-                boolean isPlayerOutsideAllMapRegions = true;
-                int scale = 0;
-                ArrayList<Pair<Integer, Integer>> discoveringEdges = new ArrayList<>();
-                if (activeInfo != null) {
-                    discoveringEdges = getPlayerDiscoveringMapEdges(
-                            activeInfo.getValue().centerX,
-                            activeInfo.getValue().centerZ,
-                            (1 << activeInfo.getValue().scale) * 128,
-                            playX,
-                            playZ
-                    );
+                byte scale = activeState.scale;
+                int scaleWidth = (1 << scale) * 128;
+                ArrayList<Pair<Integer, Integer>> discoveringEdges = getPlayerDiscoveringMapEdges(
+                        activeState.centerX,
+                        activeState.centerZ,
+                        scaleWidth,
+                        playX,
+                        playZ
+                );
+
+                // Update Map states & colors
+                // updateColors is *easily* the most expensive function in the entire server tick
+                Map<String, MapState> nearbyExistentMaps = currentMapInfos.entrySet().stream()
+                        .filter(e -> discoveringEdges.stream()
+                                .anyMatch(edge -> edge.getLeft() == e.getValue().centerX
+                                        && edge.getLeft() == e.getValue().centerX))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                for (var mapInfo : changedMapState == null ?
+                        nearbyExistentMaps.entrySet() : currentMapInfos.entrySet()) {
+                    updateMapDataForPlayer(mapInfo, player, atlas);
+                }
+                updateMapColorsForPlayer(activeState, player);
+                if (!nearbyExistentMaps.isEmpty()) {
+                    updateMapColorsForPlayer(
+                            (MapState) nearbyExistentMaps.values().toArray()[
+                                    Random.create().nextBetween(0, nearbyExistentMaps.size() - 1)],
+                            player);
                 }
 
-                Map<String, MapState> mapInfos =
-                        MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
-                for (Map.Entry<String, MapState> info : mapInfos.entrySet()) {
-                    MapState state = info.getValue();
-                    boolean isDiscoveringEdgeMap =
-                            discoveringEdges.stream().anyMatch(p -> p.getLeft()==state.centerX && p.getRight() == state.centerZ);
-                    boolean isActiveMap = activeInfo != null
-                            && activeInfo.getKey().compareTo(info.getKey()) == 0;
-                    // Only update active (based on discovery radius) map states
-                    if (!isDiscoveringEdgeMap && !isActiveMap && changedMapState == null)
-                        continue;
-                    state.update(player, atlas);
-                    ((FilledMapItem) Items.FILLED_MAP).updateColors(player.getWorld(), player, state);
-                    int mapId = MapAtlasesAccessUtils.getMapIntFromString(info.getKey());
-                    Packet<?> p = null;
-                    int tries = 0;
-                    while (p == null && tries < 10) {
-                        p = state.getPlayerMarkerPacket(mapId, player);
-                        tries++;
-                    }
-                    if (p != null) {
-                        PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-                        p.write(packetByteBuf);
-                        player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                                MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC,
-                                packetByteBuf));
-                    }
-
-                    isPlayerOutsideAllMapRegions = isPlayerOutsideAllMapRegions &&
-                            isPlayerOutsideSquareRegion(
-                                    state.centerX,
-                                    state.centerZ,
-                                    (1 << state.scale) * 128,
-                                    playX,
-                                    playZ
-                            );
-                    scale = state.scale;
-                }
-
+                // Create new Map entries
                 if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) continue;
+                boolean isPlayerOutsideAllMapRegions = MapAtlasesAccessUtils.distanceBetweenMapStateAndPlayer(
+                        activeState, player) > scaleWidth;
                 if (isPlayerOutsideAllMapRegions) {
                     maybeCreateNewMapEntry(player, atlas, scale, MathHelper.floor(player.getX()),
                             MathHelper.floor(player.getZ()));
                 }
-                discoveringEdges.removeIf(p -> mapInfos.values().stream().anyMatch(i -> p.getLeft() == i.centerX
-                        && p.getRight() == i.centerZ));
+                discoveringEdges.removeIf(e -> nearbyExistentMaps.values().stream().anyMatch(
+                        d -> d.centerX == e.getLeft() && d.centerZ == e.getRight()));
                 for (var p : discoveringEdges) {
                     maybeCreateNewMapEntry(player, atlas, scale, p.getLeft(), p.getRight());
                 }
@@ -182,6 +153,72 @@ public class MapAtlasesServerLifecycleEvents {
                 playerToActiveMapId.remove(playerName);
             }
         }
+        tickInt++;
+        if (tickInt > 20) {
+            tickInt = 1;
+        }
+    }
+
+    private static void updateMapDataForPlayer(
+            Map.Entry<String, MapState> mapInfo,
+            ServerPlayerEntity player,
+            ItemStack atlas
+    ) {
+        mapInfo.getValue().update(player, atlas);
+        relayMapStateSyncToPlayerClient(mapInfo, player);
+    }
+
+    private static void updateMapColorsForPlayer(
+            MapState state,
+            ServerPlayerEntity player) {
+        ((FilledMapItem) Items.FILLED_MAP).updateColors(player.getWorld(), player, state);
+    }
+
+    private static void relayMapStateSyncToPlayerClient(
+            Map.Entry<String, MapState> mapInfo,
+            ServerPlayerEntity player
+    ) {
+        int mapId = MapAtlasesAccessUtils.getMapIntFromString(mapInfo.getKey());
+        Packet<?> p = null;
+        int tries = 0;
+        while (p == null && tries < 10) {
+            p = mapInfo.getValue().getPlayerMarkerPacket(mapId, player);
+            tries++;
+        }
+        if (p != null) {
+            PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+            p.write(packetByteBuf);
+            player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                    MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC,
+                    packetByteBuf));
+        }
+    }
+
+    private static String relayActiveMapIdToPlayerClient(
+            Map.Entry<String, MapState> activeInfo,
+            ServerPlayerEntity player
+    ) {
+        String playerName = player.getName().getString();
+        String changedMapState = null;
+        if (activeInfo != null) {
+            if (!playerToActiveMapId.containsKey(playerName)
+                    || playerToActiveMapId.get(playerName) == null
+                    || activeInfo.getKey().compareTo(playerToActiveMapId.get(playerName)) != 0) {
+                changedMapState = playerToActiveMapId.get(playerName);
+                playerToActiveMapId.put(playerName, activeInfo.getKey());
+                PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+                packetByteBuf.writeString(activeInfo.getKey());
+                player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                        MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
+            }
+        } else if (playerToActiveMapId.get(playerName) != null){
+            PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
+            packetByteBuf.writeString("null");
+            player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                    MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
+            playerToActiveMapId.put(playerName, null);
+        }
+        return changedMapState;
     }
 
     private static void maybeCreateNewMapEntry(
@@ -237,19 +274,6 @@ public class MapAtlasesServerLifecycleEvents {
                 mutex.release();
             }
         }
-    }
-
-    private static boolean isPlayerOutsideSquareRegion(
-            int xCenter,
-            int zCenter,
-            int width,
-            int xPlayer,
-            int zPlayer) {
-        int halfWidth = width / 2;
-        return xPlayer < xCenter - halfWidth ||
-                xPlayer > xCenter + halfWidth ||
-                zPlayer < zCenter - halfWidth ||
-                zPlayer > zCenter + halfWidth;
     }
 
     private static ArrayList<Pair<Integer, Integer>> getPlayerDiscoveringMapEdges(

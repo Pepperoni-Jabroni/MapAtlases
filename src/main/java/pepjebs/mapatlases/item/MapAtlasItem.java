@@ -119,11 +119,10 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         BlockState blockState = context.getWorld().getBlockState(context.getBlockPos());
         if (blockState.isIn(BlockTags.BANNERS)) {
             if (!context.getWorld().isClient) {
-                MapState mapState =
-                        MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
-                                context.getWorld(),
-                                context.getStack(),
-                                (ServerPlayerEntity) context.getPlayer()).getValue();
+                Map<String, MapState> currentDimMapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(
+                        context.getWorld(), context.getStack());
+                MapState mapState = MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
+                        currentDimMapInfos, (ServerPlayerEntity) context.getPlayer()).getValue();
                 if (mapState != null) {
                     mapState.addBanner(context.getWorld(), context.getBlockPos());
                 }

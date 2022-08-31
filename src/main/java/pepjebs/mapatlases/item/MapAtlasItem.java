@@ -63,12 +63,19 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_1", mapSize))
                     .formatted(Formatting.GRAY));
             if (MapAtlasesMod.CONFIG == null || MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) {
+                // If there's no maps & no empty maps, the atlas is "inactive", so display how many empty maps
+                // they *would* receive if they activated the atlas
+                if (mapSize + empties == 0 && MapAtlasesMod.CONFIG != null) {
+                    empties = MapAtlasesMod.CONFIG.pityActivationMapCount;
+                }
                 tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_2", empties))
                         .formatted(Formatting.GRAY));
             }
             MapState mapState = world.getMapState(MapAtlasesClient.currentMapStateId);
             if (mapState == null) return;
-            tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_3", 1 << mapState.scale))
+            tooltip.add(MutableText.of(
+                        new TranslatableTextContent("item.map_atlases.atlas.tooltip_3", 1 << mapState.scale)
+                    )
                     .formatted(Formatting.GRAY));
         }
     }
@@ -115,7 +122,9 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     }
 
     public ActionResult useOnBlock(ItemUsageContext context) {
-        if (context.getPlayer() == null || context.getWorld().isClient) return super.useOnBlock(context);
+        if (context.getPlayer() == null || context.getWorld() == null
+                || context.getStack() == null || context.getBlockPos() == null)
+            return super.useOnBlock(context);
         BlockState blockState = context.getWorld().getBlockState(context.getBlockPos());
         if (blockState.isIn(BlockTags.BANNERS)) {
             if (!context.getWorld().isClient) {
@@ -123,9 +132,11 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
                         context.getWorld(), context.getStack());
                 MapState mapState = MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
                         currentDimMapInfos, (ServerPlayerEntity) context.getPlayer()).getValue();
-                if (mapState != null) {
-                    mapState.addBanner(context.getWorld(), context.getBlockPos());
-                }
+                if (mapState == null)
+                    return ActionResult.FAIL;
+                boolean didAdd = mapState.addBanner(context.getWorld(), context.getBlockPos());
+                if (!didAdd)
+                    return ActionResult.FAIL;
             }
             return ActionResult.success(context.getWorld().isClient);
         } else {

@@ -81,13 +81,13 @@ public class MapAtlasesAccessUtils {
         PlayerInventory inventory = entity.getInventory();
         ItemStack itemStack =  inventory.main.stream()
                 .limit(9)
-                .filter(i -> i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
+                .filter(i -> i != null && i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
                 .findFirst().orElse(null);
 
         if (MapAtlasesMod.CONFIG != null) {
             if(MapAtlasesMod.CONFIG.activationLocation.equals("INVENTORY")) {
                 itemStack =  inventory.main.stream()
-                        .filter(i -> i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
+                        .filter(i -> i != null && i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
                         .findFirst().orElse(null);
             } else if (MapAtlasesMod.CONFIG.activationLocation.equals("HANDS")) {
                 itemStack = null;

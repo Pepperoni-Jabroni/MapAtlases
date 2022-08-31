@@ -17,7 +17,6 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
@@ -83,64 +82,62 @@ public class MapAtlasesServerLifecycleEvents {
             seenPlayers.add(player.getName().getString());
             if (player.isRemoved() || player.isInTeleportationState() || player.isDisconnected()) continue;
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
-            if (!atlas.isEmpty()) {
-                Map<String, MapState> currentMapInfos =
-                        MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
-                Map.Entry<String, MapState> activeInfo = MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
-                        currentMapInfos, player);
-                // changedMapState has non-null value if player has a new active Map ID
-                String changedMapState = relayActiveMapIdToPlayerClient(activeInfo, player);
-                if (activeInfo == null) {
-                    maybeCreateNewMapEntry(player, atlas, 0, MathHelper.floor(player.getX()),
-                            MathHelper.floor(player.getZ()));
-                    continue;
-                }
-                MapState activeState = activeInfo.getValue();
+            if (atlas.isEmpty()) continue;
+            Map<String, MapState> currentMapInfos =
+                    MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
+            Map.Entry<String, MapState> activeInfo = MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
+                    currentMapInfos, player);
+            // changedMapState has non-null value if player has a new active Map ID
+            String changedMapState = relayActiveMapIdToPlayerClient(activeInfo, player);
+            if (activeInfo == null) {
+                maybeCreateNewMapEntry(player, atlas, 0, MathHelper.floor(player.getX()),
+                        MathHelper.floor(player.getZ()));
+                continue;
+            }
+            MapState activeState = activeInfo.getValue();
 
-                int playX = player.getBlockPos().getX();
-                int playZ = player.getBlockPos().getZ();
-                byte scale = activeState.scale;
-                int scaleWidth = (1 << scale) * 128;
-                ArrayList<Pair<Integer, Integer>> discoveringEdges = getPlayerDiscoveringMapEdges(
-                        activeState.centerX,
-                        activeState.centerZ,
-                        scaleWidth,
-                        playX,
-                        playZ
-                );
+            int playX = player.getBlockPos().getX();
+            int playZ = player.getBlockPos().getZ();
+            byte scale = activeState.scale;
+            int scaleWidth = (1 << scale) * 128;
+            ArrayList<Pair<Integer, Integer>> discoveringEdges = getPlayerDiscoveringMapEdges(
+                    activeState.centerX,
+                    activeState.centerZ,
+                    scaleWidth,
+                    playX,
+                    playZ
+            );
 
-                // Update Map states & colors
-                // updateColors is *easily* the most expensive function in the entire server tick
-                Map<String, MapState> nearbyExistentMaps = currentMapInfos.entrySet().stream()
-                        .filter(e -> discoveringEdges.stream()
-                                .anyMatch(edge -> edge.getLeft() == e.getValue().centerX
-                                        && edge.getLeft() == e.getValue().centerX))
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                for (var mapInfo : changedMapState == null ?
-                        nearbyExistentMaps.entrySet() : currentMapInfos.entrySet()) {
-                    updateMapDataForPlayer(mapInfo, player, atlas);
-                }
-                updateMapColorsForPlayer(activeState, player);
-                if (!nearbyExistentMaps.isEmpty()) {
-                    updateMapColorsForPlayer(
-                            (MapState) nearbyExistentMaps.values().toArray()[
-                                    Random.create().nextBetween(0, nearbyExistentMaps.size() - 1)],
-                            player);
-                }
+            // Update Map states & colors
+            // updateColors is *easily* the most expensive function in the entire server tick
+            // As a result, we will only ever call updateColors twice per tick (same as vanilla's limit)
+            Map<String, MapState> nearbyExistentMaps = currentMapInfos.entrySet().stream()
+                    .filter(e -> discoveringEdges.stream()
+                            .anyMatch(edge -> edge.getLeft() == e.getValue().centerX
+                                    && edge.getLeft() == e.getValue().centerX))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            for (var mapInfo : changedMapState == null ? nearbyExistentMaps.entrySet() : currentMapInfos.entrySet()) {
+                updateMapDataForPlayer(mapInfo, player, atlas);
+            }
+            updateMapColorsForPlayer(activeState, player);
+            if (!nearbyExistentMaps.isEmpty()) {
+                updateMapColorsForPlayer(
+                        (MapState) nearbyExistentMaps.values().toArray()[server.getTicks() % nearbyExistentMaps.size()],
+                        player);
+            }
 
-                // Create new Map entries
-                if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) continue;
-                boolean isPlayerOutsideAllMapRegions = MapAtlasesAccessUtils.distanceBetweenMapStateAndPlayer(
-                        activeState, player) > scaleWidth;
-                if (isPlayerOutsideAllMapRegions) {
-                    maybeCreateNewMapEntry(player, atlas, scale, MathHelper.floor(player.getX()),
-                            MathHelper.floor(player.getZ()));
-                }
-                discoveringEdges.removeIf(e -> nearbyExistentMaps.values().stream().anyMatch(
-                        d -> d.centerX == e.getLeft() && d.centerZ == e.getRight()));
-                for (var p : discoveringEdges) {
-                    maybeCreateNewMapEntry(player, atlas, scale, p.getLeft(), p.getRight());
-                }
+            // Create new Map entries
+            if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) continue;
+            boolean isPlayerOutsideAllMapRegions = MapAtlasesAccessUtils.distanceBetweenMapStateAndPlayer(
+                    activeState, player) > scaleWidth;
+            if (isPlayerOutsideAllMapRegions) {
+                maybeCreateNewMapEntry(player, atlas, scale, MathHelper.floor(player.getX()),
+                        MathHelper.floor(player.getZ()));
+            }
+            discoveringEdges.removeIf(e -> nearbyExistentMaps.values().stream().anyMatch(
+                    d -> d.centerX == e.getLeft() && d.centerZ == e.getRight()));
+            for (var p : discoveringEdges) {
+                maybeCreateNewMapEntry(player, atlas, scale, p.getLeft(), p.getRight());
             }
         }
         // Clean up disconnected players in server tick

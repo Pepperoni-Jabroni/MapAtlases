@@ -13,8 +13,10 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
+import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
 import pepjebs.mapatlases.utils.MapStateIntrfc;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
@@ -51,19 +53,22 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
         if (client == null || client.player == null || client.world == null) return;
         // Handle zooming
-        int worldMapScaling = (int)Math.floor(.8 * client.getWindow().getScaledHeight());
+        int atlasBgScaledSize = (int)Math.floor(.8 * client.getWindow().getScaledHeight());
         if (MapAtlasesMod.CONFIG != null) {
-            worldMapScaling = (int)Math.floor(MapAtlasesMod.CONFIG.forceWorldMapScaling/100.0 * client.getWindow().getScaledHeight());
+            atlasBgScaledSize = (int)Math.floor(
+                    MapAtlasesMod.CONFIG.forceWorldMapScaling/100.0 * client.getWindow().getScaledHeight());
         }
+        double drawnMapBufferSize = atlasBgScaledSize / 18.0;
+        int atlasDataScaledSize = (int) (atlasBgScaledSize - (2 * drawnMapBufferSize));
         int zoomLevel = round(zoomValue, ZOOM_BUCKET) / ZOOM_BUCKET;
         zoomLevel = Math.max(zoomLevel, 0);
         int zoomLevelDim = (2 * zoomLevel) + 1;
         MapAtlasesClient.setWorldMapZoomLevel(zoomLevelDim);
         // a function of worldMapScaling, zoomLevel, and textureSize
-        float mapTextureScale = (float)((worldMapScaling-(worldMapScaling/8.0))/(128.0*zoomLevelDim));
+        float mapTextureScale = (float)(atlasDataScaledSize/(128.0*zoomLevelDim));
         // Draw map background
-        double y = (height / 2.0)-(worldMapScaling/2.0);
-        double x = (width / 2.0)-(worldMapScaling/2.0);
+        double y = (height / 2.0)-(atlasBgScaledSize/2.0);
+        double x = (width / 2.0)-(atlasBgScaledSize/2.0);
         RenderSystem.setShaderTexture(0, ATLAS_BACKGROUND);
         drawTexture(
                 matrices,
@@ -71,10 +76,10 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 (int) y,
                 0,
                 0,
-                worldMapScaling,
-                worldMapScaling,
-                worldMapScaling,
-                worldMapScaling
+                atlasBgScaledSize,
+                atlasBgScaledSize,
+                atlasBgScaledSize,
+                atlasBgScaledSize
         );
         // Draw maps, putting active map in middle of grid
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(client.world, atlas);
@@ -91,16 +96,31 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             }
         }
         int activeMapId = MapAtlasesAccessUtils.getMapIntFromString(activeMapIdStr);
+        int atlasScale = (1 << activeState.scale) * 128;
         if (!idsToCenters.containsKey(activeMapId)) {
             if (idsToCenters.isEmpty())
                 return;
             activeMapId = idsToCenters.keySet().stream().findAny().get();
         }
-        double mapTextY = y+(worldMapScaling/18.0);
-        double mapTextX = x+(worldMapScaling/18.0);
+        double mapTextX = x + drawnMapBufferSize;
+        double mapTextY = y + drawnMapBufferSize;
+        int activeXCenter = idsToCenters.get(activeMapId).get(0) +
+                (round(mouseXOffset, PAN_BUCKET) / PAN_BUCKET * atlasScale * -1);
+        int activeZCenter = idsToCenters.get(activeMapId).get(1) +
+                (round(mouseYOffset, PAN_BUCKET) / PAN_BUCKET * atlasScale * -1);
+        int centerScreenXCenter = -1;
+        int centerScreenZCenter = -1;
         for (int i = zoomLevelDim-1; i >= 0; i--) {
             for (int j = zoomLevelDim-1; j >= 0; j--) {
-                var state = processMapState(i,j,zoomLevelDim,mapInfos,activeMapId,activeState);
+                int iXIdx = i-(zoomLevelDim/2);
+                int jYIdx = j-(zoomLevelDim/2);
+                int reqXCenter = activeXCenter + (jYIdx * atlasScale);
+                int reqZCenter = activeZCenter + (iXIdx * atlasScale);
+                if (i == (zoomLevelDim / 2)  && j == (zoomLevelDim / 2)) {
+                    centerScreenXCenter = reqXCenter;
+                    centerScreenZCenter = reqZCenter;
+                }
+                var state = findMapEntryForCenters(mapInfos, reqXCenter, reqZCenter);
                 if (state == null) continue;
                 if (!mapContainsMeaningfulIcons(state)) {
                     drawMap(matrices,i,j,state,activeMapId,mapTextX,mapTextY,mapTextureScale);
@@ -111,7 +131,11 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         // and then draw maps with icons (to avoid drawing over icons)
         for (int i = zoomLevelDim-1; i >= 0; i--) {
             for (int j = zoomLevelDim-1; j >= 0; j--) {
-                var state = processMapState(i,j,zoomLevelDim,mapInfos,activeMapId,activeState);
+                int iXIdx = i-(zoomLevelDim/2);
+                int jYIdx = j-(zoomLevelDim/2);
+                int reqXCenter = activeXCenter + (jYIdx * atlasScale);
+                int reqZCenter = activeZCenter + (iXIdx * atlasScale);
+                var state = findMapEntryForCenters(mapInfos, reqXCenter, reqZCenter);
                 if (state == null) continue;
                 if (mapContainsMeaningfulIcons(state)) {
                     drawMap(matrices,i,j,state,activeMapId,mapTextX,mapTextY,mapTextureScale);
@@ -125,11 +149,51 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 (int) y,
                 0,
                 0,
-                worldMapScaling,
-                worldMapScaling,
-                worldMapScaling,
-                worldMapScaling
+                atlasBgScaledSize,
+                atlasBgScaledSize,
+                atlasBgScaledSize,
+                atlasBgScaledSize
         );
+        if (mouseX < x + drawnMapBufferSize || mouseY < y + drawnMapBufferSize
+                || mouseX > x + atlasBgScaledSize - drawnMapBufferSize
+                || mouseY > y + atlasBgScaledSize - drawnMapBufferSize)
+            return;
+        BlockPos cursorBlockPos = getBlockPosForCursor(
+                mouseX,
+                mouseY,
+                atlasScale,
+                zoomLevelDim,
+                centerScreenXCenter,
+                centerScreenZCenter,
+                atlasBgScaledSize,
+                x,
+                y,
+                drawnMapBufferSize
+        );
+        MapAtlasesHUD.drawMapTextCoords(
+                matrices, (int) x, (int) y, atlasBgScaledSize, 1.0f, cursorBlockPos, 4);
+    }
+
+    private BlockPos getBlockPosForCursor(
+            int mouseX,
+            int mouseY,
+            int atlasScale,
+            int zoomLevelDim,
+            int centerScreenXCenter,
+            int centerScreenZCenter,
+            int atlasBgScaledSize,
+            double x,
+            double y,
+            double buffer
+    ) {
+        double atlasMapsRelativeMouseX = mapRangeValueToAnother(
+                mouseX, x + buffer, x + atlasBgScaledSize - buffer, -1.0, 1.0);
+        double atlasMapsRelativeMouseZ = mapRangeValueToAnother(
+                mouseY, y + buffer, y + atlasBgScaledSize - buffer, -1.0, 1.0);
+        return new BlockPos(
+                Math.floor(atlasMapsRelativeMouseX * zoomLevelDim * (atlasScale / 2.0)) + centerScreenXCenter,
+                255,
+                Math.floor(atlasMapsRelativeMouseZ * zoomLevelDim * (atlasScale / 2.0)) + centerScreenZCenter);
     }
 
     private boolean mapContainsMeaningfulIcons(Map.Entry<String, MapState> state) {
@@ -138,25 +202,12 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                     && p.getType() != MapIcon.Type.PLAYER_OFF_LIMITS);
     }
 
-    private Map.Entry<String, MapState> processMapState(
-            int i,
-            int j,
-            int zoomLevelDim,
+    private Map.Entry<String, MapState> findMapEntryForCenters(
             Map<String, MapState> mapInfos,
-            int activeMapId,
-            MapState activeState
+            int reqXCenter,
+            int reqZCenter
     ) {
-        int activeXCenter = idsToCenters.get(activeMapId).get(0);
-        int activeZCenter = idsToCenters.get(activeMapId).get(1);
-        activeXCenter = activeXCenter +
-                (round(mouseXOffset, PAN_BUCKET) / PAN_BUCKET * (1 << activeState.scale) * -128);
-        activeZCenter = activeZCenter +
-                (round(mouseYOffset, PAN_BUCKET) / PAN_BUCKET * (1 << activeState.scale) * -128);
         // Get the map for the GUI idx
-        int iXIdx = i-(zoomLevelDim/2);
-        int jYIdx = j-(zoomLevelDim/2);
-        int reqXCenter = activeXCenter + (jYIdx * (1 << activeState.scale) * 128);
-        int reqZCenter = activeZCenter + (iXIdx * (1 << activeState.scale) * 128);
         return mapInfos.entrySet().stream()
                 .filter(m ->
                         idsToCenters.containsKey(MapAtlasesAccessUtils.getMapIntFromString(m.getKey()))
@@ -174,7 +225,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             double mapTextX,
             double mapTextY,
             float mapTextureScale
-            ) {
+        ) {
         if (state == null || client == null) return;
         // Draw the map
         double curMapTextX = mapTextX + (mapTextureScale * 128 * j);
@@ -216,6 +267,20 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         }
     }
 
+    public static void drawMapTextXZCoords(
+            MatrixStack matrices,
+            int x,
+            int y,
+            int originOffsetWidth,
+            float textScaling,
+            BlockPos blockPos,
+            int addtlYOffset
+    ) {
+        String coordsToDisplay = "X: "+blockPos.getX()+", Z: "+blockPos.getZ();
+        MapAtlasesHUD.drawScaledText(matrices, x, y, coordsToDisplay, textScaling, originOffsetWidth,
+                (int) Math.floor(addtlYOffset * textScaling));
+    }
+
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (button == 0) {
@@ -231,6 +296,12 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         zoomValue += -1 * amount;
         zoomValue = Math.max(zoomValue, -1 * ZOOM_BUCKET);
         return true;
+    }
+
+    private double mapRangeValueToAnother(
+            double input, double inputStart, double inputEnd, double outputStart, double outputEnd) {
+        double slope = (outputEnd - outputStart) / (inputEnd - inputStart);
+        return outputStart + slope * (input - inputStart);
     }
 
     private int round(int num, int mod) {

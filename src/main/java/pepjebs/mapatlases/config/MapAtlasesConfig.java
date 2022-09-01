@@ -56,4 +56,12 @@ public class MapAtlasesConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip()
     @Comment("The number of pixels to shift vertically when there's an active effect")
     public int activePotionVerticalOffset = 26;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("When enabled, the player's current Coords and Biome will be displayed")
+    public boolean drawMinimapCoordsAndBiome = false;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Sets the scale of the text rendered for Coords and Biome mini-map data")
+    public float minimapCoordsAndBiomeScale = 1.0f;
 }

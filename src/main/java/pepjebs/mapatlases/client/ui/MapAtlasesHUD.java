@@ -8,11 +8,17 @@ import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.MapRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
@@ -68,23 +74,28 @@ public class MapAtlasesHUD extends DrawableHelper {
         if (currentMapId == null || curMapId.compareTo(currentMapId) != 0) {
             if (currentMapId != null && currentMapId.compareTo("") != 0) {
                 client.world.playSound(client.player.getX(), client.player.getY(), client.player.getZ(),
-                        MapAtlasesMod.ATLAS_PAGE_TURN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F, false);
+                        MapAtlasesMod.ATLAS_PAGE_TURN_SOUND_EVENT, SoundCategory.PLAYERS,
+                        1.0F, 1.0F, false);
             }
             currentMapId = curMapId;
         }
         // Set zoom-level for map icons
         MapAtlasesClient.setWorldMapZoomLevel(1);
         // Draw map background
-        int mapScaling = (int)Math.floor(.2 * client.getWindow().getScaledHeight());
+        int mapBgScaledSize = (int)Math.floor(.2 * client.getWindow().getScaledHeight());
         if (MapAtlasesMod.CONFIG != null) {
-            mapScaling = (int) Math.floor(MapAtlasesMod.CONFIG.forceMiniMapScaling / 100.0 * client.getWindow().getScaledHeight());
+            mapBgScaledSize = (int) Math.floor(
+                    MapAtlasesMod.CONFIG.forceMiniMapScaling / 100.0 * client.getWindow().getScaledHeight());
         }
+        double drawnMapBufferSize = mapBgScaledSize / 24.0;
+        int mapDataScaledSize = (int) ((mapBgScaledSize - (2 * drawnMapBufferSize)));
+        float mapDataScale = mapDataScaledSize / 128.0f;
         String anchorLocation = "UpperLeft";
         if (MapAtlasesMod.CONFIG != null) {
             anchorLocation = MapAtlasesMod.CONFIG.miniMapAnchoring;
         }
-        int x = anchorLocation.contains("Left") ? 0 : client.getWindow().getScaledWidth()-mapScaling;
-        int y = anchorLocation.contains("Lower") ? client.getWindow().getScaledHeight()-mapScaling : 0;
+        int x = anchorLocation.contains("Left") ? 0 : client.getWindow().getScaledWidth() - mapBgScaledSize;
+        int y = anchorLocation.contains("Lower") ? client.getWindow().getScaledHeight() - mapBgScaledSize : 0;
         if (MapAtlasesMod.CONFIG != null) {
             x += MapAtlasesMod.CONFIG.miniMapHorizontalOffset;
             y += MapAtlasesMod.CONFIG.miniMapVerticalOffset;
@@ -106,17 +117,14 @@ public class MapAtlasesHUD extends DrawableHelper {
             }
         }
         RenderSystem.setShaderTexture(0, MAP_BACKGROUND);
-        drawTexture(matrices,x,y,0,0,mapScaling,mapScaling, mapScaling, mapScaling);
+        drawTexture(matrices,x,y,0,0,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize);
 
         // Draw map data
-        int mapDrawX = x + (mapScaling / 16) - (mapScaling / 64);
-        int mapDrawY = y + (mapScaling / 16) - (mapScaling / 64);
         VertexConsumerProvider.Immediate vcp;
         vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         matrices.push();
-        matrices.translate(mapDrawX, mapDrawY, 0.0);
-        // Prepare yourself for some magic numbers
-        matrices.scale((float) mapScaling / 142, (float) mapScaling / 142, -1);
+        matrices.translate(drawnMapBufferSize, drawnMapBufferSize, 0.0);
+        matrices.scale(mapDataScale, mapDataScale, -1);
         mapRenderer.draw(
                 matrices,
                 vcp,
@@ -128,6 +136,78 @@ public class MapAtlasesHUD extends DrawableHelper {
         vcp.draw();
         matrices.pop();
         RenderSystem.setShaderTexture(0, MAP_FOREGROUND);
-        drawTexture(matrices,x,y,0,0,mapScaling,mapScaling, mapScaling, mapScaling);
+        drawTexture(matrices,x,y,0,0,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize);
+        if (MapAtlasesMod.CONFIG == null || !MapAtlasesMod.CONFIG.drawMinimapCoordsAndBiome) return;
+        int textOffset = mapBgScaledSize;
+        if (anchorLocation.contains("Lower")) {
+            textOffset = -28;
+        }
+        float textScaling = MapAtlasesMod.CONFIG.minimapCoordsAndBiomeScale;
+        drawMapTextCoords(matrices, x, y, textOffset, textScaling, client.player.getBlockPos(), 4);
+        drawMapTextBiome(
+                matrices, x, y, textOffset, textScaling, client.player.getBlockPos(), client.world, 16);
     }
+
+    public static void drawMapTextCoords(
+            MatrixStack matrices,
+            int x,
+            int y,
+            int originOffsetWidth,
+            float textScaling,
+            BlockPos blockPos,
+            int addtlYOffset
+    ) {
+        String coordsToDisplay = blockPos.toShortString();
+        drawScaledText(matrices, x, y, coordsToDisplay, textScaling, originOffsetWidth,
+                (int) Math.floor(addtlYOffset * textScaling));
+    }
+
+    public static void drawMapTextBiome(
+            MatrixStack matrices,
+            int x,
+            int y,
+            int originOffsetWidth,
+            float textScaling,
+            BlockPos blockPos,
+            World world,
+            int addtlYOffset
+    ) {
+        String biomeToDisplay = getBiomeStringToDisplay(world, blockPos);
+        drawScaledText(matrices, x, y, biomeToDisplay, textScaling, originOffsetWidth,
+                (int) Math.floor(addtlYOffset * textScaling));
+    }
+
+    public static void drawScaledText(
+            MatrixStack matrices,
+            int x,
+            int y,
+            String text,
+            float textScaling,
+            int originOffsetWidth,
+            int addtlYOffset
+    ) {
+        int screenBuffer = 4;
+        float textWidth = client.textRenderer.getWidth(text) * textScaling;
+        float textX = (float) (x + (originOffsetWidth / 2.0) - (textWidth / 2.0));
+        float textY = y + originOffsetWidth + addtlYOffset;
+        if (textX < screenBuffer) {
+            textX = screenBuffer;
+        } else if (textX + textWidth >= client.getWindow().getScaledWidth() - screenBuffer) {
+            textX = client.getWindow().getScaledWidth() - textWidth - screenBuffer;
+        }
+        matrices.push();
+        matrices.translate(textX, textY, 0);
+        matrices.scale(textScaling, textScaling, 1);
+        client.textRenderer.draw(matrices, text, 1, 1, Integer.parseInt("595959", 16));
+        client.textRenderer.draw(matrices, text, 0, 0, Integer.parseInt("E0E0E0", 16));
+        matrices.pop();
+    }
+
+    private static String getBiomeStringToDisplay(World world, BlockPos blockPos) {
+        if (world == null || world.getBiome(blockPos).getKey().isEmpty())
+            return "";
+        RegistryKey<Biome> biomeKey = world.getBiome(blockPos).getKey().get();
+        return I18n.translate(Util.createTranslationKey("biome", biomeKey.getValue()));
+    }
+
 }

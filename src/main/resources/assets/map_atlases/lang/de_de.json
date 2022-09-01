@@ -37,7 +37,7 @@
   "text.autoconfig.map_atlases.option.mapEntryValueMultiplier": "Kartenanzahl-Multiplikator",
   "text.autoconfig.map_atlases.option.mapEntryValueMultiplier.@Tooltip": "Hinzugefügte Seiten, wenn ein Kartenitem zum Atlas hinzugefügt wird",
   "text.autoconfig.map_atlases.option.pityActivationMapCount": "Grund-Kartenanzahl",
-  "text.autoconfig.map_atlases.option.pityActivationMapCount.@Tooltip": "Hinzugefügte Seiten bei aktivierung eines inaktiven Atlas",
+  "text.autoconfig.map_atlases.option.pityActivationMapCount.@Tooltip": "Hinzugefügte Seiten bei Aktivierung eines inaktiven Atlas",
   "text.autoconfig.map_atlases.option.activePotionVerticalOffset": "Trankeffekt-Verschiebung",
   "text.autoconfig.map_atlases.option.activePotionVerticalOffset.@Tooltip": "Vertikale Verschiebung bei aktiven Trankeffekten",
   "trinkets.slot.hand.atlas": "Atlas"

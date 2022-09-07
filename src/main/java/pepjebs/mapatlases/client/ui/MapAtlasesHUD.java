@@ -58,16 +58,12 @@ public class MapAtlasesHUD extends DrawableHelper {
     private void renderMapHUD(MatrixStack matrices) {
         // Handle early returns
         if (client.world == null || client.player == null) {
-            MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: Current map id - null (client.world)");
             return;
         }
         String curMapId = MapAtlasesClient.currentMapStateId;
         MapState state = client.world.getMapState(MapAtlasesClient.currentMapStateId);
         if (curMapId == null || state == null) {
-            if (currentMapId != null) {
-                MapAtlasesMod.LOGGER.warn("renderMapHUDFromItemStack: Current map id - null (state)");
-                currentMapId = null;
-            }
+            currentMapId = null;
             return;
         }
         // Update client current map id
@@ -123,7 +119,6 @@ public class MapAtlasesHUD extends DrawableHelper {
         VertexConsumerProvider.Immediate vcp;
         vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         matrices.push();
-        // TODO: Is this right?
         matrices.translate(x + drawnMapBufferSize, y + drawnMapBufferSize, 0.0);
         matrices.scale(mapDataScale, mapDataScale, -1);
         mapRenderer.draw(

@@ -116,11 +116,11 @@ public class MapAtlasesServerLifecycleEvents {
                             .anyMatch(edge -> edge.getLeft() == e.getValue().centerX
                                     && edge.getLeft() == e.getValue().centerX))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            for (var mapInfo : changedMapState == null ? nearbyExistentMaps.entrySet() : currentMapInfos.entrySet()) {
+            for (var mapInfo : currentMapInfos.entrySet()) {
                 updateMapDataForPlayer(mapInfo, player, atlas);
             }
             updateMapColorsForPlayer(activeState, player);
-            // TODO: Only call updateColors if MapState is within 128 radius of player
+            MapAtlasesMod.LOGGER.info("nearbyExistentMaps: " + nearbyExistentMaps.size());
             if (!nearbyExistentMaps.isEmpty()) {
                 updateMapColorsForPlayer(
                         (MapState) nearbyExistentMaps.values().toArray()[server.getTicks() % nearbyExistentMaps.size()],

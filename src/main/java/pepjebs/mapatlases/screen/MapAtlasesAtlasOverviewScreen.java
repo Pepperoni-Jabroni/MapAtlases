@@ -187,7 +187,6 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             int zoomLevelDim,
             int centerScreenXCenter,
             int centerScreenZCenter,
-            // TODO: use Data size instead
             int atlasBgScaledSize,
             double x,
             double y,

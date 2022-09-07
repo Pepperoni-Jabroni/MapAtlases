@@ -58,10 +58,18 @@ public class MapAtlasesConfig implements ConfigData {
     public int activePotionVerticalOffset = 26;
 
     @ConfigEntry.Gui.Tooltip()
-    @Comment("When enabled, the player's current Coords and Biome will be displayed")
-    public boolean drawMinimapCoordsAndBiome = false;
+    @Comment("When enabled, the player's current Coords will be displayed")
+    public boolean drawMinimapCoords = true;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("When enabled, the player's current Biome will be displayed")
+    public boolean drawMinimapBiome = true;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("Sets the scale of the text rendered for Coords and Biome mini-map data")
     public float minimapCoordsAndBiomeScale = 1.0f;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("When enabled, the Atlas world map coordinates will be displayed")
+    public boolean drawWorldMapXAndZ = true;
 }

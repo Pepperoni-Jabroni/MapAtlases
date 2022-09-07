@@ -87,7 +87,7 @@ public class MapAtlasesHUD extends DrawableHelper {
             mapBgScaledSize = (int) Math.floor(
                     MapAtlasesMod.CONFIG.forceMiniMapScaling / 100.0 * client.getWindow().getScaledHeight());
         }
-        double drawnMapBufferSize = mapBgScaledSize / 24.0;
+        double drawnMapBufferSize = mapBgScaledSize / 20.0;
         int mapDataScaledSize = (int) ((mapBgScaledSize - (2 * drawnMapBufferSize)));
         float mapDataScale = mapDataScaledSize / 128.0f;
         String anchorLocation = "UpperLeft";
@@ -123,7 +123,8 @@ public class MapAtlasesHUD extends DrawableHelper {
         VertexConsumerProvider.Immediate vcp;
         vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         matrices.push();
-        matrices.translate(drawnMapBufferSize, drawnMapBufferSize, 0.0);
+        // TODO: Is this right?
+        matrices.translate(x + drawnMapBufferSize, y + drawnMapBufferSize, 0.0);
         matrices.scale(mapDataScale, mapDataScale, -1);
         mapRenderer.draw(
                 matrices,
@@ -137,15 +138,25 @@ public class MapAtlasesHUD extends DrawableHelper {
         matrices.pop();
         RenderSystem.setShaderTexture(0, MAP_FOREGROUND);
         drawTexture(matrices,x,y,0,0,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize);
-        if (MapAtlasesMod.CONFIG == null || !MapAtlasesMod.CONFIG.drawMinimapCoordsAndBiome) return;
-        int textOffset = mapBgScaledSize;
-        if (anchorLocation.contains("Lower")) {
-            textOffset = -28;
-        }
+
+        // Draw text data
         float textScaling = MapAtlasesMod.CONFIG.minimapCoordsAndBiomeScale;
-        drawMapTextCoords(matrices, x, y, textOffset, textScaling, client.player.getBlockPos(), 4);
-        drawMapTextBiome(
-                matrices, x, y, textOffset, textScaling, client.player.getBlockPos(), client.world, 16);
+        int textHeightOffset = mapBgScaledSize + 4;
+        int textWidthOffset = mapBgScaledSize;
+        if (anchorLocation.contains("Lower")) {
+            textHeightOffset = -24;
+        }
+        if (MapAtlasesMod.CONFIG != null && MapAtlasesMod.CONFIG.drawMinimapCoords) {
+            drawMapTextCoords(
+                    matrices, x, y, textWidthOffset, textHeightOffset,
+                    textScaling, client.player.getBlockPos());
+            textHeightOffset += (12 * textScaling);
+        }
+        if (MapAtlasesMod.CONFIG != null && MapAtlasesMod.CONFIG.drawMinimapBiome) {
+            drawMapTextBiome(
+                    matrices, x, y, textWidthOffset, textHeightOffset,
+                    textScaling, client.player.getBlockPos(), client.world);
+        }
     }
 
     public static void drawMapTextCoords(
@@ -153,13 +164,12 @@ public class MapAtlasesHUD extends DrawableHelper {
             int x,
             int y,
             int originOffsetWidth,
+            int originOffsetHeight,
             float textScaling,
-            BlockPos blockPos,
-            int addtlYOffset
+            BlockPos blockPos
     ) {
         String coordsToDisplay = blockPos.toShortString();
-        drawScaledText(matrices, x, y, coordsToDisplay, textScaling, originOffsetWidth,
-                (int) Math.floor(addtlYOffset * textScaling));
+        drawScaledText(matrices, x, y, coordsToDisplay, textScaling, originOffsetWidth, originOffsetHeight);
     }
 
     public static void drawMapTextBiome(
@@ -167,14 +177,13 @@ public class MapAtlasesHUD extends DrawableHelper {
             int x,
             int y,
             int originOffsetWidth,
+            int originOffsetHeight,
             float textScaling,
             BlockPos blockPos,
-            World world,
-            int addtlYOffset
+            World world
     ) {
         String biomeToDisplay = getBiomeStringToDisplay(world, blockPos);
-        drawScaledText(matrices, x, y, biomeToDisplay, textScaling, originOffsetWidth,
-                (int) Math.floor(addtlYOffset * textScaling));
+        drawScaledText(matrices, x, y, biomeToDisplay, textScaling, originOffsetWidth, originOffsetHeight);
     }
 
     public static void drawScaledText(
@@ -184,16 +193,13 @@ public class MapAtlasesHUD extends DrawableHelper {
             String text,
             float textScaling,
             int originOffsetWidth,
-            int addtlYOffset
+            int originOffsetHeight
     ) {
-        int screenBuffer = 4;
         float textWidth = client.textRenderer.getWidth(text) * textScaling;
         float textX = (float) (x + (originOffsetWidth / 2.0) - (textWidth / 2.0));
-        float textY = y + originOffsetWidth + addtlYOffset;
-        if (textX < screenBuffer) {
-            textX = screenBuffer;
-        } else if (textX + textWidth >= client.getWindow().getScaledWidth() - screenBuffer) {
-            textX = client.getWindow().getScaledWidth() - textWidth - screenBuffer;
+        float textY = y + originOffsetHeight;
+        if (textX + textWidth >= client.getWindow().getScaledWidth()) {
+            textX = client.getWindow().getScaledWidth() - textWidth;
         }
         matrices.push();
         matrices.translate(textX, textY, 0);

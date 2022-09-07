@@ -120,6 +120,7 @@ public class MapAtlasesServerLifecycleEvents {
                 updateMapDataForPlayer(mapInfo, player, atlas);
             }
             updateMapColorsForPlayer(activeState, player);
+            // TODO: Only call updateColors if MapState is within 128 radius of player
             if (!nearbyExistentMaps.isEmpty()) {
                 updateMapColorsForPlayer(
                         (MapState) nearbyExistentMaps.values().toArray()[server.getTicks() % nearbyExistentMaps.size()],

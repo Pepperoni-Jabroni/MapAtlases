@@ -93,6 +93,19 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
             this.sendContentUpdates();
 
             info.cancel();
+        } else if (atlas.getItem() == Items.BOOK && bottomItem.getItem() == Items.FILLED_MAP) {
+            ItemStack result = new ItemStack(MapAtlasesMod.MAP_ATLAS);
+            if (bottomItem.getNbt() == null || !bottomItem.hasNbt() || !bottomItem.getNbt().contains("map"))
+                return;
+            int mapId = bottomItem.getNbt().getInt("map");
+            NbtCompound compound = new NbtCompound();
+            compound.putIntArray(MapAtlasItem.MAP_LIST_NBT, new int[]{mapId});
+            result.setNbt(compound);
+            this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
+
+            this.sendContentUpdates();
+
+            info.cancel();
         }
     }
 

@@ -158,6 +158,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 || mouseX > x + atlasBgScaledSize - drawnMapBufferSize
                 || mouseY > y + atlasBgScaledSize - drawnMapBufferSize)
             return;
+        if (MapAtlasesMod.CONFIG == null || !MapAtlasesMod.CONFIG.drawWorldMapXAndZ) return;
         BlockPos cursorBlockPos = getBlockPosForCursor(
                 mouseX,
                 mouseY,
@@ -170,8 +171,13 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 y,
                 drawnMapBufferSize
         );
-        MapAtlasesHUD.drawMapTextCoords(
-                matrices, (int) x, (int) y, atlasBgScaledSize, 1.0f, cursorBlockPos, 4);
+        int targetHeight = atlasBgScaledSize + 4;
+        if (MapAtlasesMod.CONFIG.forceWorldMapScaling >= 95) {
+            targetHeight = 8;
+        }
+        drawMapTextXZCoords(
+                matrices, (int) x, (int) y, atlasBgScaledSize,
+                targetHeight, 1.0f, cursorBlockPos);
     }
 
     private BlockPos getBlockPosForCursor(
@@ -181,6 +187,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             int zoomLevelDim,
             int centerScreenXCenter,
             int centerScreenZCenter,
+            // TODO: use Data size instead
             int atlasBgScaledSize,
             double x,
             double y,
@@ -272,13 +279,13 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             int x,
             int y,
             int originOffsetWidth,
+            int originOffsetHeight,
             float textScaling,
-            BlockPos blockPos,
-            int addtlYOffset
+            BlockPos blockPos
     ) {
         String coordsToDisplay = "X: "+blockPos.getX()+", Z: "+blockPos.getZ();
-        MapAtlasesHUD.drawScaledText(matrices, x, y, coordsToDisplay, textScaling, originOffsetWidth,
-                (int) Math.floor(addtlYOffset * textScaling));
+        MapAtlasesHUD.drawScaledText(
+                matrices, x, y, coordsToDisplay, textScaling, originOffsetWidth, originOffsetHeight);
     }
 
     @Override

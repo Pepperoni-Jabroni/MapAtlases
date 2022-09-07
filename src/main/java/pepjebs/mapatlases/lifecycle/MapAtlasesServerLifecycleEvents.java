@@ -120,7 +120,6 @@ public class MapAtlasesServerLifecycleEvents {
                 updateMapDataForPlayer(mapInfo, player, atlas);
             }
             updateMapColorsForPlayer(activeState, player);
-            MapAtlasesMod.LOGGER.info("nearbyExistentMaps: " + nearbyExistentMaps.size());
             if (!nearbyExistentMaps.isEmpty()) {
                 updateMapColorsForPlayer(
                         (MapState) nearbyExistentMaps.values().toArray()[server.getTicks() % nearbyExistentMaps.size()],

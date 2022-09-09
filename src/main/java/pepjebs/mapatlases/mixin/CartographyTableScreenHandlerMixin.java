@@ -15,6 +15,7 @@ import net.minecraft.screen.CartographyTableScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.Pair;
+import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -56,17 +57,7 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
                     .distinct()
                     .toArray();
             this.context.run((world, blockPos) -> {
-                // Ensure duplicate X,Z maps are removed (as adding duplicate maps is bad practice)
-                Map<String, Pair<Integer, MapState>> uniqueXZMapIds =
-                                Arrays.stream(allMapIds)
-                                        .mapToObj(mId -> new Pair<>(mId, world.getMapState("map_" + mId)))
-                                        .filter(m -> m.getRight() != null)
-                                        .collect(Collectors.toMap(
-                                                m -> m.getRight().centerX + ":" + m.getRight().centerZ
-                                                        + ":"  + m.getRight().dimension,
-                                                m -> m,
-                                                (m1, m2) -> m1));
-                int[] filteredMapIds = uniqueXZMapIds.values().stream().mapToInt(Pair::getLeft).toArray();
+                int[] filteredMapIds = filterIntArrayForUniqueMaps(world, allMapIds);
                 ItemStack result = new ItemStack(MapAtlasesMod.MAP_ATLAS);
                 NbtCompound mergedNbt = new NbtCompound();
                 int halfEmptyCount = (int) Math.ceil((MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas)
@@ -93,15 +84,28 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
             this.sendContentUpdates();
 
             info.cancel();
-        } else if (atlas.getItem() == Items.BOOK && bottomItem.getItem() == Items.FILLED_MAP) {
-            ItemStack result = new ItemStack(MapAtlasesMod.MAP_ATLAS);
+        } else if (atlas.getItem() == MapAtlasesMod.MAP_ATLAS && bottomItem.getItem() == Items.FILLED_MAP) {
+            ItemStack result = atlas.copy();
             if (bottomItem.getNbt() == null || !bottomItem.hasNbt() || !bottomItem.getNbt().contains("map"))
                 return;
             int mapId = bottomItem.getNbt().getInt("map");
-            NbtCompound compound = new NbtCompound();
-            compound.putIntArray(MapAtlasItem.MAP_LIST_NBT, new int[]{mapId});
-            result.setNbt(compound);
-            this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
+            NbtCompound compound = result.getNbt();
+            if (compound == null) return;
+            int[] existentMapIdArr = compound.getIntArray(MapAtlasItem.MAP_LIST_NBT);
+            List<Integer> existentMapIds =
+                    Arrays.stream(existentMapIdArr).boxed().distinct().collect(Collectors.toList());
+            if (!existentMapIds.contains(mapId)) {
+                existentMapIds.add(mapId);
+            }
+            this.context.run((world, blockPos) -> {
+                int[] filteredMapIds =
+                        filterIntArrayForUniqueMaps(world, existentMapIds.stream().mapToInt(s -> s).toArray());
+
+                compound.putIntArray(MapAtlasItem.MAP_LIST_NBT, filteredMapIds);
+                result.setNbt(compound);
+
+                this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
+            });
 
             this.sendContentUpdates();
 
@@ -126,6 +130,20 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
                 info.setReturnValue(ItemStack.EMPTY);
             }
         }
+    }
+
+    // Filters for both duplicate map id (e.g. "map_25") and duplicate X+Z+Dimension
+    private int[] filterIntArrayForUniqueMaps(World world, int[] toFilter) {
+        Map<String, Pair<Integer, MapState>> uniqueXZMapIds =
+                Arrays.stream(toFilter)
+                        .mapToObj(mId -> new Pair<>(mId, world.getMapState("map_" + mId)))
+                        .filter(m -> m.getRight() != null)
+                        .collect(Collectors.toMap(
+                                m -> m.getRight().centerX + ":" + m.getRight().centerZ
+                                        + ":"  + m.getRight().dimension,
+                                m -> m,
+                                (m1, m2) -> m1));
+        return uniqueXZMapIds.values().stream().mapToInt(Pair::getLeft).toArray();
     }
 
 }

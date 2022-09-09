@@ -158,7 +158,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 || mouseX > x + atlasBgScaledSize - drawnMapBufferSize
                 || mouseY > y + atlasBgScaledSize - drawnMapBufferSize)
             return;
-        if (MapAtlasesMod.CONFIG == null || !MapAtlasesMod.CONFIG.drawWorldMapXAndZ) return;
+        if (MapAtlasesMod.CONFIG == null || !MapAtlasesMod.CONFIG.drawWorldMapCoords) return;
         BlockPos cursorBlockPos = getBlockPosForCursor(
                 mouseX,
                 mouseY,

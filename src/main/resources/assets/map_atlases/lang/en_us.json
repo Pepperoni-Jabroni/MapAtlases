@@ -40,5 +40,13 @@
   "text.autoconfig.map_atlases.option.pityActivationMapCount.@Tooltip": "Controls how many free Empty Maps you get for 'activating' an Inactive Atlas",
   "text.autoconfig.map_atlases.option.activePotionVerticalOffset": "Active Potion Vertical Offset",
   "text.autoconfig.map_atlases.option.activePotionVerticalOffset.@Tooltip": "The number of pixels to shift vertically when there's an active effect",
+  "text.autoconfig.map_atlases.option.drawMinimapCoords": "Draw Minimap Coords",
+  "text.autoconfig.map_atlases.option.drawMinimapCoords.@Tooltip": "When enabled, the player's current Coords will be displayed",
+  "text.autoconfig.map_atlases.option.drawMinimapBiome": "DrawM Minimap Biome",
+  "text.autoconfig.map_atlases.option.drawMinimapBiome.@Tooltip": "When enabled, the player's current Biome will be displayed",
+  "text.autoconfig.map_atlases.option.minimapCoordsAndBiomeScale": "Minimap Coords And Biome Scale",
+  "text.autoconfig.map_atlases.option.minimapCoordsAndBiomeScale.@Tooltip": "Sets the scale of the text rendered for Coords and Biome mini-map data",
+  "text.autoconfig.map_atlases.option.drawWorldMapCoords": "Draw World Map Coords",
+  "text.autoconfig.map_atlases.option.drawWorldMapCoords.@Tooltip": "When enabled, the Atlas world map coordinates will be displayed",
   "trinkets.slot.hand.atlas": "Atlas"
 }

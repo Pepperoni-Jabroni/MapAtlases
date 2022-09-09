@@ -139,7 +139,7 @@ public class MapAtlasesHUD extends DrawableHelper {
         int textHeightOffset = mapBgScaledSize + 4;
         int textWidthOffset = mapBgScaledSize;
         if (anchorLocation.contains("Lower")) {
-            textHeightOffset = -24;
+            textHeightOffset = (int) (-24 * textScaling);
         }
         if (MapAtlasesMod.CONFIG != null && MapAtlasesMod.CONFIG.drawMinimapCoords) {
             drawMapTextCoords(

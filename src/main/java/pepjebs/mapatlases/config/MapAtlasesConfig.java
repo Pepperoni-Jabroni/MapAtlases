@@ -71,5 +71,5 @@ public class MapAtlasesConfig implements ConfigData {
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("When enabled, the Atlas world map coordinates will be displayed")
-    public boolean drawWorldMapXAndZ = true;
+    public boolean drawWorldMapCoords = true;
 }

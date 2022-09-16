@@ -96,4 +96,6 @@ Recommended Additions:
 - Optional "Modern" Resource Pack [[1.19]](https://github.com/Pepperoni-Jabroni/MapAtlases/releases/download/2.1.0/map_atlases_modern_resource_pack+1.19.zip) - This Resource Pack gives the Mini-map and World-map a "modern" look, abandoning the vanilla Map style textures.
 
 ## Photo of "Modern" Resource Pack & Better Nether Map mod
+![2022-09-15_19 51 51](https://user-images.githubusercontent.com/17690401/190546424-894fc024-884f-4cea-a8e4-0315643fb7f9.png)
+
 ![2022-09-15_19 50 29](https://user-images.githubusercontent.com/17690401/190546249-388c58b5-99de-463c-b0d8-d3c40ebb4c33.png)

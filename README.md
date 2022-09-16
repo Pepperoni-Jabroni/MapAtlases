@@ -86,5 +86,9 @@ Optional Dependencies:
 - [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu)
 - [Trinkets](https://www.curseforge.com/minecraft/mc-mods/trinkets)
 
-**Known Incompatiblities**:
-- Immersive Portals
+Known Incompatiblities:
+- [Accurate Maps](https://www.curseforge.com/minecraft/mc-mods/accurate-maps) (*todo: fix here or submit PR to their project*)
+- [Immersive Portals](https://www.curseforge.com/minecraft/mc-mods/immersive-portals-mod)
+
+Recommended Additions:
+- [Better Nether Map](https://modrinth.com/mod/better-nether-map)

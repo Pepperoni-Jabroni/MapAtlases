@@ -91,4 +91,9 @@ Known Incompatiblities:
 - [Immersive Portals](https://www.curseforge.com/minecraft/mc-mods/immersive-portals-mod)
 
 Recommended Additions:
-- [Better Nether Map](https://modrinth.com/mod/better-nether-map)
+- [Better Nether Map](https://modrinth.com/mod/better-nether-map) - Makes Nether (& other ceiling dimension) Maps create at y-level of player
+- Cheaper Maps Recipe Data Pack [[1.19]](https://github.com/Pepperoni-Jabroni/MapAtlases/releases/download/2.0.1/cheaper-map-crafting+1.19.zip) - Why would a Map require a Compass? This Data Pack adds a recipe for Empty Maps that's simply 1 Paper + 1 Ink Sac shapeless. 
+- Optional "Modern" Resource Pack [[1.19]](https://github.com/Pepperoni-Jabroni/MapAtlases/releases/download/2.1.0/map_atlases_modern_resource_pack+1.19.zip) - This Resource Pack gives the Mini-map and World-map a "modern" look, abandoning the vanilla Map style textures.
+
+## Photo of "Modern" Resource Pack & Better Nether Map mod
+![2022-09-15_19 50 29](https://user-images.githubusercontent.com/17690401/190546249-388c58b5-99de-463c-b0d8-d3c40ebb4c33.png)

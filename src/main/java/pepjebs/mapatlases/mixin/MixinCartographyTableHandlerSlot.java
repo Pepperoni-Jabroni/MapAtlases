@@ -26,7 +26,8 @@ class MixinCartographyTableScreenHandlerFirstSlot {
 
     @Inject(method = "canInsert", at = @At("RETURN"), cancellable = true)
     void mapAtlasCanInsert(ItemStack stack, CallbackInfoReturnable<Boolean> info) {
-        info.setReturnValue(stack.getItem() == MapAtlasesMod.MAP_ATLAS || info.getReturnValueZ());
+        info.setReturnValue(stack.getItem() == MapAtlasesMod.MAP_ATLAS || stack.getItem() ==  Items.BOOK ||
+                info.getReturnValueZ());
     }
 }
 

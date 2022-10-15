@@ -31,4 +31,6 @@ public class LecternBlockMixin extends Block {
     public void injectAtlasProperty(StateManager.Builder<Block, BlockState> builder, CallbackInfo ci) {
         builder.add(new Property[]{MapAtlasItem.HAS_ATLAS});
     }
+
+    // Lnet/minecraft/block/AbstractBlock;onUse(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;
 }

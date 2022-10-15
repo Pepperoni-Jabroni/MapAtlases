@@ -4,6 +4,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
@@ -15,7 +16,9 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.lwjgl.glfw.GLFW;
 import pepjebs.mapatlases.MapAtlasesMod;
@@ -29,6 +32,7 @@ public class MapAtlasesClient implements ClientModInitializer {
     private static final ThreadLocal<Integer> worldMapZoomLevel = new ThreadLocal<>();
     public static KeyBinding displayMapGUIBinding;
     public static String currentMapStateId = null;
+    public static final Identifier ATLAS_LECTERN_ID = new Identifier(MapAtlasesMod.MOD_ID, "entity/lectern_atlas");
 
     @Override
     public void onInitializeClient() {
@@ -66,6 +70,11 @@ public class MapAtlasesClient implements ClientModInitializer {
                 MapAtlasesMod.MAP_ATLAS,
                 new Identifier("atlas"),
                 this::getPredicateForAtlas);
+
+        ClientSpriteRegistryCallback.event(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).register(
+                ((atlasTexture, registry) -> {
+                    registry.register(ATLAS_LECTERN_ID);
+                }));
     }
 
     public static int getWorldMapZoomLevel() {

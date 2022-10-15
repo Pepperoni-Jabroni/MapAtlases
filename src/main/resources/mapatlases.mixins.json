@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "CartographyTableScreenHandlerMixin",
+    "LecternBlockMixin",
     "MapStateMixin",
     "MapStateTrinketsMixin",
     "MixinCartographyTableScreenHandlerFirstSlot",
@@ -13,6 +14,7 @@
   ],
   "client": [
     "InGameHudMixin",
+    "MapAtlasesLecternBlockEntityRenderer",
     "MapRendererMixin"
   ],
   "plugin": "pepjebs.mapatlases.mixin.plugin.MapAtlasesMixinPlugin",

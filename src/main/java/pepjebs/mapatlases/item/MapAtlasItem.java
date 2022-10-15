@@ -2,6 +2,8 @@ package pepjebs.mapatlases.item;
 
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.LecternBlock;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -13,6 +15,8 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -25,6 +29,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
+import pepjebs.mapatlases.mixin.LecternBlockMixin;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
@@ -37,6 +42,8 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
     public static final String EMPTY_MAP_NBT = "empty";
     public static final String MAP_LIST_NBT = "maps";
+
+    public static final BooleanProperty HAS_ATLAS = BooleanProperty.of("has_atlas");
 
     public MapAtlasItem(Settings settings) {
         super(settings);
@@ -126,7 +133,22 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
                 || context.getStack() == null || context.getBlockPos() == null)
             return super.useOnBlock(context);
         BlockState blockState = context.getWorld().getBlockState(context.getBlockPos());
-        if (blockState.isIn(BlockTags.BANNERS)) {
+        if (blockState.isOf(Blocks.LECTERN)) {
+            boolean didPut = LecternBlock.putBookIfAbsent(
+                    context.getPlayer(),
+                    context.getWorld(),
+                    context.getBlockPos(),
+                    blockState,
+                    context.getStack()
+            );
+            if (!didPut) {
+                return ActionResult.PASS;
+            }
+            blockState = context.getWorld().getBlockState(context.getBlockPos());
+            LecternBlock.setHasBook(context.getWorld(), context.getBlockPos(), blockState, true);
+            context.getWorld().setBlockState(context.getBlockPos(), blockState.with(HAS_ATLAS, true));
+            return ActionResult.success(context.getWorld().isClient);
+        } if (blockState.isIn(BlockTags.BANNERS)) {
             if (!context.getWorld().isClient) {
                 Map<String, MapState> currentDimMapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(
                         context.getWorld(), context.getStack());

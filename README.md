@@ -73,6 +73,10 @@ The "Atlas" features and details:
 ## Newly textured world-map background
 ![2022-08-26_18 06 28](https://user-images.githubusercontent.com/17690401/187008291-33800e98-04c9-4340-a433-91a094fe56b6.png)
 
+## New as of 2.2.0
+**Atlases can now be dispalyed in Lecterns!**
+![atlas_lectern_promo](https://user-images.githubusercontent.com/17690401/196099897-b22d161b-c357-46dd-9087-84a642b1ab53.png)
+
 Sound Sources
 - [Atlas open sound](https://freesound.org/people/InspectorJ/sounds/416179/)
 - [Atlas page flip sound](https://freesound.org/people/flag2/sounds/63318/)

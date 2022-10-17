@@ -40,7 +40,6 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     public MapAtlasesAtlasOverviewScreen(ScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
-        // TODO: ! Atlas is null when opening Lectern ! (unless a duplicate is in inventory)
         atlas = ((MapAtlasesAtlasOverviewScreenHandler) handler).atlas;
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
     }

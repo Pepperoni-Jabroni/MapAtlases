@@ -165,7 +165,7 @@ public class MapAtlasesServerLifecycleEvents {
         ((FilledMapItem) Items.FILLED_MAP).updateColors(player.getWorld(), player, state);
     }
 
-    private static void relayMapStateSyncToPlayerClient(
+    public static void relayMapStateSyncToPlayerClient(
             Map.Entry<String, MapState> mapInfo,
             ServerPlayerEntity player
     ) {

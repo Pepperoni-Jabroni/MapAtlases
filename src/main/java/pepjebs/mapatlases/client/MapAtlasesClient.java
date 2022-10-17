@@ -32,7 +32,10 @@ public class MapAtlasesClient implements ClientModInitializer {
     private static final ThreadLocal<Integer> worldMapZoomLevel = new ThreadLocal<>();
     public static KeyBinding displayMapGUIBinding;
     public static String currentMapStateId = null;
-    public static final Identifier ATLAS_LECTERN_ID = new Identifier(MapAtlasesMod.MOD_ID, "entity/lectern_atlas");
+    public static final Identifier LECTERN_OVERWORLD_ID = new Identifier(MapAtlasesMod.MOD_ID, "entity/lectern_atlas");
+    public static final Identifier LECTERN_NETHER_ID = new Identifier(MapAtlasesMod.MOD_ID, "entity/lectern_atlas_nether");
+    public static final Identifier LECTERN_END_ID = new Identifier(MapAtlasesMod.MOD_ID, "entity/lectern_atlas_end");
+    public static final Identifier LECTERN_OTHER_ID = new Identifier(MapAtlasesMod.MOD_ID, "entity/lectern_atlas_unknown");
 
     @Override
     public void onInitializeClient() {
@@ -73,7 +76,10 @@ public class MapAtlasesClient implements ClientModInitializer {
 
         ClientSpriteRegistryCallback.event(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).register(
                 ((atlasTexture, registry) -> {
-                    registry.register(ATLAS_LECTERN_ID);
+                    registry.register(LECTERN_OVERWORLD_ID);
+                    registry.register(LECTERN_NETHER_ID);
+                    registry.register(LECTERN_END_ID);
+                    registry.register(LECTERN_OTHER_ID);
                 }));
     }
 

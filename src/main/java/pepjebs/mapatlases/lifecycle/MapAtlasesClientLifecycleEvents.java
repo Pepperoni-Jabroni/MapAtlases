@@ -53,7 +53,10 @@ public class MapAtlasesClientLifecycleEvents {
             PacketSender _sender) {
         try {
             MapUpdateS2CPacket p = new MapUpdateS2CPacket(buf);
-            client.execute(() -> handler.onMapUpdate(p));
+            client.execute(() -> {
+                MapAtlasesMod.LOGGER.info("Executing mapAtlasClientSync");
+                handler.onMapUpdate(p);
+            });
         } catch (ArrayIndexOutOfBoundsException e) {
             MapAtlasesMod.LOGGER.error("Bad Minecraft MapUpdate packet sent to client by server");
             MapAtlasesMod.LOGGER.error(e);

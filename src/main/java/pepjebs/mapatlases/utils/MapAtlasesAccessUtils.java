@@ -42,6 +42,10 @@ public class MapAtlasesAccessUtils {
         return map;
     }
 
+    public static String getMapStringFromInt(int i) {
+        return "map_" + i;
+    }
+
     public static int getMapIntFromString(String id) {
         if (id == null) {
             MapAtlasesMod.LOGGER.error("Encountered null id when fetching map name. Env: "
@@ -77,6 +81,12 @@ public class MapAtlasesAccessUtils {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    public static ItemStack getAtlasFromInventory(PlayerInventory inventory) {
+        return inventory.main.stream()
+                .filter(i -> i != null && i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
+                .findFirst().orElse(null);
+    }
+
     public static ItemStack getAtlasFromPlayerByConfig(PlayerEntity entity) {
         PlayerInventory inventory = entity.getInventory();
         ItemStack itemStack =  inventory.main.stream()
@@ -86,9 +96,7 @@ public class MapAtlasesAccessUtils {
 
         if (MapAtlasesMod.CONFIG != null) {
             if(MapAtlasesMod.CONFIG.activationLocation.equals("INVENTORY")) {
-                itemStack =  inventory.main.stream()
-                        .filter(i -> i != null && i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
-                        .findFirst().orElse(null);
+                itemStack =  getAtlasFromInventory(inventory);
             } else if (MapAtlasesMod.CONFIG.activationLocation.equals("HANDS")) {
                 itemStack = null;
                 ItemStack mainHand = inventory.main.get(inventory.selectedSlot);
@@ -120,7 +128,7 @@ public class MapAtlasesAccessUtils {
 
     public static double distanceBetweenMapStateAndPlayer(
             MapState mapState,
-            ServerPlayerEntity player
+            PlayerEntity player
     ) {
         return Math.hypot(Math.abs(mapState.centerX - player.getX()),Math.abs(mapState.centerZ - player.getZ()));
     }

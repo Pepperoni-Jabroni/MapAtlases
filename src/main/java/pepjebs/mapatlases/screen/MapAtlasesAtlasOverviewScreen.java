@@ -1,6 +1,7 @@
 package pepjebs.mapatlases.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -39,7 +40,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     public MapAtlasesAtlasOverviewScreen(ScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
-        atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(inventory.player);
+        // TODO: ! Atlas is null when opening Lectern ! (unless a duplicate is in inventory)
+        MapAtlasesMod.LOGGER.info(inventory.main.get(0).getItem().toString());
+        atlas = MapAtlasesAccessUtils.getAtlasFromInventory(inventory);
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
     }
 
@@ -82,24 +85,53 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 atlasBgScaledSize
         );
         // Draw maps, putting active map in middle of grid
+        if (atlas == null) {
+            MapAtlasesMod.LOGGER.warn("atlas == null");
+            return;
+        }
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(client.world, atlas);
         String activeMapIdStr = MapAtlasesClient.currentMapStateId;
+        if (activeMapIdStr == null) {
+            MapAtlasesMod.LOGGER.warn("activeMapIdStr == null");
+        }
         MapState activeState = client.world.getMapState(activeMapIdStr);
         if (activeState == null) {
             if (!mapInfos.isEmpty()) {
                 var info = mapInfos.entrySet().stream().findFirst().get();
                 activeMapIdStr = info.getKey();
                 activeState = info.getValue();
+                MapAtlasesMod.LOGGER.warn("Using back-up active state on client: "+activeMapIdStr);
+            } else if(!idsToCenters.isEmpty()) {
+                double minDist = Double.MAX_VALUE;
+                for (var id : idsToCenters.keySet()) {
+                    String idStr = MapAtlasesAccessUtils.getMapStringFromInt(id);
+                    MapState ms = MinecraftClient.getInstance().world.getMapState(idStr);
+                    if (ms == null) {
+                        MapAtlasesMod.LOGGER.warn("Couldn't find: "+idStr);
+                        continue;
+                    }
+                    double distance = MapAtlasesAccessUtils.distanceBetweenMapStateAndPlayer(
+                            ms, MinecraftClient.getInstance().player);
+                    if (distance < minDist) {
+                        minDist = distance;
+                        activeMapIdStr = idStr;
+                        activeState = ms;
+                    }
+
+                }
             }
-            else {
-                return;
-            }
+        }
+        if (activeState == null) {
+            MapAtlasesMod.LOGGER.warn("Unable to find activeState, returning");
+            return;
         }
         int activeMapId = MapAtlasesAccessUtils.getMapIntFromString(activeMapIdStr);
         int atlasScale = (1 << activeState.scale) * 128;
         if (!idsToCenters.containsKey(activeMapId)) {
-            if (idsToCenters.isEmpty())
+            if (idsToCenters.isEmpty()) {
+                MapAtlasesMod.LOGGER.warn("idsToCenters.isEmpty(), returning");
                 return;
+            }
             activeMapId = idsToCenters.keySet().stream().findAny().get();
         }
         double mapTextX = x + drawnMapBufferSize;

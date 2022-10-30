@@ -142,33 +142,37 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         return ItemStack.EMPTY;
     }
 
+    private void sendPlayerLecternAtlasData(ServerPlayerEntity serverPlayerEntity, ItemStack atlas){
+        // Send player all MapStates
+        var states =
+                MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(serverPlayerEntity.world, atlas);
+        double minDist = Double.MAX_VALUE;
+        String activeId = null;
+        for (var state : states.entrySet()) {
+            state.getValue().getPlayerSyncData(serverPlayerEntity);
+            double distance =
+                    MapAtlasesAccessUtils.distanceBetweenMapStateAndPlayer(state.getValue(), serverPlayerEntity);
+            if (distance < minDist) {
+                minDist = distance;
+                activeId = state.getKey();
+            }
+            MapAtlasesServerLifecycleEvents.relayMapStateSyncToPlayerClient(state, serverPlayerEntity);
+        }
+        // Tell player active MapState for location
+        if (activeId != null) {
+            PacketByteBuf p = new PacketByteBuf(Unpooled.buffer());
+            p.writeString(activeId);
+            serverPlayerEntity.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+                    MAP_ATLAS_ACTIVE_STATE_CHANGE, p));
+        }
+    }
+
     @Override
     public void writeScreenOpeningData(ServerPlayerEntity serverPlayerEntity, PacketByteBuf packetByteBuf) {
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(serverPlayerEntity);
         if (atlas.isEmpty()) {
             atlas = getAtlasFromLookingLectern(serverPlayerEntity);
-            // Send player all MapStates
-            var states =
-                    MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(serverPlayerEntity.world, atlas);
-            double minDist = Double.MAX_VALUE;
-            String activeId = null;
-            for (var state : states.entrySet()) {
-                state.getValue().update(serverPlayerEntity, atlas);
-                MapAtlasesServerLifecycleEvents.relayMapStateSyncToPlayerClient(state, serverPlayerEntity);
-                double distance =
-                        MapAtlasesAccessUtils.distanceBetweenMapStateAndPlayer(state.getValue(), serverPlayerEntity);
-                if (distance < minDist) {
-                    minDist = distance;
-                    activeId = state.getKey();
-                }
-            }
-            // Tell player active MapState for location
-            if (activeId != null) {
-                PacketByteBuf p = new PacketByteBuf(Unpooled.buffer());
-                p.writeString(activeId);
-                serverPlayerEntity.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                        MAP_ATLAS_ACTIVE_STATE_CHANGE, p));
-            }
+            sendPlayerLecternAtlasData(serverPlayerEntity, atlas);
         }
         if (atlas.isEmpty()) return;
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(

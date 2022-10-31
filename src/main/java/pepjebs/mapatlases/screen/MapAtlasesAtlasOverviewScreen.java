@@ -84,28 +84,22 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         );
         // Draw maps, putting active map in middle of grid
         if (atlas == null) {
-            MapAtlasesMod.LOGGER.warn("atlas == null");
             return;
         }
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(client.world, atlas);
         String activeMapIdStr = MapAtlasesClient.currentMapStateId;
-        if (activeMapIdStr == null) {
-            MapAtlasesMod.LOGGER.warn("activeMapIdStr == null");
-        }
         MapState activeState = client.world.getMapState(activeMapIdStr);
         if (activeState == null) {
             if (!mapInfos.isEmpty()) {
                 var info = mapInfos.entrySet().stream().findFirst().get();
                 activeMapIdStr = info.getKey();
                 activeState = info.getValue();
-                MapAtlasesMod.LOGGER.warn("Using back-up active state on client: "+activeMapIdStr);
             } else if(!idsToCenters.isEmpty()) {
                 double minDist = Double.MAX_VALUE;
                 for (var id : idsToCenters.keySet()) {
                     String idStr = MapAtlasesAccessUtils.getMapStringFromInt(id);
                     MapState ms = MinecraftClient.getInstance().world.getMapState(idStr);
                     if (ms == null) {
-                        MapAtlasesMod.LOGGER.warn("Couldn't find: "+idStr);
                         continue;
                     }
                     double distance = MapAtlasesAccessUtils.distanceBetweenMapStateAndPlayer(
@@ -120,14 +114,12 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             }
         }
         if (activeState == null) {
-            MapAtlasesMod.LOGGER.warn("Unable to find activeState, returning");
             return;
         }
         int activeMapId = MapAtlasesAccessUtils.getMapIntFromString(activeMapIdStr);
         int atlasScale = (1 << activeState.scale) * 128;
         if (!idsToCenters.containsKey(activeMapId)) {
             if (idsToCenters.isEmpty()) {
-                MapAtlasesMod.LOGGER.warn("idsToCenters.isEmpty(), returning");
                 return;
             }
             activeMapId = idsToCenters.keySet().stream().findAny().get();

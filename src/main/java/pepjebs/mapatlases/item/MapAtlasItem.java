@@ -114,9 +114,9 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     @Nullable
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
+        ItemStack atlas = getAtlasFromLookingLectern(player);
         if (atlas.isEmpty()) {
-            atlas = getAtlasFromLookingLectern(player);
+            atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
         }
         Map<Integer, List<Integer>> idsToCenters = new HashMap<>();
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
@@ -169,9 +169,10 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
     @Override
     public void writeScreenOpeningData(ServerPlayerEntity serverPlayerEntity, PacketByteBuf packetByteBuf) {
-        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(serverPlayerEntity);
+        ItemStack atlas = getAtlasFromLookingLectern(serverPlayerEntity);
         if (atlas.isEmpty()) {
-            atlas = getAtlasFromLookingLectern(serverPlayerEntity);
+            atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(serverPlayerEntity);
+        } else {
             sendPlayerLecternAtlasData(serverPlayerEntity, atlas);
         }
         if (atlas.isEmpty()) return;

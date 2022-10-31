@@ -21,7 +21,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
+import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
+
+import java.util.Arrays;
 
 @Environment(EnvType.CLIENT)
 public class MapAtlasesHUD extends DrawableHelper {
@@ -51,8 +54,16 @@ public class MapAtlasesHUD extends DrawableHelper {
         if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.drawMiniMapHUD) return false;
         // Check F3 menu displayed
         if (client.options.debugEnabled) return false;
-        // Check the hot-bar for an Atlas
-        return MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player) != ItemStack.EMPTY;
+        ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player);
+        // Check the player for an Atlas
+        if (atlas.isEmpty()) return false;
+        // Check the client has an active map id
+        if (MapAtlasesClient.currentMapStateId == null) return false;
+        // Check the active map id is in the active atlas
+        return atlas.getNbt() != null && atlas.getNbt().contains(MapAtlasItem.MAP_LIST_NBT) &&
+                Arrays.stream(atlas.getNbt().getIntArray(MapAtlasItem.MAP_LIST_NBT))
+                        .anyMatch(i ->
+                                i == MapAtlasesAccessUtils.getMapIntFromString(MapAtlasesClient.currentMapStateId));
     }
 
     private void renderMapHUD(MatrixStack matrices) {
@@ -62,10 +73,7 @@ public class MapAtlasesHUD extends DrawableHelper {
         }
         String curMapId = MapAtlasesClient.currentMapStateId;
         MapState state = client.world.getMapState(MapAtlasesClient.currentMapStateId);
-        if (curMapId == null || state == null) {
-            currentMapId = null;
-            return;
-        }
+        if (state == null) return;
         // Update client current map id
         if (currentMapId == null || curMapId.compareTo(currentMapId) != 0) {
             if (currentMapId != null && currentMapId.compareTo("") != 0) {

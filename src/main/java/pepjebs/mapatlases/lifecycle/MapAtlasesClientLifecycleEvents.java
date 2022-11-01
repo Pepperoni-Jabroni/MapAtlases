@@ -54,7 +54,6 @@ public class MapAtlasesClientLifecycleEvents {
         try {
             MapUpdateS2CPacket p = new MapUpdateS2CPacket(buf);
             client.execute(() -> {
-                MapAtlasesMod.LOGGER.info("Executing mapAtlasClientSync");
                 handler.onMapUpdate(p);
             });
         } catch (ArrayIndexOutOfBoundsException e) {

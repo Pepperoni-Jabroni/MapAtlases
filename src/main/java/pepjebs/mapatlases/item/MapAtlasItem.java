@@ -125,7 +125,9 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
                     MapAtlasesAccessUtils.getMapIntFromString(state.getKey()),
                     Arrays.asList(state.getValue().centerX, state.getValue().centerZ));
         }
-        return new MapAtlasesAtlasOverviewScreenHandler(syncId, inv, idsToCenters, atlas);
+        String centerMap = MapAtlasesAccessUtils
+                .getActiveAtlasMapStateServer(mapInfos, (ServerPlayerEntity) player).getKey();
+        return new MapAtlasesAtlasOverviewScreenHandler(syncId, inv, idsToCenters, atlas, centerMap);
     }
 
     public ItemStack getAtlasFromLookingLectern(PlayerEntity player) {
@@ -159,12 +161,12 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             MapAtlasesServerLifecycleEvents.relayMapStateSyncToPlayerClient(state, serverPlayerEntity);
         }
         // Tell player active MapState for location
-        if (activeId != null) {
-            PacketByteBuf p = new PacketByteBuf(Unpooled.buffer());
-            p.writeString(activeId);
-            serverPlayerEntity.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                    MAP_ATLAS_ACTIVE_STATE_CHANGE, p));
-        }
+//        if (activeId != null) {
+//            PacketByteBuf p = new PacketByteBuf(Unpooled.buffer());
+//            p.writeString(activeId);
+//            serverPlayerEntity.networkHandler.sendPacket(new CustomPayloadS2CPacket(
+//                    MAP_ATLAS_ACTIVE_STATE_CHANGE, p));
+//        }
     }
 
     @Override
@@ -178,7 +180,10 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         if (atlas.isEmpty()) return;
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(
                 serverPlayerEntity.world, atlas);
+        String centerMap = MapAtlasesAccessUtils
+                .getActiveAtlasMapStateServer(mapInfos, serverPlayerEntity).getKey();
         packetByteBuf.writeItemStack(atlas);
+        packetByteBuf.writeString(centerMap);
         packetByteBuf.writeInt(mapInfos.size());
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
             packetByteBuf.writeInt(MapAtlasesAccessUtils.getMapIntFromString(state.getKey()));

@@ -33,6 +33,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     private static final int PAN_BUCKET = 25;
 
     private final ItemStack atlas;
+    public final String centerMapId;
     public Map<Integer, List<Integer>> idsToCenters;
     private int mouseXOffset = 0;
     private int mouseYOffset = 0;
@@ -42,6 +43,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         super(handler, inventory, title);
         atlas = ((MapAtlasesAtlasOverviewScreenHandler) handler).atlas;
         idsToCenters = ((MapAtlasesAtlasOverviewScreenHandler) handler).idsToCenters;
+        centerMapId = ((MapAtlasesAtlasOverviewScreenHandler) handler).centerMapId;
     }
 
     @Override
@@ -87,36 +89,11 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             return;
         }
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(client.world, atlas);
-        String activeMapIdStr = MapAtlasesClient.currentMapStateId;
-        MapState activeState = client.world.getMapState(activeMapIdStr);
-        if (activeState == null) {
-            if (!mapInfos.isEmpty()) {
-                var info = mapInfos.entrySet().stream().findFirst().get();
-                activeMapIdStr = info.getKey();
-                activeState = info.getValue();
-            } else if(!idsToCenters.isEmpty()) {
-                double minDist = Double.MAX_VALUE;
-                for (var id : idsToCenters.keySet()) {
-                    String idStr = MapAtlasesAccessUtils.getMapStringFromInt(id);
-                    MapState ms = MinecraftClient.getInstance().world.getMapState(idStr);
-                    if (ms == null) {
-                        continue;
-                    }
-                    double distance = MapAtlasesAccessUtils.distanceBetweenMapStateAndPlayer(
-                            ms, MinecraftClient.getInstance().player);
-                    if (distance < minDist) {
-                        minDist = distance;
-                        activeMapIdStr = idStr;
-                        activeState = ms;
-                    }
-
-                }
-            }
-        }
+        MapState activeState = client.world.getMapState(this.centerMapId);
         if (activeState == null) {
             return;
         }
-        int activeMapId = MapAtlasesAccessUtils.getMapIntFromString(activeMapIdStr);
+        int activeMapId = MapAtlasesAccessUtils.getMapIntFromString(this.centerMapId);
         int atlasScale = (1 << activeState.scale) * 128;
         if (!idsToCenters.containsKey(activeMapId)) {
             if (idsToCenters.isEmpty()) {

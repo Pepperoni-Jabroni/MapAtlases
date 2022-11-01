@@ -16,11 +16,13 @@ import java.util.Map;
 public class MapAtlasesAtlasOverviewScreenHandler extends ScreenHandler {
 
     public ItemStack atlas = ItemStack.EMPTY;
+    public String centerMapId = "";
     public Map<Integer, List<Integer>> idsToCenters = new HashMap<>();
 
     public MapAtlasesAtlasOverviewScreenHandler(int syncId, PlayerInventory _playerInventory, PacketByteBuf buf) {
         super(MapAtlasesMod.ATLAS_OVERVIEW_HANDLER, syncId);
         atlas = buf.readItemStack();
+        centerMapId = buf.readString();
         int numToRead = buf.readInt();
         for (int i = 0; i < numToRead; i++) {
             idsToCenters.put(buf.readInt(), Arrays.asList(buf.readInt(), buf.readInt()));
@@ -28,10 +30,13 @@ public class MapAtlasesAtlasOverviewScreenHandler extends ScreenHandler {
     }
 
     public MapAtlasesAtlasOverviewScreenHandler(int syncId, PlayerInventory _playerInventory,
-                                                Map<Integer, List<Integer>> idsToCenters1, ItemStack atlas1) {
+                                                Map<Integer, List<Integer>> idsToCenters1,
+                                                ItemStack atlas1,
+                                                String centerMapId1) {
         super(MapAtlasesMod.ATLAS_OVERVIEW_HANDLER, syncId);
         idsToCenters = idsToCenters1;
         atlas = atlas1;
+        centerMapId = centerMapId1;
     }
 
     @Override
@@ -40,8 +45,5 @@ public class MapAtlasesAtlasOverviewScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
-        return true;
-//        return MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player) != ItemStack.EMPTY;
-    }
+    public boolean canUse(PlayerEntity player) {return true;}
 }

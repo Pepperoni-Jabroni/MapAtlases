@@ -74,9 +74,7 @@ The "Atlas" features and details:
 ![2022-08-26_18 06 28](https://user-images.githubusercontent.com/17690401/187008291-33800e98-04c9-4340-a433-91a094fe56b6.png)
 
 ## New as of 2.2.0
-**Atlases can now be displayed in Lecterns!**
-And each dimension has its own texture - collect 'em all!
-![atlas_lectern_promo](https://user-images.githubusercontent.com/17690401/196099897-b22d161b-c357-46dd-9087-84a642b1ab53.png)
+![map_atlases_v220_promo](https://user-images.githubusercontent.com/17690401/199161203-4cbfc68d-e817-46c2-8e80-36e2950af26f.png)
 
 Sound Sources
 - [Atlas open sound](https://freesound.org/people/InspectorJ/sounds/416179/)

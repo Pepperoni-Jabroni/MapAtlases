@@ -148,25 +148,10 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         // Send player all MapStates
         var states =
                 MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(serverPlayerEntity.world, atlas);
-        double minDist = Double.MAX_VALUE;
-        String activeId = null;
         for (var state : states.entrySet()) {
             state.getValue().getPlayerSyncData(serverPlayerEntity);
-            double distance =
-                    MapAtlasesAccessUtils.distanceBetweenMapStateAndPlayer(state.getValue(), serverPlayerEntity);
-            if (distance < minDist) {
-                minDist = distance;
-                activeId = state.getKey();
-            }
             MapAtlasesServerLifecycleEvents.relayMapStateSyncToPlayerClient(state, serverPlayerEntity);
         }
-        // Tell player active MapState for location
-//        if (activeId != null) {
-//            PacketByteBuf p = new PacketByteBuf(Unpooled.buffer());
-//            p.writeString(activeId);
-//            serverPlayerEntity.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-//                    MAP_ATLAS_ACTIVE_STATE_CHANGE, p));
-//        }
     }
 
     @Override

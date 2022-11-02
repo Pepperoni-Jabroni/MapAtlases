@@ -26,7 +26,10 @@ The "Atlas" features and details:
 - The Atlas world view has full pan support as well, using your mouse to drag the world map.
 - Atlases also support right-clicking Banners to add "waypoints", which display in both the mini-map & world-view map.
 - Atlases can be **merged** with a Cartography Table - simply put an Atlas in the top & bottom slots and the Atlases will combine their mapped regions with one-another!
-- You can mass-add entire stacks of Empty Maps to the Atlas using a Cartography Table as well.
+- You can create an Atlas in a Cartography Table by combining a Book with a Filled Map & mass-add entire stacks of Empty Maps to the Atlas using a Cartography Table as well.
+- **Atlases also support Lecterns** - Show off your world by putting an Atlas in a Lectern! 
+   - Simply right click a Lectern while holding an Atlas to display the Lectern
+   - The Atlas will appear visually different depending on the Dimension its displayed in - there's a unique texture for the Overworld, Nether, End and "Other".
 - **Optional Trinkets support**: 
    - When Trinkets is installed, there will be a new Slot for an Atlas
    - The Atlas will continue to function as normal inside the Trinkets slot

@@ -126,6 +126,14 @@ public class MapAtlasesAccessUtils {
         return itemStacks;
     }
 
+    public static String getPlayerDimKey(PlayerEntity player) {
+        return player.world.getRegistryKey().getValue().toString();
+    }
+
+    public static String getMapStateDimKey(MapState state) {
+        return state.dimension.getValue().toString();
+    }
+
     public static double distanceBetweenMapStateAndPlayer(
             MapState mapState,
             PlayerEntity player

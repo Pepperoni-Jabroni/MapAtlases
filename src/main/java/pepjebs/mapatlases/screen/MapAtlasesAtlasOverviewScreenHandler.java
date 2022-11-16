@@ -1,12 +1,12 @@
 package pepjebs.mapatlases.screen;
 
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import pepjebs.mapatlases.MapAtlasesMod;
-import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,7 +17,7 @@ public class MapAtlasesAtlasOverviewScreenHandler extends ScreenHandler {
 
     public ItemStack atlas = ItemStack.EMPTY;
     public String centerMapId = "";
-    public Map<Integer, List<Integer>> idsToCenters = new HashMap<>();
+    public Map<Integer, Pair<String,List<Integer>>> idsToCenters = new HashMap<>();
 
     public MapAtlasesAtlasOverviewScreenHandler(int syncId, PlayerInventory _playerInventory, PacketByteBuf buf) {
         super(MapAtlasesMod.ATLAS_OVERVIEW_HANDLER, syncId);
@@ -25,12 +25,15 @@ public class MapAtlasesAtlasOverviewScreenHandler extends ScreenHandler {
         centerMapId = buf.readString();
         int numToRead = buf.readInt();
         for (int i = 0; i < numToRead; i++) {
-            idsToCenters.put(buf.readInt(), Arrays.asList(buf.readInt(), buf.readInt()));
+            int id = buf.readInt();
+            var dim = buf.readString();
+            var centers = Arrays.asList(buf.readInt(), buf.readInt());
+            idsToCenters.put(id, new Pair<>(dim, centers));
         }
     }
 
     public MapAtlasesAtlasOverviewScreenHandler(int syncId, PlayerInventory _playerInventory,
-                                                Map<Integer, List<Integer>> idsToCenters1,
+                                                Map<Integer, Pair<String,List<Integer>>> idsToCenters1,
                                                 ItemStack atlas1,
                                                 String centerMapId1) {
         super(MapAtlasesMod.ATLAS_OVERVIEW_HANDLER, syncId);

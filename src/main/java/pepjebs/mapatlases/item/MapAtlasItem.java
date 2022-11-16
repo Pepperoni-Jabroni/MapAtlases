@@ -1,6 +1,6 @@
 package pepjebs.mapatlases.item;
 
-import io.netty.buffer.Unpooled;
+import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -15,7 +15,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.map.MapState;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
@@ -42,8 +41,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static pepjebs.mapatlases.lifecycle.MapAtlasesServerLifecycleEvents.MAP_ATLAS_ACTIVE_STATE_CHANGE;
 
 public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
@@ -118,12 +115,13 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         if (atlas.isEmpty()) {
             atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
         }
-        Map<Integer, List<Integer>> idsToCenters = new HashMap<>();
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
+        Map<Integer, Pair<String,List<Integer>>> idsToCenters = new HashMap<>();
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
-            idsToCenters.put(
-                    MapAtlasesAccessUtils.getMapIntFromString(state.getKey()),
-                    Arrays.asList(state.getValue().centerX, state.getValue().centerZ));
+            var id = MapAtlasesAccessUtils.getMapIntFromString(state.getKey());
+            var centers = Arrays.asList(state.getValue().centerX, state.getValue().centerZ);
+            var dimStr = MapAtlasesAccessUtils.getMapStateDimKey(state.getValue());
+            idsToCenters.put(id, new Pair<>(dimStr, centers));
         }
         String centerMap = MapAtlasesAccessUtils
                 .getActiveAtlasMapStateServer(mapInfos, (ServerPlayerEntity) player).getKey();
@@ -147,7 +145,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     private void sendPlayerLecternAtlasData(ServerPlayerEntity serverPlayerEntity, ItemStack atlas){
         // Send player all MapStates
         var states =
-                MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(serverPlayerEntity.world, atlas);
+                MapAtlasesAccessUtils.getAllMapInfoFromAtlas(serverPlayerEntity.world, atlas);
         for (var state : states.entrySet()) {
             state.getValue().getPlayerSyncData(serverPlayerEntity);
             MapAtlasesServerLifecycleEvents.relayMapStateSyncToPlayerClient(state, serverPlayerEntity);
@@ -163,7 +161,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             sendPlayerLecternAtlasData(serverPlayerEntity, atlas);
         }
         if (atlas.isEmpty()) return;
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(
                 serverPlayerEntity.world, atlas);
         String centerMap = MapAtlasesAccessUtils
                 .getActiveAtlasMapStateServer(mapInfos, serverPlayerEntity).getKey();
@@ -172,6 +170,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         packetByteBuf.writeInt(mapInfos.size());
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
             packetByteBuf.writeInt(MapAtlasesAccessUtils.getMapIntFromString(state.getKey()));
+            packetByteBuf.writeString(MapAtlasesAccessUtils.getMapStateDimKey(state.getValue()));
             packetByteBuf.writeInt(state.getValue().centerX);
             packetByteBuf.writeInt(state.getValue().centerZ);
         }

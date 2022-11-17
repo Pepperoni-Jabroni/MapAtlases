@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.FilledMapItem;
@@ -12,7 +13,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableTextContent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import pepjebs.mapatlases.MapAtlasesMod;
@@ -50,6 +53,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     public Map<Integer, Pair<String,List<Integer>>> idsToCenters;
     private int mouseXOffset = 0;
     private int mouseYOffset = 0;
+    private double rawMouseXMoved = 0;
+    private double rawMouseYMoved = 0;
     private int zoomValue = ZOOM_BUCKET;
     private String registryWorldSelected;
     private final String initialWorldSelected;
@@ -203,6 +208,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 atlasBgScaledSize,
                 atlasBgScaledSize
         );
+        // Draw dimension tooltip if necessary
+        drawDimensionTooltip(matrices, x, y, atlasBgScaledSize);
         // Draw world map coords
         if (mouseX < x + drawnMapBufferSize || mouseY < y + drawnMapBufferSize
                 || mouseX > x + atlasBgScaledSize - drawnMapBufferSize
@@ -229,6 +236,45 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         drawMapTextXZCoords(matrices, (int) x, (int) y, atlasBgScaledSize, targetHeight, textScaling, cursorBlockPos);
     }
 
+    private void drawDimensionTooltip(
+            MatrixStack matrices,
+            double x,
+            double y,
+            int atlasBgScaledSize
+    ) {
+        var dimensions =
+                idsToCenters.values().stream().map(Pair::getFirst).collect(Collectors.toSet()).stream().toList();
+        if (client == null) return;
+        int scalingFactor = client.getWindow().getHeight() / client.getWindow().getScaledHeight();
+        if (scalingFactor == 0) return;
+
+        for (int i = 0; i < dimensions.size(); i++) {
+            int rawWidth = 48;
+            int scaledWidth = rawWidth / scalingFactor;
+            if (rawMouseXMoved >= (x + (int) (29.5/32.0 * atlasBgScaledSize))
+                    && rawMouseXMoved <= (x + (int) (29.5/32.0 * atlasBgScaledSize) + scaledWidth)
+                    && rawMouseYMoved >= (y + (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize))
+                    && rawMouseYMoved <= (y + (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize)) + scaledWidth) {
+                Identifier dimRegistry = new Identifier(dimensions.get(i));
+                String dimName;
+                if (dimRegistry.getNamespace().compareTo("minecraft") == 0) {
+                    dimName = dimRegistry.getPath().toString().replace("_", " ");
+                } else {
+                    dimName = dimRegistry.toString().toString().replace("_", " ").replace(":", " ");
+                }
+                char[] array = dimName.toCharArray();
+                array[0] = Character.toUpperCase(array[0]);
+                for (int j = 1; j < array.length; j++) {
+                    if (Character.isWhitespace(array[j - 1])) {
+                        array[j] = Character.toUpperCase(array[j]);
+                    }
+                }
+                dimName = new String(array);
+                this.renderTooltip(matrices, Text.of(dimName), (int) rawMouseXMoved, (int) rawMouseYMoved);
+            }
+        }
+    }
+
     private void drawDimensionSelectors(
             MatrixStack matrices,
             double x,
@@ -237,16 +283,18 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     ) {
         var dimensions =
                 idsToCenters.values().stream().map(Pair::getFirst).collect(Collectors.toSet()).stream().toList();
+        if (client == null) return;
+        int scalingFactor = client.getWindow().getHeight() / client.getWindow().getScaledHeight();
+        if (scalingFactor == 0) return;
         for (int i = 0; i < dimensions.size(); i++) {
+            int rawWidth = 48;
+            int scaledWidth = rawWidth / scalingFactor;
             // Draw selector
             if (dimensions.get(i).compareTo(registryWorldSelected) == 0) {
                 RenderSystem.setShaderTexture(0, PAGE_SELECTED);
             } else {
                 RenderSystem.setShaderTexture(0, PAGE_UNSELECTED);
             }
-            int scalingFactor = client.getWindow().getHeight() / client.getWindow().getScaledHeight();
-            int rawWidth = 48;
-            int scaledWidth = rawWidth / scalingFactor;
             drawTexture(
                     matrices,
                     (int) x + (int) (29.5/32.0 * atlasBgScaledSize),
@@ -413,6 +461,12 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         zoomValue += -1 * amount;
         zoomValue = Math.max(zoomValue, -1 * ZOOM_BUCKET);
         return true;
+    }
+
+    @Override
+    public void mouseMoved(double mouseX, double mouseY) {
+        rawMouseXMoved = mouseX;
+        rawMouseYMoved = mouseY;
     }
 
     @Override

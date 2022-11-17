@@ -118,20 +118,34 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             return;
         }
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(client.world, atlas);
-        MapState activeState = client.world.getMapState(this.centerMapId);
-        if (activeState == null) {
-            return;
-        }
-        int activeMapId = MapAtlasesAccessUtils.getMapIntFromString(this.centerMapId);
-        int atlasScale = (1 << activeState.scale) * 128;
+        String currentMapId = MapAtlasesClient.currentMapStateId == null
+            ? this.centerMapId
+            : MapAtlasesClient.currentMapStateId;
+        MapState activeState = client.world.getMapState(currentMapId);
+        int activeMapId = MapAtlasesAccessUtils.getMapIntFromString(currentMapId);
         if (!currentIdsToCenters.containsKey(activeMapId)) {
             if (currentIdsToCenters.isEmpty()) {
                 return;
             }
-            activeMapId = currentIdsToCenters.keySet().stream().findAny().get();
+            activeMapId = currentIdsToCenters.keySet().stream()
+                    .filter(stringListPair -> {
+                        var state = client.world.getMapState(
+                                MapAtlasesAccessUtils.getMapStringFromInt(stringListPair));
+                        if (state == null) return false;
+                        return !((MapStateIntrfc) state).getFullIcons().entrySet().stream()
+                                .filter(e -> isMeaningfulMapIcon(e.getValue().getType()))
+                                .collect(Collectors.toSet())
+                                .isEmpty();
+                    })
+                    .findAny().orElseGet(() -> currentIdsToCenters.keySet().stream().findAny().orElse(-1));
+            activeState = client.world.getMapState(MapAtlasesAccessUtils.getMapStringFromInt(activeMapId));
+        }
+        if (activeState == null) {
+            return;
         }
         double mapTextX = x + drawnMapBufferSize;
         double mapTextY = y + drawnMapBufferSize;
+        int atlasScale = (1 << activeState.scale) * 128;
         int activeXCenter = currentIdsToCenters.get(activeMapId).getSecond().get(0) +
                 (round(mouseXOffset, PAN_BUCKET) / PAN_BUCKET * atlasScale * -1);
         int activeZCenter = currentIdsToCenters.get(activeMapId).getSecond().get(1) +
@@ -296,8 +310,11 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     private boolean mapContainsMeaningfulIcons(Map.Entry<String, MapState> state) {
         return ((MapStateIntrfc) state.getValue()).getFullIcons().values().stream()
-                .anyMatch(p -> p.getType() != MapIcon.Type.PLAYER_OFF_MAP
-                    && p.getType() != MapIcon.Type.PLAYER_OFF_LIMITS);
+                .anyMatch(i -> this.isMeaningfulMapIcon(i.getType()));
+    }
+
+    private boolean isMeaningfulMapIcon(MapIcon.Type type) {
+        return type != MapIcon.Type.PLAYER_OFF_MAP && type != MapIcon.Type.PLAYER_OFF_LIMITS;
     }
 
     private Map.Entry<String, MapState> findMapEntryForCenters(
@@ -340,14 +357,13 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         Iterator<Map.Entry<String, MapIcon>> it = ((MapStateIntrfc) state.getValue())
                 .getFullIcons().entrySet().iterator();
         List<Map.Entry<String, MapIcon>> removed = new ArrayList<>();
-        if (state.getKey().compareTo(FilledMapItem.getMapName(activeMapId)) != 0) {
-            // Only remove the off-map icon if it's not the active map
+        if (state.getKey().compareTo(FilledMapItem.getMapName(activeMapId)) != 0
+                || registryWorldSelected.compareTo(initialWorldSelected) != 0) {
+            // Only remove the off-map icon if it's not the active map or its not the active dimension
             while (it.hasNext()) {
                 Map.Entry<String, MapIcon> e = it.next();
-                if (e.getValue().getType() == MapIcon.Type.PLAYER_OFF_MAP
-                        || e.getValue().getType() == MapIcon.Type.PLAYER_OFF_LIMITS
-                        || (e.getValue().getType() == MapIcon.Type.PLAYER
-                            && !drawPlayerIcons)) {
+                if (!isMeaningfulMapIcon(e.getValue().getType())
+                        || (e.getValue().getType() == MapIcon.Type.PLAYER && !drawPlayerIcons)) {
                     it.remove();
                     removed.add(e);
                 }

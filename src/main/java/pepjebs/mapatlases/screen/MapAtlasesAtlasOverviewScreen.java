@@ -2,7 +2,6 @@ package pepjebs.mapatlases.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -226,9 +225,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         if (MapAtlasesMod.CONFIG.forceWorldMapScaling >= 95) {
             targetHeight = 8;
         }
-        drawMapTextXZCoords(
-                matrices, (int) x, (int) y, atlasBgScaledSize,
-                targetHeight, 1.0f, cursorBlockPos);
+        float textScaling = MapAtlasesMod.CONFIG.worldMapCoordsScale;
+        drawMapTextXZCoords(matrices, (int) x, (int) y, atlasBgScaledSize, targetHeight, textScaling, cursorBlockPos);
     }
 
     private void drawDimensionSelectors(

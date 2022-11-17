@@ -72,4 +72,8 @@ public class MapAtlasesConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip()
     @Comment("When enabled, the Atlas world map coordinates will be displayed")
     public boolean drawWorldMapCoords = true;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Sets the scale of the text rendered for Coords world-map data")
+    public float worldMapCoordsScale = 1.0f;
 }

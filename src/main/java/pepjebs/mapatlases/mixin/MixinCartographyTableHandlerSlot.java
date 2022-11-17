@@ -56,7 +56,8 @@ class MixinCartographyTableScreenHandlerSecondSlotMaps  {
         ItemStack atlas = cartographyHandler.slots.get(0).getStack();
         Slot slotOne = cartographyHandler.slots.get(1);
         if (cartographyHandler.slots.get(0).getStack().getItem() == MapAtlasesMod.MAP_ATLAS
-                && slotOne.getStack().getItem() == Items.MAP) {
+                && (slotOne.getStack().getItem() == Items.MAP
+                || (MapAtlasesMod.CONFIG.acceptPaperForEmptyMaps && slotOne.getStack().getItem() == Items.PAPER))) {
             int amountToTake = MapAtlasesAccessUtils.getMapCountToAdd(atlas, slotOne.getStack());
             // onTakeItem already calls takeStack(1) so we subtract that out
             slotOne.takeStack(amountToTake - 1);

@@ -57,6 +57,7 @@ public class MapAtlasesHUD extends DrawableHelper {
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player);
         // Check the player for an Atlas
         if (atlas.isEmpty()) return false;
+        if (atlas.isEmpty()) return false;
         // Check the client has an active map id
         if (MapAtlasesClient.currentMapStateId == null) return false;
         // Check the active map id is in the active atlas
@@ -84,7 +85,7 @@ public class MapAtlasesHUD extends DrawableHelper {
             currentMapId = curMapId;
         }
         // Set zoom-level for map icons
-        MapAtlasesClient.setWorldMapZoomLevel(1);
+        MapAtlasesClient.setWorldMapZoomLevel(MapAtlasesMod.CONFIG.miniMapIconScale);
         // Draw map background
         int mapBgScaledSize = (int)Math.floor(.2 * client.getWindow().getScaledHeight());
         if (MapAtlasesMod.CONFIG != null) {

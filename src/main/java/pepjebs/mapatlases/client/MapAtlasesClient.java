@@ -29,7 +29,7 @@ import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreen;
 
 public class MapAtlasesClient implements ClientModInitializer {
 
-    private static final ThreadLocal<Integer> worldMapZoomLevel = new ThreadLocal<>();
+    private static final ThreadLocal<Float> worldMapZoomLevel = new ThreadLocal<>();
     public static KeyBinding displayMapGUIBinding;
     public static String currentMapStateId = null;
     public static final Identifier LECTERN_OVERWORLD_ID = new Identifier(MapAtlasesMod.MOD_ID, "entity/lectern_atlas");
@@ -83,12 +83,12 @@ public class MapAtlasesClient implements ClientModInitializer {
                 }));
     }
 
-    public static int getWorldMapZoomLevel() {
-        if (worldMapZoomLevel.get() == null) return 1;
+    public static float getWorldMapZoomLevel() {
+        if (worldMapZoomLevel.get() == null) return 1.0f;
         return worldMapZoomLevel.get();
     }
 
-    public static void setWorldMapZoomLevel(int i) {
+    public static void setWorldMapZoomLevel(float i) {
         worldMapZoomLevel.set(i);
     }
 

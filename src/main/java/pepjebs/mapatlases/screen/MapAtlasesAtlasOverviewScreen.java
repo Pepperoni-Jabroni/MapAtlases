@@ -97,7 +97,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         int zoomLevel = round(zoomValue, ZOOM_BUCKET) / ZOOM_BUCKET;
         zoomLevel = Math.max(zoomLevel, 0);
         int zoomLevelDim = (2 * zoomLevel) + 1;
-        MapAtlasesClient.setWorldMapZoomLevel(zoomLevelDim);
+        MapAtlasesClient.setWorldMapZoomLevel(zoomLevelDim * MapAtlasesMod.CONFIG.worldMapIconScale);
         // a function of worldMapScaling, zoomLevel, and textureSize
         float mapTextureScale = (float)(atlasDataScaledSize/(128.0*zoomLevelDim));
         // Draw map background

@@ -15,7 +15,7 @@ public class MapAtlasesConfig implements ConfigData {
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("Scale the mini-map to a given % of the height of your screen.")
-    public int forceMiniMapScaling = 35;
+    public int forceMiniMapScaling = 30;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("If 'true', the Mini-Map of the Active Map will be drawn on the HUD while the Atlas is active.")
@@ -31,7 +31,7 @@ public class MapAtlasesConfig implements ConfigData {
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("Scale the world-map to a given % of the height of your screen.")
-    public int forceWorldMapScaling = 90;
+    public int forceWorldMapScaling = 80;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("Set to any of 'Upper'/'Lower' & 'Left'/'Right' to control anchor position of mini-map")
@@ -39,11 +39,11 @@ public class MapAtlasesConfig implements ConfigData {
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("Enter an integer which will offset the mini-map horizontally")
-    public int miniMapHorizontalOffset = 0;
+    public int miniMapHorizontalOffset = 5;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("Enter an integer which will offset the mini-map vertically")
-    public int miniMapVerticalOffset = 0;
+    public int miniMapVerticalOffset = 5;
 
     @ConfigEntry.Gui.Tooltip()
     @Comment("Controls how many usable Maps are added when you add a single Map to the Atlas")
@@ -76,4 +76,16 @@ public class MapAtlasesConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip()
     @Comment("Sets the scale of the text rendered for Coords world-map data")
     public float worldMapCoordsScale = 1.0f;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Sets the scale of the map icons rendered in the mini-map")
+    public float miniMapIconScale = 1.0f;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Sets the scale of the map icons rendered in the world-map")
+    public float worldMapIconScale = 1.0f;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("If enabled, you can increase the Empty Map count by inserting Paper")
+    public boolean acceptPaperForEmptyMaps = false;
 }

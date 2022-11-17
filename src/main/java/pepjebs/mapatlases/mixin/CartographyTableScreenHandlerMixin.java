@@ -73,7 +73,8 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
             this.sendContentUpdates();
 
             info.cancel();
-        } else if (atlas.getItem() == MapAtlasesMod.MAP_ATLAS && bottomItem.getItem() == Items.MAP) {
+        } else if (atlas.getItem() == MapAtlasesMod.MAP_ATLAS && (bottomItem.getItem() == Items.MAP
+                || (MapAtlasesMod.CONFIG.acceptPaperForEmptyMaps && bottomItem.getItem() == Items.PAPER))) {
             ItemStack result = atlas.copy();
             NbtCompound nbt = result.getNbt() != null ? result.getNbt() : new NbtCompound();
             int amountToAdd = MapAtlasesAccessUtils.getMapCountToAdd(atlas, bottomItem);

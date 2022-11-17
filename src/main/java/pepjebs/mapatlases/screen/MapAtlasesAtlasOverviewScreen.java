@@ -70,6 +70,15 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         drawBackground(matrices, delta, mouseX, mouseY);
     }
 
+    private int getAtlasBgScaledSize() {
+        if (client == null) return 16;
+        if (MapAtlasesMod.CONFIG != null) {
+            return (int) Math.floor(
+                    MapAtlasesMod.CONFIG.forceWorldMapScaling/100.0 * client.getWindow().getScaledHeight());
+        }
+        return (int) Math.floor(.8 * client.getWindow().getScaledHeight());
+    }
+
     @Override
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
         if (client == null || client.player == null || client.world == null) return;
@@ -78,11 +87,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                         .filter(t -> t.getValue().getFirst().compareTo(registryWorldSelected) == 0)
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (m1, m2) -> m1));
         // Handle zooming
-        int atlasBgScaledSize = (int)Math.floor(.8 * client.getWindow().getScaledHeight());
-        if (MapAtlasesMod.CONFIG != null) {
-            atlasBgScaledSize = (int)Math.floor(
-                    MapAtlasesMod.CONFIG.forceWorldMapScaling/100.0 * client.getWindow().getScaledHeight());
-        }
+        int atlasBgScaledSize = getAtlasBgScaledSize();
         double drawnMapBufferSize = atlasBgScaledSize / 18.0;
         int atlasDataScaledSize = (int) (atlasBgScaledSize - (2 * drawnMapBufferSize));
         int zoomLevel = round(zoomValue, ZOOM_BUCKET) / ZOOM_BUCKET;
@@ -227,16 +232,19 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             } else {
                 RenderSystem.setShaderTexture(0, PAGE_UNSELECTED);
             }
+            int scalingFactor = client.getWindow().getHeight() / client.getWindow().getScaledHeight();
+            int rawWidth = 48;
+            int scaledWidth = rawWidth / scalingFactor;
             drawTexture(
                     matrices,
                     (int) x + (int) (29.5/32.0 * atlasBgScaledSize),
-                    (int) y + (int) (i * (5/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize),
+                    (int) y + (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize),
                     0,
                     0,
-                    48 / (client.getWindow().getHeight() / client.getWindow().getScaledHeight()),
-                    48 / (client.getWindow().getHeight() / client.getWindow().getScaledHeight()),
-                    48 / (client.getWindow().getHeight() / client.getWindow().getScaledHeight()),
-                    48 / (client.getWindow().getHeight() / client.getWindow().getScaledHeight())
+                    scaledWidth,
+                    scaledWidth,
+                    scaledWidth,
+                    scaledWidth
             );
             // Draw Icon
             if (dimensions.get(i).compareTo("minecraft:overworld") == 0) {
@@ -248,16 +256,18 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             } else {
                 RenderSystem.setShaderTexture(0, PAGE_OTHER);
             }
+            rawWidth = 36;
+            scaledWidth = rawWidth / scalingFactor;
             drawTexture(
                     matrices,
                     (int) x + (int) (30.0/32.0 * atlasBgScaledSize),
-                    (int) y + (int) (i * (5/32.0 * atlasBgScaledSize)) + (int) (4.0/64.0 * atlasBgScaledSize),
+                    (int) y + (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (4.0/64.0 * atlasBgScaledSize),
                     0,
                     0,
-                    36 / (client.getWindow().getHeight() / client.getWindow().getScaledHeight()),
-                    36 / (client.getWindow().getHeight() / client.getWindow().getScaledHeight()),
-                    36 / (client.getWindow().getHeight() / client.getWindow().getScaledHeight()),
-                    36 / (client.getWindow().getHeight() / client.getWindow().getScaledHeight())
+                    scaledWidth,
+                    scaledWidth,
+                    scaledWidth,
+                    scaledWidth
             );
         }
     }
@@ -393,16 +403,28 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 2) {
+        if (button == 0) {
             var dims =
                     idsToCenters.values().stream().map(Pair::getFirst).collect(Collectors.toSet()).stream().toList();
-            int curIdx = dims.lastIndexOf(registryWorldSelected);
-            if (curIdx == dims.size() - 1) {
-                curIdx = 0;
-            } else {
-                curIdx++;
+            int atlasBgScaledSize = getAtlasBgScaledSize();
+            double x = (width / 2.0)-(atlasBgScaledSize/2.0);
+            double y = (height / 2.0)-(atlasBgScaledSize/2.0);
+            int scalingFactor = client.getWindow().getHeight() / client.getWindow().getScaledHeight();
+            int rawWidth = 48;
+            int scaledWidth = rawWidth / scalingFactor;
+            for (int i = 0; i < dims.size(); i++) {
+                int targetX = (int) x + (int) (29.5/32.0 * atlasBgScaledSize);
+                int targetY = (int) y +
+                        (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize);
+                if (mouseX >= targetX && mouseX <= targetX + scaledWidth
+                    && mouseY >= targetY && mouseY <= targetY + scaledWidth) {
+                    registryWorldSelected = dims.get(i);
+                    // Reset zoom
+                    mouseXOffset = 0;
+                    mouseYOffset = 0;
+                    zoomValue = ZOOM_BUCKET;
+                }
             }
-            registryWorldSelected = dims.get(curIdx);
         }
         return true;
     }

@@ -53,7 +53,7 @@ The "Atlas" features and details:
 ![2022-06-24_19 48 21](https://user-images.githubusercontent.com/17690401/175755670-3819eca7-cbc4-4be5-a7c8-3d4286dacd19.png)
 
 ## World Map View
-![untitled](https://user-images.githubusercontent.com/17690401/182009108-f87ca806-a698-4c4f-a62b-ab10ca328ead.GIF)
+![2022-11-17_18 16 44](https://user-images.githubusercontent.com/17690401/202605175-ddc836c3-bc1e-4650-a9ae-8df7c377bfa7.png)
 
 ## Cutting a Map out of an Atlas
 ![2022-06-24_19 48 45](https://user-images.githubusercontent.com/17690401/175755627-bf5ff6b5-752d-4bfd-85d2-82c863bc1257.png)
@@ -72,9 +72,6 @@ The "Atlas" features and details:
 
 ## End Atlas World-Map
 ![2022-07-09_11 56 18](https://user-images.githubusercontent.com/17690401/178119955-d1a90fc7-114c-483e-903b-456f0bd74066.png)
-
-## Newly textured world-map background
-![2022-08-26_18 06 28](https://user-images.githubusercontent.com/17690401/187008291-33800e98-04c9-4340-a433-91a094fe56b6.png)
 
 ## New as of 2.2.0
 ![map_atlases_v220_promo](https://user-images.githubusercontent.com/17690401/199161203-4cbfc68d-e817-46c2-8e80-36e2950af26f.png)

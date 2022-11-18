@@ -17,7 +17,6 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.text.MutableText;
@@ -99,8 +98,6 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
     public void openHandledAtlasScreen(World world, PlayerEntity player) {
         player.openHandledScreen(this);
-        world.playSound(player.getX(), player.getY(), player.getZ(), MapAtlasesMod.ATLAS_OPEN_SOUND_EVENT,
-                SoundCategory.PLAYERS, 1.0F, 1.0F, false);
     }
 
     @Override

@@ -47,6 +47,8 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         List<Item> additems = new ArrayList<>(Arrays.asList(Items.FILLED_MAP, MapAtlasesMod.MAP_ATLAS));
         if (MapAtlasesMod.CONFIG == null || MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill)
             additems.add(Items.MAP);
+        if (MapAtlasesMod.CONFIG != null && MapAtlasesMod.CONFIG.acceptPaperForEmptyMaps)
+            additems.add(Items.PAPER);
         if (!(itemStacks.size() > 1 && isListOnlyIngredients(
                 itemStacks,
                 additems))) {
@@ -83,7 +85,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         Set<Integer> mapIds = getMapIdsFromItemStacks(itemStacks);
         // Set NBT Data
         int emptyMapCount = (int)itemStacks.stream()
-                .filter(i -> i != null && i.isItemEqual(new ItemStack(Items.MAP))).count();
+                .filter(i -> i != null && (i.isOf(Items.MAP) || i.isOf(Items.PAPER))).count();
         if (MapAtlasesMod.CONFIG != null) {
             emptyMapCount *= MapAtlasesMod.CONFIG.mapEntryValueMultiplier;
         }

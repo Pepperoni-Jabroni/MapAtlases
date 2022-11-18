@@ -49,8 +49,6 @@ public class MapAtlasesServerLifecycleEvents {
         server.execute(() -> {
             ItemStack atlas = p.atlas;
             player.openHandledScreen((MapAtlasItem) atlas.getItem());
-            player.getWorld().playSound(null, player.getBlockPos(),
-                    MapAtlasesMod.ATLAS_OPEN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F);
         });
     }
 
@@ -59,7 +57,12 @@ public class MapAtlasesServerLifecycleEvents {
             PacketSender _responseSender,
             MinecraftServer _server
     ) {
-        ServerPlayerEntity player = serverPlayNetworkHandler.player;
+        mapAtlasPlayerJoinImpl(serverPlayNetworkHandler.player);
+    }
+
+    public static void mapAtlasPlayerJoinImpl(
+            ServerPlayerEntity player
+    ) {
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
         if (atlas.isEmpty()) return;
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
@@ -79,7 +82,8 @@ public class MapAtlasesServerLifecycleEvents {
     public static void mapAtlasServerTick(MinecraftServer server) {
         ArrayList<String> seenPlayers = new ArrayList<>();
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            seenPlayers.add(player.getName().getString());
+            var playerName = player.getName().getString();
+            seenPlayers.add(playerName);
             if (player.isRemoved() || player.isInTeleportationState() || player.isDisconnected()) continue;
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
             if (atlas.isEmpty()) continue;
@@ -193,8 +197,13 @@ public class MapAtlasesServerLifecycleEvents {
         String playerName = player.getName().getString();
         String changedMapState = null;
         if (activeInfo != null) {
-            if (!playerToActiveMapId.containsKey(playerName)
-                    || playerToActiveMapId.get(playerName) == null
+            boolean addingPlayer = !playerToActiveMapId.containsKey(playerName);
+            boolean activatingPlayer = playerToActiveMapId.get(playerName) == null;
+            // Players that pick up an atlas will need their MapStates initialized
+            if (addingPlayer || activatingPlayer) {
+                mapAtlasPlayerJoinImpl(player);
+            }
+            if (addingPlayer || activatingPlayer
                     || activeInfo.getKey().compareTo(playerToActiveMapId.get(playerName)) != 0) {
                 changedMapState = playerToActiveMapId.get(playerName);
                 playerToActiveMapId.put(playerName, activeInfo.getKey());

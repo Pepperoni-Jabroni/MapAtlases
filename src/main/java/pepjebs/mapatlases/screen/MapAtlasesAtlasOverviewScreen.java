@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.screen.ScreenHandler;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
@@ -66,6 +67,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         centerMapId = ((MapAtlasesAtlasOverviewScreenHandler) handler).centerMapId;
         registryWorldSelected = MapAtlasesAccessUtils.getPlayerDimKey(inventory.player);
         initialWorldSelected = MapAtlasesAccessUtils.getPlayerDimKey(inventory.player);
+        // Play open sound
+        inventory.player.playSound(
+                MapAtlasesMod.ATLAS_OPEN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F);
     }
 
     @Override
@@ -471,6 +475,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (client == null || client.player == null) return false;
         if (button == 0) {
             var dims =
                     idsToCenters.values().stream().map(Pair::getFirst).collect(Collectors.toSet()).stream().toList();
@@ -491,6 +496,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                     mouseXOffset = 0;
                     mouseYOffset = 0;
                     zoomValue = ZOOM_BUCKET;
+                    // Play sound
+                    client.player.playSound(
+                            MapAtlasesMod.ATLAS_PAGE_TURN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F);
                 }
             }
         }

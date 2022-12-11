@@ -82,6 +82,7 @@ The mod is highly configurable and offers in-game config editing with ModMenu. S
 ## 📃 Changelog
 Changelogs are available [at the GitHub Releases section](https://github.com/Pepperoni-Jabroni/MapAtlases/releases)
 
+## 📸 Media
 <details>
 <summary> Photos! </summary>
 

@@ -1,19 +1,14 @@
 <p align="center">
   <img src="https://user-images.githubusercontent.com/17690401/206918778-f71443ec-e7c4-4957-8e1d-20746c8f110e.png">
   </br></br>
+  A vanilla-friendly mini-map/world-view mod using vanilla Maps, introducing the "Atlas".
+  </br></br>
   <a href="https://www.curseforge.com/minecraft/mc-mods/fabric-api"><img src="https://i.imgur.com/Ol1Tcf8.png" width="149" height="50" title="Fabric API" alt="Fabric API"></a>
   </br></br>
   <a href="https://www.curseforge.com/minecraft/mc-mods/map-atlases"><img alt="Curseforge" src="https://cf.way2muchnoise.eu/full_436298_downloads.svg"></a> <a href="https://modrinth.com/mod/map-atlases"><img alt="Modrinth" src="https://img.shields.io/modrinth/dt/map-atlases?label=Modrinth%20Downloads"></a> <a href="https://github.com/Pepperoni-Jabroni/MapAtlases"><img alt="GitHub" src="https://img.shields.io/github/downloads/Pepperoni-Jabroni/MapAtlases/total?label=Downloads&logo=github"></a>
 </p>
 
-
-
-
-
-
-
-A vanilla-friendly mini-map/world-view mod using vanilla Maps, introducing the "Atlas".
-
+## 📖 About
 The "Atlas" features and details:
 - Crafted with a **Filled** Map (the source map), a Book, and something sticky (Slimeball or Honey Bottle). The source map determines the Atlas' scale. *Who knew this whole time, all you had to do to get a mini-map was slap a map onto a book?*
 - When the Atlas is on your hot-bar or off-hand, it will render your current-position Map on the HUD if a such Map exists inside the Atlas.
@@ -83,24 +78,24 @@ The "Atlas" features and details:
 ## New as of 2.2.0
 ![map_atlases_v220_promo](https://user-images.githubusercontent.com/17690401/199161203-4cbfc68d-e817-46c2-8e80-36e2950af26f.png)
 
-Sound Sources
-- [Atlas open sound](https://freesound.org/people/InspectorJ/sounds/416179/)
-- [Atlas page flip sound](https://freesound.org/people/flag2/sounds/63318/)
-- [Atlas new map creation sound](https://freesound.org/people/Tomoyo%20Ichijouji/sounds/211247/)
+## 🔊 Sound Sources
+- [Atlas open sound](https://freesound.org/people/InspectorJ/sounds/416179/), thanks to InspectorJ
+- [Atlas page flip sound](https://freesound.org/people/flag2/sounds/63318/), thanks to flag2
+- [Atlas new map creation sound](https://freesound.org/people/Tomoyo%20Ichijouji/sounds/211247/), thanks to Tomoyo Ichijouji
 
-Required Dependencies:
-- [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
-- [Cloth Config](https://www.curseforge.com/minecraft/mc-mods/cloth-config)
+## ⛓ Dependencies
+- Required:
+   - [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
+   - [Cloth Config](https://www.curseforge.com/minecraft/mc-mods/cloth-config)
+- Optional:
+   - [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu)
+   - [Trinkets](https://www.curseforge.com/minecraft/mc-mods/trinkets)
 
-Optional Dependencies:
-- [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu)
-- [Trinkets](https://www.curseforge.com/minecraft/mc-mods/trinkets)
-
-Known Incompatiblities:
+## ⛔️ Known Incompatiblities
 - [Accurate Maps](https://www.curseforge.com/minecraft/mc-mods/accurate-maps) (*todo: fix here or submit PR to their project*)
 - [Immersive Portals](https://www.curseforge.com/minecraft/mc-mods/immersive-portals-mod)
 
-Recommended Additions:
+## ✅ Recommended Additions
 - [Better Nether Map](https://modrinth.com/mod/better-nether-map) - Makes Nether (& other ceiling dimension) Maps create at y-level of player
 - Cheaper Maps Recipe Data Pack [[1.19]](https://github.com/Pepperoni-Jabroni/MapAtlases/releases/download/2.0.1/cheaper-map-crafting+1.19.zip) - Why would a Map require a Compass? This Data Pack adds a recipe for Empty Maps that's simply 1 Paper + 1 Ink Sac shapeless. 
 - Optional "Modern" Resource Pack [[1.19]](https://github.com/Pepperoni-Jabroni/MapAtlases/releases/download/2.1.0/map_atlases_modern_resource_pack+1.19.zip) - This Resource Pack gives the Mini-map and World-map a "modern" look, abandoning the vanilla Map style textures.

@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="867" height="117" src="https://user-images.githubusercontent.com/17690401/206918778-f71443ec-e7c4-4957-8e1d-20746c8f110e.png">
+  <img src="https://user-images.githubusercontent.com/17690401/206918778-f71443ec-e7c4-4957-8e1d-20746c8f110e.png">
   </br></br>
   <a href="https://www.curseforge.com/minecraft/mc-mods/fabric-api"><img src="https://i.imgur.com/Ol1Tcf8.png" width="149" height="50" title="Fabric API" alt="Fabric API"></a>
   </br></br>

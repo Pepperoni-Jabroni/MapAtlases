@@ -9,34 +9,81 @@
 </p>
 
 ## 📖 About
-The "Atlas" features and details:
-- Crafted with a **Filled** Map (the source map), a Book, and something sticky (Slimeball or Honey Bottle). The source map determines the Atlas' scale. *Who knew this whole time, all you had to do to get a mini-map was slap a map onto a book?*
-- When the Atlas is on your hot-bar or off-hand, it will render your current-position Map on the HUD if a such Map exists inside the Atlas.
+![crafting_toast](https://user-images.githubusercontent.com/17690401/206921288-fa262fb0-e294-409c-b0d8-9321ab6dbadd.png)
+
+An Atlas can be crafted by combining a:
+- **Filled** Map (the source map)
+- Book
+- And something sticky (Slimeball or Honey Bottle by default)
+
+The source map determines the Atlas' scale. *Who knew this whole time, all you had to do to get a mini-map was slap a map onto a book?*
+
+![expanding_toast](https://user-images.githubusercontent.com/17690401/206921556-f865f820-0aba-4db3-a14f-7f5646b401a0.png)
+
 - You can put both Filled Maps and Empty Maps with an Atlas in a crafting inventory to insert either Map type into the Atlas.
+- A Cartography Table can be used to add Filled Maps and Empty Maps as well.
 - Filled Maps which are added **must** be of same Scale.
 - There's a maximum of 512 Maps in each Atlas (configurable/togglable).
-- **Atlases do work inter-dimensionally**. They create new Maps in new Dimensions as you'd expect.
+- You can use your Atlas and Shears in the Crafting Grid to remove Maps from the Atlas.
+
+![exploring_toast](https://user-images.githubusercontent.com/17690401/206921859-f21cacac-2f6d-4522-a7a6-871edb6b7c74.png)
+
+- When the Atlas is active (on your hot-bar or off-hand by default), it will render your current-position Map on the HUD if a such Map exists inside the Atlas.
 - Filled Maps inside the Atlas will continue updating your location & world-state.
 - Empty Maps are consumed when you enter an un-mapped region to generate a new Map of the corresponding Scale.
 - If the player is in Creative, un-mapped regions will generate new Maps even if there's no Empty Maps in the Atlas.
-- You may also cut out Maps when putting it in a Crafting Grid with Shears. 
-   - This will remove Filled Maps from the Atlas until only the Source Map is left, which cannot be cut out. 
-   - It will then start removing Empty Maps from the Atlas if there are no Filled Maps left inside (besides Source Map).
-   - This does consume Shear's durability (Unbreaking still functions though).
-- The Atlas has a world map view as well. To access this, right-click the Atlas or press "m" while the Atlas is on your hot-bar.
-- The Atlas world view has zoom support & scales by odd numbers 1x1, 3x3, 5x5, 7x7, etc using your mouse scroll wheel.
-- The Atlas world view has full pan support as well, using your mouse to drag the world map.
-- Atlases also support right-clicking Banners to add "waypoints", which display in both the mini-map & world-view map.
-- Atlases can be **merged** with a Cartography Table - simply put an Atlas in the top & bottom slots and the Atlases will combine their mapped regions with one-another!
-- You can create an Atlas in a Cartography Table by combining a Book with a Filled Map & mass-add entire stacks of Empty Maps to the Atlas using a Cartography Table as well.
-- **Atlases also support Lecterns** - Show off your world by putting an Atlas in a Lectern! 
-   - Simply right click a Lectern while holding an Atlas to display the Lectern
-   - The Atlas will appear visually different depending on the Dimension its displayed in - there's a unique texture for the Overworld, Nether, End and "Other".
+- **Atlases do work inter-dimensionally**. They create new Maps in new Dimensions as you'd expect.
+- The mini-map supports the ability to display your current X, Y, & Z coordinates as well as your current Biome
 - **Optional Trinkets support**: 
    - When Trinkets is installed, there will be a new Slot for an Atlas
    - The Atlas will continue to function as normal inside the Trinkets slot
-- Atlases have 3 sounds: An opening world-view sound, a new map drawing sound, & a page flipping (new mini-map displaying) sound.
-- The mod is extremely highly configurable and offers in-game config editing with ModMenu. See the current config [options here](https://github.com/Pepperoni-Jabroni/MapAtlases/blob/main/src/main/java/pepjebs/mapatlases/config/MapAtlasesConfig.java)!
+
+![navigating_toast](https://user-images.githubusercontent.com/17690401/206922018-2b6195e3-fbe8-4850-bf31-4896764a5747.png)
+
+- The Atlas has a world map view as well. To access this, right-click the Atlas or press "m" while the Atlas is on your hot-bar.
+- The world map has selectable tabs for each Dimension you've explored and created Map entries for.
+- The world map will display the active X & Z coordinates of the point your mouse is hovering over.
+- The Atlas world view has zoom support & scales by odd numbers 1x1, 3x3, 5x5, 7x7, etc using your mouse scroll wheel.
+- The Atlas world view has full pan support as well, using your mouse to drag the world map.
+- Atlases also support right-clicking Banners to add "waypoints", which display in both the mini-map & world-view map.
+
+![sharing_toast](https://user-images.githubusercontent.com/17690401/206922262-7346a3d7-8c76-4399-9d54-6cfb0f806c6e.png)
+
+- Atlases can also be **merged** with a Cartography Table - simply put an Atlas in the top & bottom slots and the Atlases will combine their mapped regions with one-another!
+- **Atlases also support Lecterns** - Show off your world by putting an Atlas in a Lectern! 
+   - Simply right click a Lectern while holding an Atlas to display the Lectern
+   - The Atlas will appear visually different depending on the Dimension its displayed in - there's a unique texture for the Overworld, Nether, End and "Other".
+
+## ⚙️ Config
+The mod is highly configurable and offers in-game config editing with ModMenu. See the current config [options here](https://github.com/Pepperoni-Jabroni/MapAtlases/blob/main/src/main/java/pepjebs/mapatlases/config/MapAtlasesConfig.java)!
+
+## 🔊 Sound Sources
+- [Atlas open sound](https://freesound.org/people/InspectorJ/sounds/416179/), thanks to InspectorJ
+- [Atlas page flip sound](https://freesound.org/people/flag2/sounds/63318/), thanks to flag2
+- [Atlas new map creation sound](https://freesound.org/people/Tomoyo%20Ichijouji/sounds/211247/), thanks to Tomoyo Ichijouji
+
+## ⛓ Dependencies
+- Required:
+   - [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
+   - [Cloth Config](https://www.curseforge.com/minecraft/mc-mods/cloth-config)
+- Optional:
+   - [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu)
+   - [Trinkets](https://www.curseforge.com/minecraft/mc-mods/trinkets)
+
+## ⛔️ Known Incompatiblities
+- [Accurate Maps](https://www.curseforge.com/minecraft/mc-mods/accurate-maps) (*todo: fix here or submit PR to their project*)
+- [Immersive Portals](https://www.curseforge.com/minecraft/mc-mods/immersive-portals-mod)
+
+## ✅ Recommended Additions
+- [Better Nether Map](https://modrinth.com/mod/better-nether-map) - Makes Nether (& other ceiling dimension) Maps create at y-level of player
+- Cheaper Maps Recipe Data Pack [[1.19]](https://github.com/Pepperoni-Jabroni/MapAtlases/releases/download/2.0.1/cheaper-map-crafting+1.19.zip) - Why would a Map require a Compass? This Data Pack adds a recipe for Empty Maps that's simply 1 Paper + 1 Ink Sac shapeless. 
+- Optional "Modern" Resource Pack [[1.19]](https://github.com/Pepperoni-Jabroni/MapAtlases/releases/download/2.1.0/map_atlases_modern_resource_pack+1.19.zip) - This Resource Pack gives the Mini-map and World-map a "modern" look, abandoning the vanilla Map style textures.
+
+## 📃 Changelog
+Changelogs are available [at the GitHub Releases section](https://github.com/Pepperoni-Jabroni/MapAtlases/releases)
+
+<details>
+<summary> Photos! </summary>
 
 ## Crafting an Atlas
 ![2022-06-24_19 46 45](https://user-images.githubusercontent.com/17690401/175755582-aecd94b1-ac3a-4686-a3d5-82cea1e3583d.png)
@@ -78,29 +125,9 @@ The "Atlas" features and details:
 ## New as of 2.2.0
 ![map_atlases_v220_promo](https://user-images.githubusercontent.com/17690401/199161203-4cbfc68d-e817-46c2-8e80-36e2950af26f.png)
 
-## 🔊 Sound Sources
-- [Atlas open sound](https://freesound.org/people/InspectorJ/sounds/416179/), thanks to InspectorJ
-- [Atlas page flip sound](https://freesound.org/people/flag2/sounds/63318/), thanks to flag2
-- [Atlas new map creation sound](https://freesound.org/people/Tomoyo%20Ichijouji/sounds/211247/), thanks to Tomoyo Ichijouji
-
-## ⛓ Dependencies
-- Required:
-   - [Fabric API](https://www.curseforge.com/minecraft/mc-mods/fabric-api)
-   - [Cloth Config](https://www.curseforge.com/minecraft/mc-mods/cloth-config)
-- Optional:
-   - [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu)
-   - [Trinkets](https://www.curseforge.com/minecraft/mc-mods/trinkets)
-
-## ⛔️ Known Incompatiblities
-- [Accurate Maps](https://www.curseforge.com/minecraft/mc-mods/accurate-maps) (*todo: fix here or submit PR to their project*)
-- [Immersive Portals](https://www.curseforge.com/minecraft/mc-mods/immersive-portals-mod)
-
-## ✅ Recommended Additions
-- [Better Nether Map](https://modrinth.com/mod/better-nether-map) - Makes Nether (& other ceiling dimension) Maps create at y-level of player
-- Cheaper Maps Recipe Data Pack [[1.19]](https://github.com/Pepperoni-Jabroni/MapAtlases/releases/download/2.0.1/cheaper-map-crafting+1.19.zip) - Why would a Map require a Compass? This Data Pack adds a recipe for Empty Maps that's simply 1 Paper + 1 Ink Sac shapeless. 
-- Optional "Modern" Resource Pack [[1.19]](https://github.com/Pepperoni-Jabroni/MapAtlases/releases/download/2.1.0/map_atlases_modern_resource_pack+1.19.zip) - This Resource Pack gives the Mini-map and World-map a "modern" look, abandoning the vanilla Map style textures.
-
 ## Photo of "Modern" Resource Pack & Better Nether Map mod
 ![2022-09-15_19 51 51](https://user-images.githubusercontent.com/17690401/190546424-894fc024-884f-4cea-a8e4-0315643fb7f9.png)
 
 ![2022-09-15_19 50 29](https://user-images.githubusercontent.com/17690401/190546249-388c58b5-99de-463c-b0d8-d3c40ebb4c33.png)
+
+</details>

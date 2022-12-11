@@ -1,8 +1,15 @@
-# Map Atlases
+<p align="center">
+  <img width="867" height="117" src="https://user-images.githubusercontent.com/17690401/206918778-f71443ec-e7c4-4957-8e1d-20746c8f110e.png">
+  </br></br>
+  <a href="https://www.curseforge.com/minecraft/mc-mods/fabric-api"><img src="https://i.imgur.com/Ol1Tcf8.png" width="149" height="50" title="Fabric API" alt="Fabric API"></a>
+  </br></br>
+  <a href="https://www.curseforge.com/minecraft/mc-mods/map-atlases"><img alt="Curseforge" src="https://cf.way2muchnoise.eu/full_436298_downloads.svg"></a> <a href="https://modrinth.com/mod/map-atlases"><img alt="Modrinth" src="https://img.shields.io/modrinth/dt/map-atlases?label=Modrinth%20Downloads"></a> <a href="https://github.com/Pepperoni-Jabroni/MapAtlases"><img alt="GitHub" src="https://img.shields.io/github/downloads/Pepperoni-Jabroni/MapAtlases/total?label=Downloads&logo=github"></a>
+</p>
 
-<a href="https://www.curseforge.com/minecraft/mc-mods/fabric-api"><img src="https://i.imgur.com/Ol1Tcf8.png" width="149" height="50" title="Fabric API" alt="Fabric API"></a>
 
-<a href="https://www.curseforge.com/minecraft/mc-mods/map-atlases"><img alt="Curseforge" src="https://cf.way2muchnoise.eu/full_436298_downloads.svg"></a> <a href="https://modrinth.com/mod/map-atlases"><img alt="Modrinth" src="https://img.shields.io/modrinth/dt/map-atlases?label=Modrinth%20Downloads"></a> <a href="https://github.com/Pepperoni-Jabroni/MapAtlases"><img alt="GitHub" src="https://img.shields.io/github/downloads/Pepperoni-Jabroni/MapAtlases/total?label=Downloads&logo=github"></a>
+
+
+
 
 
 A vanilla-friendly mini-map/world-view mod using vanilla Maps, introducing the "Atlas".

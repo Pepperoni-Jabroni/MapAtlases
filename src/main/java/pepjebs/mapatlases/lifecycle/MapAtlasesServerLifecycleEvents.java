@@ -147,12 +147,7 @@ public class MapAtlasesServerLifecycleEvents {
         // Clean up disconnected players in server tick
         // since when using Disconnect event, the tick will sometimes
         // re-add the Player after they disconnect
-        // TODO: Fix concurrent exception here?
-        for (String playerName : playerToActiveMapId.keySet()) {
-            if (!seenPlayers.contains(playerName)) {
-                playerToActiveMapId.remove(playerName);
-            }
-        }
+        playerToActiveMapId.keySet().removeIf(playerName -> !seenPlayers.contains(playerName));
     }
 
     private static void updateMapDataForPlayer(

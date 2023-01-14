@@ -16,6 +16,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -78,9 +79,13 @@ public class MapAtlasesHUD extends DrawableHelper {
         // Update client current map id
         if (currentMapId == null || curMapId.compareTo(currentMapId) != 0) {
             if (currentMapId != null && currentMapId.compareTo("") != 0) {
+                float soundScalar = 1.0f;
+                if (MapAtlasesMod.CONFIG != null) {
+                    soundScalar = MapAtlasesMod.CONFIG.soundScalar;
+                }
                 client.world.playSound(client.player.getX(), client.player.getY(), client.player.getZ(),
                         MapAtlasesMod.ATLAS_PAGE_TURN_SOUND_EVENT, SoundCategory.PLAYERS,
-                        1.0F, 1.0F, false);
+                        soundScalar, 1.0F, false);
             }
             currentMapId = curMapId;
         }
@@ -150,17 +155,24 @@ public class MapAtlasesHUD extends DrawableHelper {
         if (anchorLocation.contains("Lower")) {
             textHeightOffset = (int) (-24 * textScaling);
         }
-        if (MapAtlasesMod.CONFIG != null && MapAtlasesMod.CONFIG.drawMinimapCoords) {
+        if (MapAtlasesMod.CONFIG.drawMinimapCoords) {
             drawMapTextCoords(
                     matrices, x, y, textWidthOffset, textHeightOffset,
-                    textScaling, client.player.getBlockPos());
+                    textScaling, new BlockPos(new Vec3i(towardsZero(client.player.getPos().x), towardsZero(client.player.getPos().y), towardsZero(client.player.getPos().z))));
             textHeightOffset += (12 * textScaling);
         }
-        if (MapAtlasesMod.CONFIG != null && MapAtlasesMod.CONFIG.drawMinimapBiome) {
+        if (MapAtlasesMod.CONFIG.drawMinimapBiome) {
             drawMapTextBiome(
                     matrices, x, y, textWidthOffset, textHeightOffset,
                     textScaling, client.player.getBlockPos(), client.world);
         }
+    }
+
+    private static int towardsZero(double d) {
+        if (d < 0.0)
+            return -1 * (int) Math.floor(-1 * d);
+        else
+            return (int) Math.floor(d);
     }
 
     public static void drawMapTextCoords(

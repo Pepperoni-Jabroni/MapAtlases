@@ -261,9 +261,13 @@ public class MapAtlasesServerLifecycleEvents {
                 atlas.getNbt().putIntArray(MapAtlasItem.MAP_LIST_NBT, mapIds);
 
                 // Play the sound
+                float soundScalar = 1.0f;
+                if (MapAtlasesMod.CONFIG != null) {
+                    soundScalar = MapAtlasesMod.CONFIG.soundScalar;
+                }
                 player.getWorld().playSound(null, player.getBlockPos(),
                         MapAtlasesMod.ATLAS_CREATE_MAP_SOUND_EVENT,
-                        SoundCategory.PLAYERS, 1.0F, 1.0F);
+                        SoundCategory.PLAYERS, soundScalar, 1.0F);
             } catch (InterruptedException e) {
                 MapAtlasesMod.LOGGER.warn(e);
             } finally {

@@ -15,9 +15,11 @@ import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableTextContent;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -75,8 +77,12 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         registryWorldSelected = MapAtlasesAccessUtils.getPlayerDimKey(inventory.player);
         initialWorldSelected = MapAtlasesAccessUtils.getPlayerDimKey(inventory.player);
         // Play open sound
+        float soundScalar = 1.0f;
+        if (MapAtlasesMod.CONFIG != null) {
+            soundScalar = MapAtlasesMod.CONFIG.soundScalar;
+        }
         inventory.player.playSound(
-                MapAtlasesMod.ATLAS_OPEN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                MapAtlasesMod.ATLAS_OPEN_SOUND_EVENT, SoundCategory.PLAYERS, soundScalar, 1.0F);
     }
 
     @Override
@@ -94,16 +100,16 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         return (int) Math.floor(.8 * client.getWindow().getScaledHeight());
     }
 
-    private Map<Integer, Pair<String, List<Integer>>> getCurrentIdsToCenters() {
+    private Map<Integer, Pair<String, List<Integer>>> getDimIdsToCenters(String worldKey) {
         return idsToCenters.entrySet().stream()
-                .filter(t -> t.getValue().getFirst().compareTo(registryWorldSelected) == 0)
+                .filter(t -> t.getValue().getFirst().compareTo(worldKey) == 0)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (m1, m2) -> m1));
     }
 
     @Override
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
         if (client == null || client.player == null || client.world == null) return;
-        var currentIdsToCenters = getCurrentIdsToCenters();
+        var currentIdsToCenters = getDimIdsToCenters(registryWorldSelected);
         // Handle zooming
         int atlasBgScaledSize = getAtlasBgScaledSize();
         double drawnMapBufferSize = atlasBgScaledSize / 18.0;
@@ -224,8 +230,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 atlasBgScaledSize,
                 atlasBgScaledSize
         );
-        // Draw dimension tooltip if necessary
+        // Draw tooltips if necessary
         drawDimensionTooltip(matrices, x, y, atlasBgScaledSize);
+        drawMapIconTooltip(matrices, x, y, atlasBgScaledSize);
         // Draw world map coords
         if (mouseX < x + drawnMapBufferSize || mouseY < y + drawnMapBufferSize
                 || mouseX > x + atlasBgScaledSize - drawnMapBufferSize
@@ -253,7 +260,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     }
 
     private List<Map.Entry<String, MapIcon>> getMapIconList() {
-        var currentIdsToCenters = getCurrentIdsToCenters();
+        var currentIdsToCenters = getDimIdsToCenters(registryWorldSelected);
         var mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(client.world, atlas);
         // Map of <"MapStateId/MapIconId": MapIcon>
         Map<String, MapIcon> mapIcons = new HashMap<>();
@@ -281,7 +288,10 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         var mapList = getMapIconList();
         for (int k = 0; k < mapList.size(); k++) {
             var key = mapList.get(k).getKey();
-            var stateId = key.split("/")[0];
+            var stateIdStr = key.split("/")[0];
+            var stateId = MapAtlasesAccessUtils.getMapIntFromString(stateIdStr);
+            var dimAndCenters = idsToCenters.get(stateId);
+            var mapState = client.world.getMapState(stateIdStr);
             var iconId = key.split("/")[1];
             var mapIcon = mapList.get(k).getValue();
             // Draw selector
@@ -328,13 +338,6 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                     .color(255, 255, 255, 255).texture(g, m).light(light).next();
             vcp.draw();
             matrices.pop();
-            if (mapIcon.getText() != null && rawMouseXMoved >= (int) x - (int) (1.0/16 * atlasBgScaledSize)
-                    && rawMouseXMoved <= (int) x - (int) (1.0/16 * atlasBgScaledSize) + scaledWidth
-                    && rawMouseYMoved >= (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize)
-                    && rawMouseYMoved <= (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize) + scaledWidth) {
-                // draw text
-                this.renderTooltip(matrices, mapIcon.getText(), (int) rawMouseXMoved, (int) rawMouseYMoved);
-            }
         }
     }
 
@@ -388,6 +391,43 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 }
                 dimName = new String(array);
                 this.renderTooltip(matrices, Text.of(dimName), (int) rawMouseXMoved, (int) rawMouseYMoved);
+            }
+        }
+    }
+
+    private void drawMapIconTooltip(
+            MatrixStack matrices,
+            double x,
+            double y,
+            int atlasBgScaledSize
+    ) {
+        int scalingFactor = client.getWindow().getHeight() / client.getWindow().getScaledHeight();
+        if (scalingFactor == 0 || client.world == null) return;
+        int rawWidth = 48;
+        int scaledWidth = rawWidth / scalingFactor;
+        var mapList = getMapIconList();
+        for (int k = 0; k < mapList.size(); k++) {
+            var key = mapList.get(k).getKey();
+            var stateIdStr = key.split("/")[0];
+            var stateId = MapAtlasesAccessUtils.getMapIntFromString(stateIdStr);
+            var dimAndCenters = idsToCenters.get(stateId);
+            var mapState = client.world.getMapState(stateIdStr);
+            if (mapState == null) continue;
+            var mapIcon = mapList.get(k).getValue();
+            if (mapIcon.getText() != null && rawMouseXMoved >= (int) x - (int) (1.0/16 * atlasBgScaledSize)
+                    && rawMouseXMoved <= (int) x - (int) (1.0/16 * atlasBgScaledSize) + scaledWidth
+                    && rawMouseYMoved >= (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize)
+                    && rawMouseYMoved <= (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize) + scaledWidth) {
+                // draw text
+                int mapScale = ((1 << mapState.scale) * 128);
+                LiteralTextContent s = new LiteralTextContent(
+                        (int) (dimAndCenters.getSecond().get(0) - (mapScale / 2.0d) + ((mapScale / 2.0d) * ((mapIcon.getX() + 128) / 128.0d)))
+                                + ", "
+                                + (int) (dimAndCenters.getSecond().get(1) - (mapScale / 2.0d) + ((mapScale / 2.0d) * ((mapIcon.getZ() + 128) / 128.0d)))
+                );
+                MutableText t = MutableText.of(s).formatted(Formatting.GRAY);
+                this.renderTooltip(matrices, List.of(mapIcon.getText(), t), (int) rawMouseXMoved, (int) rawMouseYMoved);
+                return;
             }
         }
     }
@@ -507,7 +547,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             double mapTextY,
             float mapTextureScale,
             boolean drawPlayerIcons
-        ) {
+    ) {
         if (state == null || client == null) return;
         // Draw the map
         double curMapTextX = mapTextX + (mapTextureScale * 128 * j);
@@ -603,15 +643,19 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 int targetY = (int) y +
                         (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize);
                 if (mouseX >= targetX && mouseX <= targetX + scaledWidth
-                    && mouseY >= targetY && mouseY <= targetY + scaledWidth) {
+                        && mouseY >= targetY && mouseY <= targetY + scaledWidth) {
                     registryWorldSelected = dims.get(i);
                     // Reset zoom
                     mouseXOffset = 0;
                     mouseYOffset = 0;
                     zoomValue = ZOOM_BUCKET;
                     // Play sound
+                    float soundScalar = 1.0f;
+                    if (MapAtlasesMod.CONFIG != null) {
+                        soundScalar = MapAtlasesMod.CONFIG.soundScalar;
+                    }
                     client.player.playSound(
-                            MapAtlasesMod.ATLAS_PAGE_TURN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                            MapAtlasesMod.ATLAS_PAGE_TURN_SOUND_EVENT, SoundCategory.PLAYERS, soundScalar, 1.0F);
                 }
             }
             var mapList = getMapIconList();
@@ -622,16 +666,23 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                         && mouseY >= targetY && mouseY <= targetY + scaledWidth) {
                     // Set mouse
                     var key = mapList.get(k).getKey();
-                    var currentIds = getCurrentIdsToCenters();
-                    var stateId = MapAtlasesAccessUtils.getMapIntFromString(key.split("/")[0]);
-                    var state = currentIds.get(stateId).getSecond();
-                    var centerStateId = MapAtlasesAccessUtils.getMapIntFromString(centerMapId);
-                    var centerState = currentIds.get(centerStateId).getSecond();
-                    mouseXOffset = (int) ((-1.0 / 4) * (state.get(0) - centerState.get(0)));
-                    mouseYOffset = (int) ((-1.0 / 4) * (state.get(1) - centerState.get(1)));
+                    var stateIdStr = key.split("/")[0];
+                    var stateId = MapAtlasesAccessUtils.getMapIntFromString(stateIdStr);
+                    var state = client.world.getMapState(stateIdStr);
+                    int atlasScale = (1 << state.scale) * 128;
+                    var stateXandZ = idsToCenters.get(stateId).getSecond();
+                    var centerStateId = getCenterMapIdForWorld(idsToCenters.get(stateId).getFirst());
+                    var centerStateXZ = idsToCenters.get(centerStateId).getSecond();
+                    mouseXOffset = ((centerStateXZ.get(0) - stateXandZ.get(0)) / (4 * (1 << state.scale)));
+                    mouseYOffset = ((centerStateXZ.get(1) - stateXandZ.get(1)) / (4 * (1 << state.scale)));
+                    zoomValue = ZOOM_BUCKET;
+                    float soundScalar = 1.0f;
+                    if (MapAtlasesMod.CONFIG != null) {
+                        soundScalar = MapAtlasesMod.CONFIG.soundScalar;
+                    }
                     // Play sound
                     client.player.playSound(
-                            MapAtlasesMod.ATLAS_PAGE_TURN_SOUND_EVENT, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                            MapAtlasesMod.ATLAS_PAGE_TURN_SOUND_EVENT, SoundCategory.PLAYERS, soundScalar, 1.0F);
                 }
             }
         }
@@ -650,5 +701,22 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             return num - t;
         else
             return num + mod - t;
+    }
+
+    private int getCenterMapIdForWorld(String worldKey) {
+        if (worldKey.compareTo(initialWorldSelected) == 0) {
+            return MapAtlasesAccessUtils.getMapIntFromString(centerMapId);
+        }
+        var worldCenters = getDimIdsToCenters(worldKey);
+        return worldCenters.keySet().stream()
+                .filter(mapId -> {
+                    var state = client.world.getMapState(MapAtlasesAccessUtils.getMapStringFromInt(mapId));
+                    if (state == null) return false;
+                    return !((MapStateIntrfc) state).getFullIcons().entrySet().stream()
+                            .filter(e -> isMeaningfulMapIcon(e.getValue().getType(), false))
+                            .collect(Collectors.toSet())
+                            .isEmpty();
+                })
+                .findAny().orElseGet(() -> worldCenters.keySet().stream().findAny().orElse(-1));
     }
 }

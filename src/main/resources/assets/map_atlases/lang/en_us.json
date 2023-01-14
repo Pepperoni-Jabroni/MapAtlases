@@ -56,5 +56,7 @@
   "text.autoconfig.map_atlases.option.worldMapIconScale.@Tooltip": "Sets the scale of the map icons rendered in the world-map",
   "text.autoconfig.map_atlases.option.acceptPaperForEmptyMaps": "Accept Paper For Empty Maps",
   "text.autoconfig.map_atlases.option.acceptPaperForEmptyMaps.@Tooltip": "If enabled, you can increase the Empty Map count by inserting Paper",
+  "text.autoconfig.map_atlases.option.soundScalar": "Sound Scalar",
+  "text.autoconfig.map_atlases.option.soundScalar.@Tooltip": "Multiplier for all the Atlases sound float",
   "trinkets.slot.hand.atlas": "Atlas"
 }

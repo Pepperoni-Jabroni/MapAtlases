@@ -88,4 +88,8 @@ public class MapAtlasesConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip()
     @Comment("If enabled, you can increase the Empty Map count by inserting Paper")
     public boolean acceptPaperForEmptyMaps = false;
+
+    @ConfigEntry.Gui.Tooltip()
+    @Comment("Multiplier for all the Atlases sound float")
+    public float soundScalar = 1.0f;
 }

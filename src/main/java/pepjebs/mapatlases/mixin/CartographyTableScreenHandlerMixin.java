@@ -130,7 +130,7 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
         }
     }
 
-    @Inject(method = "transferSlot", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "quickMove", at = @At("HEAD"), cancellable = true)
     void mapAtlasTransferSlot(PlayerEntity player, int index, CallbackInfoReturnable<ItemStack> info) {
         if (index >= 0 && index <= 2) return;
 

@@ -58,7 +58,6 @@ public class MapAtlasesHUD extends DrawableHelper {
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player);
         // Check the player for an Atlas
         if (atlas.isEmpty()) return false;
-        if (atlas.isEmpty()) return false;
         // Check the client has an active map id
         if (MapAtlasesClient.currentMapStateId == null) return false;
         // Check the active map id is in the active atlas
@@ -79,13 +78,9 @@ public class MapAtlasesHUD extends DrawableHelper {
         // Update client current map id
         if (currentMapId == null || curMapId.compareTo(currentMapId) != 0) {
             if (currentMapId != null && currentMapId.compareTo("") != 0) {
-                float soundScalar = 1.0f;
-                if (MapAtlasesMod.CONFIG != null) {
-                    soundScalar = MapAtlasesMod.CONFIG.soundScalar;
-                }
                 client.world.playSound(client.player.getX(), client.player.getY(), client.player.getZ(),
                         MapAtlasesMod.ATLAS_PAGE_TURN_SOUND_EVENT, SoundCategory.PLAYERS,
-                        soundScalar, 1.0F, false);
+                        MapAtlasesMod.CONFIG.soundScalar, 1.0F, false);
             }
             currentMapId = curMapId;
         }

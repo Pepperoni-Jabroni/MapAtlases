@@ -45,7 +45,7 @@ public class MapAtlasesInitAtlasS2CPacket implements Packet<ClientPlayPacketList
     public void apply(ClientPlayPacketListener listener) {
         MinecraftClient.getInstance().execute(() -> {
             if (MinecraftClient.getInstance().world == null) return;
-            MinecraftClient.getInstance().world.putMapState(mapId, mapState);
+            MinecraftClient.getInstance().world.putClientsideMapState(mapId, mapState);
         });
     }
 

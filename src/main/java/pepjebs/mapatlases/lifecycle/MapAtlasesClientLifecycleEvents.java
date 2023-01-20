@@ -37,12 +37,14 @@ public class MapAtlasesClientLifecycleEvents {
             PacketSender _sender) {
         MapAtlasesInitAtlasS2CPacket p = new MapAtlasesInitAtlasS2CPacket(buf);
         client.execute(() -> {
-            if (client.world == null || client.player == null) return;
+            if (client.world == null || client.player == null) {
+                return;
+            }
             MapState state = p.getMapState();
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player);
             state.update(client.player, atlas);
             state.getPlayerSyncData(client.player);
-            client.world.putMapState(p.getMapId(), state);
+            client.world.putClientsideMapState(p.getMapId(), state);
         });
     }
 

@@ -252,7 +252,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                     int[] coords = getCenterMapCoordsForDimension(newDim);
                     currentXCenter = coords[0];
                     currentZCenter = coords[1];
-                    // Reset zoom
+                    // Reset offset & zoom
                     mouseXOffset = 0;
                     mouseYOffset = 0;
                     zoomValue = ZOOM_BUCKET;
@@ -277,16 +277,16 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             centerMap = dimIdsToCenters.keySet().stream()
                     .filter(mapId -> {
                         if (client == null || client.world == null) return false;
-                        var state = client.world.getMapState(
-                                MapAtlasesAccessUtils.getMapStringFromInt(mapId));
-                        if (state == null) return false;
+                        var state = client.world.getMapState(MapAtlasesAccessUtils.getMapStringFromInt(mapId));
+                        if (state == null) {
+                            return false;
+                        }
                         return !((MapStateIntrfc) state).getFullIcons().entrySet().stream()
-                                .filter(e -> isMeaningfulMapIcon(e.getValue().getType()))
+                                .filter(e -> e.getValue().getType().isAlwaysRendered())
                                 .collect(Collectors.toSet())
                                 .isEmpty();
                     })
                     .findAny().orElseGet(() -> dimIdsToCenters.keySet().stream().findAny().orElseThrow());
-            //TODO: This is 16, 32 in hand and then turns to 9, 20 in lectern (for nether & end)? And then back to your hand is 9, 20 ??
             MapAtlasesMod.LOGGER.info(centerMap);
         }
         var entry = dimIdsToCenters.get(centerMap).getSecond();
@@ -517,13 +517,16 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             int reqXCenter,
             int reqZCenter
     ) {
-        // Get the map for the GUI idx
         return mapInfos.entrySet().stream()
-                .filter(m ->
-                        idsToCenters.containsKey(MapAtlasesAccessUtils.getMapIntFromString(m.getKey()))
-                                && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).getFirst().compareTo(reqDimension) == 0
-                                && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).getSecond().get(0) == reqXCenter
-                                && idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(m.getKey())).getSecond().get(1) == reqZCenter)
+                .filter(infoEntry -> {
+                    var mapId = MapAtlasesAccessUtils.getMapIntFromString(infoEntry.getKey());
+                    var dimAndCenters = idsToCenters.get(mapId);
+                    return idsToCenters.containsKey(mapId)
+                            && dimAndCenters.getFirst().compareTo(reqDimension) == 0
+                            && dimAndCenters.getSecond().get(0) == reqXCenter
+                            && dimAndCenters.getSecond().get(1) == reqZCenter;
+                        }
+                )
                 .findFirst().orElse(null);
     }
 

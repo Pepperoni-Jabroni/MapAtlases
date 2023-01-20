@@ -17,12 +17,14 @@ public class MapAtlasesAtlasOverviewScreenHandler extends ScreenHandler {
 
     public ItemStack atlas = ItemStack.EMPTY;
     public String centerMapId = "";
+    public int atlasScale = 128;
     public Map<Integer, Pair<String,List<Integer>>> idsToCenters = new HashMap<>();
 
     public MapAtlasesAtlasOverviewScreenHandler(int syncId, PlayerInventory _playerInventory, PacketByteBuf buf) {
         super(MapAtlasesMod.ATLAS_OVERVIEW_HANDLER, syncId);
         atlas = buf.readItemStack();
         centerMapId = buf.readString();
+        atlasScale = buf.readInt();
         int numToRead = buf.readInt();
         for (int i = 0; i < numToRead; i++) {
             int id = buf.readInt();
@@ -35,11 +37,13 @@ public class MapAtlasesAtlasOverviewScreenHandler extends ScreenHandler {
     public MapAtlasesAtlasOverviewScreenHandler(int syncId, PlayerInventory _playerInventory,
                                                 Map<Integer, Pair<String,List<Integer>>> idsToCenters1,
                                                 ItemStack atlas1,
-                                                String centerMapId1) {
+                                                String centerMapId1,
+                                                int atlasScale1) {
         super(MapAtlasesMod.ATLAS_OVERVIEW_HANDLER, syncId);
         idsToCenters = idsToCenters1;
         atlas = atlas1;
         centerMapId = centerMapId1;
+        atlasScale = atlasScale1;
     }
 
     @Override

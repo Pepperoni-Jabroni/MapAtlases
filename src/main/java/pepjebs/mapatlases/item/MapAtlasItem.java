@@ -125,7 +125,8 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         var currentIds = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
         String centerMap = MapAtlasesAccessUtils
                 .getActiveAtlasMapStateServer(currentIds, (ServerPlayerEntity) player).getKey();
-        return new MapAtlasesAtlasOverviewScreenHandler(syncId, inv, idsToCenters, atlas, centerMap);
+        int atlasScale = MapAtlasesAccessUtils.getAtlasBlockScale(player.world, atlas);
+        return new MapAtlasesAtlasOverviewScreenHandler(syncId, inv, idsToCenters, atlas, centerMap, atlasScale);
     }
 
     public ItemStack getAtlasFromLookingLectern(PlayerEntity player) {
@@ -167,8 +168,10 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
                 serverPlayerEntity.world, atlas);
         String centerMap = MapAtlasesAccessUtils
                 .getActiveAtlasMapStateServer(currentInfos, serverPlayerEntity).getKey();
+        int atlasScale = MapAtlasesAccessUtils.getAtlasBlockScale(serverPlayerEntity.world, atlas);
         packetByteBuf.writeItemStack(atlas);
         packetByteBuf.writeString(centerMap);
+        packetByteBuf.writeInt(atlasScale);
         packetByteBuf.writeInt(mapInfos.size());
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
             packetByteBuf.writeInt(MapAtlasesAccessUtils.getMapIntFromString(state.getKey()));

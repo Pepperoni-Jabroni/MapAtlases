@@ -17,6 +17,7 @@ import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
 import pepjebs.mapatlases.mixin.plugin.MapAtlasesMixinPlugin;
 
+import java.security.InvalidParameterException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -186,5 +187,16 @@ public class MapAtlasesAccessUtils {
             amountToAdd = MapAtlasItem.getMaxMapCount() - existingMapCount;
         }
         return amountToAdd;
+    }
+
+    public static int getAtlasBlockScale(World world, ItemStack atlas) {
+        if (world == null) {
+            throw new InvalidParameterException("Given World was null");
+        }
+        if (atlas.getItem() != MapAtlasesMod.MAP_ATLAS) {
+            throw new InvalidParameterException("Given ItemStack was not an Atlas");
+        }
+        var mapState = getFirstMapStateFromAtlas(world, atlas);
+        return (1 << mapState.scale) * 128;
     }
 }

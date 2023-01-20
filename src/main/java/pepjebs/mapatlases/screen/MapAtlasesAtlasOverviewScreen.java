@@ -287,7 +287,6 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                                 .isEmpty();
                     })
                     .findAny().orElseGet(() -> dimIdsToCenters.keySet().stream().findAny().orElseThrow());
-            MapAtlasesMod.LOGGER.info(centerMap);
         }
         var entry = dimIdsToCenters.get(centerMap).getSecond();
         return new int[]{entry.get(0), entry.get(1)};

@@ -123,6 +123,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             idsToCenters.put(id, new Pair<>(dimStr, centers));
         }
         var currentIds = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
+        // TODO: Sometimes throws bc of null when opening Lectern
         String centerMap = MapAtlasesAccessUtils
                 .getActiveAtlasMapStateServer(currentIds, (ServerPlayerEntity) player).getKey();
         int atlasScale = MapAtlasesAccessUtils.getAtlasBlockScale(player.world, atlas);

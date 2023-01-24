@@ -247,9 +247,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             int atlasBgScaledSize = getAtlasBgScaledSize();
             double x = (width / 2.0)-(atlasBgScaledSize/2.0);
             double y = (height / 2.0)-(atlasBgScaledSize/2.0);
-            int scalingFactor = client.options.getGuiScale().getValue();
-            int rawWidth = 100;
-            int scaledWidth = rawWidth / scalingFactor;
+            int scaledWidth = calcScaledWidth(100);
             for (int i = 0; i < dims.size(); i++) {
                 int targetX = (int) x + (int) (29.5/32.0 * atlasBgScaledSize);
                 int targetY = (int) y +
@@ -500,6 +498,15 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             return num + mod - t;
     }
 
+    private int calcScaledWidth(int rawWidth) {
+        if (client == null) return 0;
+        int scalingFactor = client.options.getGuiScale().getValue();
+        if (client.getWindow().getScaledHeight() == 0) return 0;
+        int scaledDiff = client.getWindow().getHeight() / client.getWindow().getScaledHeight();
+        if (scalingFactor == 0 || scaledDiff == 0) return 0;
+        return rawWidth / scalingFactor / scaledDiff;
+    }
+
     // ================== Dimension Selectors ==================
 
     private void drawDimensionTooltip(
@@ -510,13 +517,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     ) {
         var dimensions =
                 idsToCenters.values().stream().map(Pair::getFirst).collect(Collectors.toSet()).stream().toList();
-        if (client == null) return;
-        int scalingFactor = client.options.getGuiScale().getValue();
-        if (scalingFactor == 0) return;
-
+        int scaledWidth = calcScaledWidth(100);
         for (int i = 0; i < dimensions.size(); i++) {
-            int rawWidth = 100;
-            int scaledWidth = rawWidth / scalingFactor;
             if (rawMouseXMoved >= (x + (int) (29.5/32.0 * atlasBgScaledSize))
                     && rawMouseXMoved <= (x + (int) (29.5/32.0 * atlasBgScaledSize) + scaledWidth)
                     && rawMouseYMoved >= (y + (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize))
@@ -550,12 +552,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     ) {
         var dimensions =
                 idsToCenters.values().stream().map(Pair::getFirst).collect(Collectors.toSet()).stream().toList();
-        if (client == null) return;
-        int scalingFactor = client.options.getGuiScale().getValue();
-        if (scalingFactor == 0) return;
+        int scaledWidth;
         for (int i = 0; i < dimensions.size(); i++) {
-            int rawWidth = 100;
-            int scaledWidth = rawWidth / scalingFactor;
+            scaledWidth = calcScaledWidth(100);
             // Draw selector
             if (dimensions.get(i).compareTo(currentWorldSelected) == 0) {
                 RenderSystem.setShaderTexture(0, PAGE_SELECTED);
@@ -583,8 +582,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             } else {
                 RenderSystem.setShaderTexture(0, PAGE_OTHER);
             }
-            rawWidth = 75;
-            scaledWidth = rawWidth / scalingFactor;
+            scaledWidth = calcScaledWidth(75);
             drawTexture(
                     matrices,
                     (int) x + (int) (30.0/32.0 * atlasBgScaledSize),
@@ -624,10 +622,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     private void drawMapIconSelectors(MatrixStack matrices, double x, double y, int atlasBgScaledSize) {
         if (client == null) return;
-        int scalingFactor = client.options.getGuiScale().getValue();
-        if (scalingFactor == 0) return;
-        int rawWidth = 100;
-        int scaledWidth = rawWidth / scalingFactor;
+        int scaledWidth = calcScaledWidth(100);
         var mapList = getMapIconList();
         for (int k = 0; k < mapList.size(); k++) {
             // Draw selector
@@ -706,11 +701,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             double y,
             int atlasBgScaledSize
     ) {
-        if (client == null) return;
-        int scalingFactor = client.options.getGuiScale().getValue();
-        if (scalingFactor == 0 || client.world == null) return;
-        int rawWidth = 100;
-        int scaledWidth = rawWidth / scalingFactor;
+        int scaledWidth = calcScaledWidth(100);
         var mapList = getMapIconList();
         for (int k = 0; k < mapList.size(); k++) {
             var key = mapList.get(k).getKey();

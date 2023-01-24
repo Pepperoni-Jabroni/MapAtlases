@@ -500,11 +500,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     private int calcScaledWidth(int rawWidth) {
         if (client == null) return 0;
-        int scalingFactor = client.options.getGuiScale().getValue();
-        if (client.getWindow().getScaledHeight() == 0) return 0;
-        int scaledDiff = client.getWindow().getHeight() / client.getWindow().getScaledHeight();
-        if (scalingFactor == 0 || scaledDiff == 0) return 0;
-        return rawWidth / scalingFactor / scaledDiff;
+        return rawWidth * client.getWindow().getScaledHeight() / 1080;
     }
 
     // ================== Dimension Selectors ==================
@@ -650,11 +646,11 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             matrices.push();
             matrices.translate(
                     x,
-                    (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.85/16.0 * atlasBgScaledSize),
+                    (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.75/16.0 * atlasBgScaledSize),
                     1
             );
             matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float)(mapIcon.getRotation() * 360) / 16.0F));
-            matrices.scale((0.5f / 16) * atlasBgScaledSize ,(0.5f / 16) * atlasBgScaledSize, 1);
+            matrices.scale((0.4f / 16) * atlasBgScaledSize ,(0.4f / 16) * atlasBgScaledSize, 1);
             matrices.translate(-0.125D, 0.125D, -1.0D);
             byte b = mapIcon.getTypeId();
             float g = (float)(b % 16 + 0) / 16.0F;

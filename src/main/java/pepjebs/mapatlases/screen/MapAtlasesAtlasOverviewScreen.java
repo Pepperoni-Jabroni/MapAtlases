@@ -503,6 +503,17 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         return rawWidth * client.getWindow().getScaledHeight() / 1080;
     }
 
+    private String firstCharCapitalize(String source) {
+        char[] array = source.toLowerCase(Locale.ROOT).toCharArray();
+        array[0] = Character.toUpperCase(array[0]);
+        for (int j = 1; j < array.length; j++) {
+            if (Character.isWhitespace(array[j - 1])) {
+                array[j] = Character.toUpperCase(array[j]);
+            }
+        }
+        return new String(array);
+    }
+
     // ================== Dimension Selectors ==================
 
     private void drawDimensionTooltip(
@@ -526,14 +537,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 } else {
                     dimName = dimRegistry.toString().toString().replace("_", " ").replace(":", " ");
                 }
-                char[] array = dimName.toCharArray();
-                array[0] = Character.toUpperCase(array[0]);
-                for (int j = 1; j < array.length; j++) {
-                    if (Character.isWhitespace(array[j - 1])) {
-                        array[j] = Character.toUpperCase(array[j]);
-                    }
-                }
-                dimName = new String(array);
+                dimName = firstCharCapitalize(dimName);
                 this.renderTooltip(matrices, Text.of(dimName), (int) rawMouseXMoved, (int) rawMouseYMoved);
                 return;
             }
@@ -707,19 +711,22 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             var mapState = client.world.getMapState(stateIdStr);
             if (mapState == null) continue;
             var mapIcon = mapList.get(k).getValue();
-            if (mapIcon.getText() != null && rawMouseXMoved >= (int) x - (int) (1.0/16 * atlasBgScaledSize)
+            var mapIconText = mapIcon.getText() == null
+                    ? MutableText.of(new LiteralTextContent(
+                            firstCharCapitalize(mapIcon.getType().name().replace("_", " "))))
+                    : mapIcon.getText();
+            if (rawMouseXMoved >= (int) x - (int) (1.0/16 * atlasBgScaledSize)
                     && rawMouseXMoved <= (int) x - (int) (1.0/16 * atlasBgScaledSize) + scaledWidth
                     && rawMouseYMoved >= (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize)
                     && rawMouseYMoved <= (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize) + scaledWidth) {
                 // draw text
-                int mapScale = ((1 << mapState.scale) * 128);
-                LiteralTextContent s = new LiteralTextContent(
-                        "X: " + (int) (dimAndCenters.getSecond().get(0) - (mapScale / 2.0d) + ((mapScale / 2.0d) * ((mapIcon.getX() + 128) / 128.0d)))
+                LiteralTextContent coordsText = new LiteralTextContent(
+                        "X: " + (int) (dimAndCenters.getSecond().get(0) - (atlasScale / 2.0d) + ((atlasScale / 2.0d) * ((mapIcon.getX() + 128) / 128.0d)))
                                 + ", Z: "
-                                + (int) (dimAndCenters.getSecond().get(1) - (mapScale / 2.0d) + ((mapScale / 2.0d) * ((mapIcon.getZ() + 128) / 128.0d)))
+                                + (int) (dimAndCenters.getSecond().get(1) - (atlasScale / 2.0d) + ((atlasScale / 2.0d) * ((mapIcon.getZ() + 128) / 128.0d)))
                 );
-                MutableText t = MutableText.of(s).formatted(Formatting.GRAY);
-                this.renderTooltip(matrices, List.of(mapIcon.getText(), t), (int) rawMouseXMoved, (int) rawMouseYMoved);
+                MutableText formattedCoords = MutableText.of(coordsText).formatted(Formatting.GRAY);
+                this.renderTooltip(matrices, List.of(mapIconText, formattedCoords), (int) rawMouseXMoved, (int) rawMouseYMoved);
                 return;
             }
         }

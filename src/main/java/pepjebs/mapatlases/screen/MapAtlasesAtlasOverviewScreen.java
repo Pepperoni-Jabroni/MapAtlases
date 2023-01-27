@@ -50,6 +50,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     private static final RenderLayer MAP_ICONS = RenderLayer.getText(MAP_ICON_TEXTURE);
     private static final int ZOOM_BUCKET = 4;
     private static final int PAN_BUCKET = 25;
+    private static final int MAX_TAB_DISP = 7;
 
     private final ItemStack atlas;
     public final String centerMapId;
@@ -64,6 +65,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     private String currentWorldSelected;
     private final String initialWorldSelected;
     private final int atlasScale;
+    private int mapIconSelectorPage = 0;
+    private int dimSelectorPage = 0;
 
     public MapAtlasesAtlasOverviewScreen(ScreenHandler handler, PlayerInventory inventory, Text title) {
         super(handler, inventory, title);
@@ -227,6 +230,33 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        // Handle dim selector scroll
+        var dims =
+                idsToCenters.values().stream().map(Pair::getFirst).collect(Collectors.toSet()).stream().toList();
+        int atlasBgScaledSize = getAtlasBgScaledSize();
+        double x = (width / 2.0)-(atlasBgScaledSize/2.0);
+        double y = (height / 2.0)-(atlasBgScaledSize/2.0);
+        int scaledWidth = calcScaledWidth(100);
+        int targetX = (int) x + (int) (29.5/32.0 * atlasBgScaledSize);
+        if (mouseX >= targetX && mouseX <= targetX + scaledWidth) {
+            dimSelectorPage =
+                    Math.max(0, Math.min(dims.size() / MAX_TAB_DISP, dimSelectorPage + (amount > 0 ? -1 : 1)));
+            return true;
+        }
+        // Handle map icon selector scroll
+        var mapList = getMapIconList();
+        targetX = (int) x - (int) (1.0/16 * atlasBgScaledSize);
+        if (mouseX >= targetX && mouseX <= targetX + scaledWidth) {
+            mapIconSelectorPage =
+                    Math.max(0, Math.min(mapList.size() / MAX_TAB_DISP, mapIconSelectorPage + (amount > 0 ? -1 : 1)));
+            return true;
+        }
+        // Handle world map zooming
+        double drawnMapBufferSize = atlasBgScaledSize / 18.0;
+        if (mouseX < x + drawnMapBufferSize || mouseY < y + drawnMapBufferSize
+                || mouseX > x + atlasBgScaledSize - drawnMapBufferSize
+                || mouseY > y + atlasBgScaledSize - drawnMapBufferSize)
+            return true;
         zoomValue += -1 * amount;
         zoomValue = Math.max(zoomValue, -1 * ZOOM_BUCKET);
         return true;
@@ -248,13 +278,17 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             double x = (width / 2.0)-(atlasBgScaledSize/2.0);
             double y = (height / 2.0)-(atlasBgScaledSize/2.0);
             int scaledWidth = calcScaledWidth(100);
-            for (int i = 0; i < dims.size(); i++) {
+            for (int i = 0; i < MAX_TAB_DISP; i++) {
                 int targetX = (int) x + (int) (29.5/32.0 * atlasBgScaledSize);
                 int targetY = (int) y +
                         (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize);
                 if (mouseX >= targetX && mouseX <= targetX + scaledWidth
                         && mouseY >= targetY && mouseY <= targetY + scaledWidth) {
-                    String newDim = dims.get(i);
+                    int targetIdx = (dimSelectorPage * MAX_TAB_DISP) + i;
+                    if (targetIdx >= dims.size()) {
+                        continue;
+                    }
+                    String newDim = dims.get(targetIdx);
                     currentWorldSelected = newDim;
                     // Set center map coords
                     int[] coords = getCenterMapCoordsForDimension(newDim);
@@ -267,12 +301,16 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 }
             }
             var mapList = getMapIconList();
-            for (int k = 0; k < mapList.size(); k++) {
+            for (int k = 0; k < MAX_TAB_DISP; k++) {
                 int targetX = (int) x - (int) (1.0/16 * atlasBgScaledSize);
                 int targetY = (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize);
                 if (mouseX >= targetX && mouseX <= targetX + scaledWidth
                         && mouseY >= targetY && mouseY <= targetY + scaledWidth) {
-                    var key = mapList.get(k).getKey();
+                    int targetIdx = (mapIconSelectorPage * MAX_TAB_DISP) + k;
+                    if (targetIdx >= mapList.size()) {
+                        continue;
+                    }
+                    var key = mapList.get((mapIconSelectorPage * MAX_TAB_DISP) + k).getKey();
                     var stateIdStr = key.split("/")[0];
                     var centers =
                             idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(stateIdStr)).getSecond();
@@ -525,12 +563,16 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         var dimensions =
                 idsToCenters.values().stream().map(Pair::getFirst).collect(Collectors.toSet()).stream().toList();
         int scaledWidth = calcScaledWidth(100);
-        for (int i = 0; i < dimensions.size(); i++) {
+        for (int i = 0; i < MAX_TAB_DISP; i++) {
             if (rawMouseXMoved >= (x + (int) (29.5/32.0 * atlasBgScaledSize))
                     && rawMouseXMoved <= (x + (int) (29.5/32.0 * atlasBgScaledSize) + scaledWidth)
                     && rawMouseYMoved >= (y + (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize))
                     && rawMouseYMoved <= (y + (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize)) + scaledWidth) {
-                Identifier dimRegistry = new Identifier(dimensions.get(i));
+                int targetIdx = (dimSelectorPage * MAX_TAB_DISP) + i;
+                if (targetIdx >= dimensions.size()) {
+                    continue;
+                }
+                Identifier dimRegistry = new Identifier(dimensions.get(targetIdx));
                 String dimName;
                 if (dimRegistry.getNamespace().compareTo("minecraft") == 0) {
                     dimName = dimRegistry.getPath().toString().replace("_", " ");
@@ -553,10 +595,15 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         var dimensions =
                 idsToCenters.values().stream().map(Pair::getFirst).collect(Collectors.toSet()).stream().toList();
         int scaledWidth;
-        for (int i = 0; i < dimensions.size(); i++) {
+        for (int i = 0; i < MAX_TAB_DISP; i++) {
+            int targetIdx = (dimSelectorPage * MAX_TAB_DISP) + i;
+            if (targetIdx >= dimensions.size()) {
+                continue;
+            }
+            var dim = dimensions.get(targetIdx);
             scaledWidth = calcScaledWidth(100);
             // Draw selector
-            if (dimensions.get(i).compareTo(currentWorldSelected) == 0) {
+            if (dim.compareTo(currentWorldSelected) == 0) {
                 RenderSystem.setShaderTexture(0, PAGE_SELECTED);
             } else {
                 RenderSystem.setShaderTexture(0, PAGE_UNSELECTED);
@@ -573,11 +620,11 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                     scaledWidth
             );
             // Draw Icon
-            if (dimensions.get(i).compareTo("minecraft:overworld") == 0) {
+            if (dim.compareTo("minecraft:overworld") == 0) {
                 RenderSystem.setShaderTexture(0, PAGE_OVERWORLD);
-            } else if (dimensions.get(i).compareTo("minecraft:the_nether") == 0) {
+            } else if (dim.compareTo("minecraft:the_nether") == 0) {
                 RenderSystem.setShaderTexture(0, PAGE_NETHER);
-            } else if (dimensions.get(i).compareTo("minecraft:the_end") == 0) {
+            } else if (dim.compareTo("minecraft:the_end") == 0) {
                 RenderSystem.setShaderTexture(0, PAGE_END);
             } else {
                 RenderSystem.setShaderTexture(0, PAGE_OTHER);
@@ -624,9 +671,14 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         if (client == null) return;
         int scaledWidth = calcScaledWidth(100);
         var mapList = getMapIconList();
-        for (int k = 0; k < mapList.size(); k++) {
+        for (int k = 0; k < MAX_TAB_DISP; k++) {
+            int targetIdx = (mapIconSelectorPage * MAX_TAB_DISP) + k;
+            if (targetIdx >= mapList.size()) {
+                continue;
+            }
+            var mapIconE = mapList.get(targetIdx);
             // Draw selector
-            var mapIdStr = mapList.get(k).getKey().split("/")[0];
+            var mapIdStr = mapIconE.getKey().split("/")[0];
             var centers = idsToCenters.get(MapAtlasesAccessUtils.getMapIntFromString(mapIdStr)).getSecond();
             if (currentXCenter == centers.get(0) && currentZCenter == centers.get(1)) {
                 RenderSystem.setShaderTexture(0, PAGE_SELECTED);
@@ -646,7 +698,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             );
 
             // Draw map Icon
-            var mapIcon = mapList.get(k).getValue();
+            var mapIcon = mapIconE.getValue();
             matrices.push();
             matrices.translate(
                     x,
@@ -703,14 +755,18 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     ) {
         int scaledWidth = calcScaledWidth(100);
         var mapList = getMapIconList();
-        for (int k = 0; k < mapList.size(); k++) {
-            var key = mapList.get(k).getKey();
-            var stateIdStr = key.split("/")[0];
+        for (int k = 0; k < MAX_TAB_DISP; k++) {
+            int targetIdx = (mapIconSelectorPage * MAX_TAB_DISP) + k;
+            if (targetIdx >= mapList.size()) {
+                continue;
+            }
+            var entry = mapList.get(targetIdx);
+            var stateIdStr = entry.getKey().split("/")[0];
             var stateId = MapAtlasesAccessUtils.getMapIntFromString(stateIdStr);
             var dimAndCenters = idsToCenters.get(stateId);
             var mapState = client.world.getMapState(stateIdStr);
             if (mapState == null) continue;
-            var mapIcon = mapList.get(k).getValue();
+            var mapIcon = entry.getValue();
             var mapIconText = mapIcon.getText() == null
                     ? MutableText.of(new LiteralTextContent(
                             firstCharCapitalize(mapIcon.getType().name().replace("_", " "))))

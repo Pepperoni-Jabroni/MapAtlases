@@ -213,7 +213,7 @@ public class MapAtlasesHUD extends DrawableHelper {
             textX = client.getWindow().getScaledWidth() - textWidth;
         }
         matrices.push();
-        matrices.translate(textX, textY, 0);
+        matrices.translate(textX, textY, 5);
         matrices.scale(textScaling, textScaling, 1);
         client.textRenderer.draw(matrices, text, 1, 1, Integer.parseInt("595959", 16));
         client.textRenderer.draw(matrices, text, 0, 0, Integer.parseInt("E0E0E0", 16));

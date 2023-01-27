@@ -28,6 +28,8 @@ import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// TODO: If the atlas world map scaling changes, MAX_TAB_DISP needs to change too
+// TODO: Map Icon Selectors don't look right at non-default scaling
 public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> {
 
     public static final Identifier ATLAS_FOREGROUND =
@@ -706,7 +708,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                     1
             );
             matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float)(mapIcon.getRotation() * 360) / 16.0F));
-            matrices.scale((0.4f / 16) * atlasBgScaledSize ,(0.4f / 16) * atlasBgScaledSize, 1);
+            matrices.scale((0.25f * scaledWidth) ,(0.25f * scaledWidth), 1);
             matrices.translate(-0.125D, 0.125D, -1.0D);
             byte b = mapIcon.getTypeId();
             float g = (float)(b % 16 + 0) / 16.0F;

@@ -100,7 +100,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
     @Override
     public Text getDisplayName() {
-        return MutableText.of(new TranslatableTextContent(getTranslationKey(), "", new Object[0]));
+        return Text.translatable(getTranslationKey());
     }
 
     @Nullable

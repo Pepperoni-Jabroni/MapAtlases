@@ -7,8 +7,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -238,13 +238,14 @@ public class MapAtlasesServerLifecycleEvents {
             atlas.setNbt(defaultAtlasNbt);
         }
         int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
+        boolean bypassEmptyMaps = !MapAtlasesMod.CONFIG.requireEmptyMapsToExpand;
         if (mutex.availablePermits() > 0
-                && (emptyCount > 0 || player.isCreative())) {
+                && (emptyCount > 0 || player.isCreative() || bypassEmptyMaps)) {
             try {
                 mutex.acquire();
 
                 // Make the new map
-                if (!player.isCreative()) {
+                if (!player.isCreative() && !bypassEmptyMaps) {
                     atlas.getNbt().putInt(
                             MapAtlasItem.EMPTY_MAP_NBT,
                             atlas.getNbt().getInt(MapAtlasItem.EMPTY_MAP_NBT) - 1

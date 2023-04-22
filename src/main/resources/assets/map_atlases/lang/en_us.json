@@ -58,5 +58,7 @@
   "text.autoconfig.map_atlases.option.acceptPaperForEmptyMaps.@Tooltip": "If enabled, you can increase the Empty Map count by inserting Paper",
   "text.autoconfig.map_atlases.option.soundScalar": "Sound Scalar",
   "text.autoconfig.map_atlases.option.soundScalar.@Tooltip": "Multiplier for all the Atlases sound float",
+  "text.autoconfig.map_atlases.option.requireEmptyMapsToExpand": "Require Empty Maps To Expand",
+  "text.autoconfig.map_atlases.option.requireEmptyMapsToExpand.@Tooltip": "If true, the Atlas is required to have spare Empty Maps stored to expand the Filled Map size",
   "trinkets.slot.hand.atlas": "Atlas"
 }

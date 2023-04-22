@@ -10,6 +10,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
@@ -48,7 +49,7 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
                     items.containsAll(Arrays.asList(Items.FILLED_MAP, Items.BOOK)) && itemStacks.stream()
                             .anyMatch(i -> i.isIn(TagKey.of(Registries.ITEM.getKey(), MapAtlasesMod.STICKY_ITEMS_ID)));
             if (hasAllCrafting && !filledMap.isEmpty()) {
-                MapState state = FilledMapItem.getOrCreateMapState(filledMap, world);
+                MapState state = FilledMapItem.getMapState(filledMap, world);
                 return state != null;
             }
         }
@@ -56,7 +57,7 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public ItemStack craft(CraftingInventory inv) {
+    public ItemStack craft(CraftingInventory inv, DynamicRegistryManager registryManager) {
         ItemStack mapItemStack = null;
         for(int i = 0; i < inv.size(); i++) {
             if (inv.getStack(i).isItemEqual(new ItemStack(Items.FILLED_MAP))) {

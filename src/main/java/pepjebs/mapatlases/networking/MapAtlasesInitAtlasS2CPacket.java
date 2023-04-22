@@ -3,9 +3,9 @@ package pepjebs.mapatlases.networking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.util.Identifier;
 import pepjebs.mapatlases.MapAtlasesMod;
 

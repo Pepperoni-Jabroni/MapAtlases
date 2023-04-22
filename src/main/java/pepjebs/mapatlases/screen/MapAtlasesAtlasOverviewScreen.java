@@ -479,9 +479,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         double atlasMapsRelativeMouseZ = mapRangeValueToAnother(
                 mouseY, y + buffer, y + atlasBgScaledSize - buffer, -1.0, 1.0);
         return new BlockPos(
-                Math.floor(atlasMapsRelativeMouseX * zoomLevelDim * (atlasScale / 2.0)) + centerScreenXCenter,
+                (int) (Math.floor(atlasMapsRelativeMouseX * zoomLevelDim * (atlasScale / 2.0)) + centerScreenXCenter),
                 255,
-                Math.floor(atlasMapsRelativeMouseZ * zoomLevelDim * (atlasScale / 2.0)) + centerScreenZCenter);
+                (int) (Math.floor(atlasMapsRelativeMouseZ * zoomLevelDim * (atlasScale / 2.0)) + centerScreenZCenter));
     }
 
     private boolean mapContainsMeaningfulIcons(Map.Entry<String, MapState> state) {

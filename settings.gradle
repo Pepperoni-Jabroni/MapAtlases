@@ -12,6 +12,10 @@ pluginManagement {
             name = 'Cloth Config Api'
             url = 'https://maven.shedaniel.me/'
         }
+        maven {
+            name = 'Owo Api'
+            url = 'https://maven.wispforest.io'
+        }
         mavenCentral()
         gradlePluginPortal()
     }

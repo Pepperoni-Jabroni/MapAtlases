@@ -14,6 +14,10 @@ public class MapAtlasesConfig implements ConfigData {
     public int maxMapCount = 512;
 
     @ConfigEntry.Gui.Tooltip()
+    @Comment("If true, the Atlas is required to have spare Empty Maps stored to expand the Filled Map size")
+    public boolean requireEmptyMapsToExpand = true;
+
+    @ConfigEntry.Gui.Tooltip()
     @Comment("Scale the mini-map to a given % of the height of your screen.")
     public int forceMiniMapScaling = 30;
 

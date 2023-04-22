@@ -71,7 +71,7 @@ public class LecternBlockMixin extends Block {
             if (!player.getInventory().insertStack(atlas)) {
                 player.dropItem(atlas, false);
             }
-            LecternBlock.setHasBook(world, pos, state.with(MapAtlasItem.HAS_ATLAS, false), false);
+            LecternBlock.setHasBook(player, world, pos, state.with(MapAtlasItem.HAS_ATLAS, false), false);
             ci.setReturnValue(ActionResult.success(world.isClient));
         }
     }

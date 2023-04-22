@@ -1,9 +1,9 @@
 package pepjebs.mapatlases.networking;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.listener.PacketListener;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.util.Identifier;
 import pepjebs.mapatlases.MapAtlasesMod;
 

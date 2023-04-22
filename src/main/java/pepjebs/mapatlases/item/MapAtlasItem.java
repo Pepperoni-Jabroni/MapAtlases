@@ -15,9 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.map.MapState;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.TagKey;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.state.property.BooleanProperty;
@@ -69,25 +67,23 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             int mapSize = MapAtlasesAccessUtils.getMapCountFromItemStack(stack);
             int empties = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(stack);
             if (getMaxMapCount() != -1 && mapSize + empties >= getMaxMapCount()) {
-                tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_full"))
+                tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_full", "", null)
                         .formatted(Formatting.ITALIC).formatted(Formatting.GRAY));
             }
-            tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_1", mapSize))
+            tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_1", mapSize)
                     .formatted(Formatting.GRAY));
-            if (MapAtlasesMod.CONFIG == null || MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill) {
+            if (MapAtlasesMod.CONFIG == null || (MapAtlasesMod.CONFIG.requireEmptyMapsToExpand && MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill)) {
                 // If there's no maps & no empty maps, the atlas is "inactive", so display how many empty maps
                 // they *would* receive if they activated the atlas
                 if (mapSize + empties == 0 && MapAtlasesMod.CONFIG != null) {
                     empties = MapAtlasesMod.CONFIG.pityActivationMapCount;
                 }
-                tooltip.add(MutableText.of(new TranslatableTextContent("item.map_atlases.atlas.tooltip_2", empties))
+                tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_2", empties)
                         .formatted(Formatting.GRAY));
             }
             MapState mapState = world.getMapState(MapAtlasesClient.currentMapStateId);
             if (mapState == null) return;
-            tooltip.add(MutableText.of(
-                        new TranslatableTextContent("item.map_atlases.atlas.tooltip_3", 1 << mapState.scale)
-                    )
+            tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_3", 1 << mapState.scale)
                     .formatted(Formatting.GRAY));
         }
     }
@@ -104,7 +100,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
     @Override
     public Text getDisplayName() {
-        return MutableText.of(new TranslatableTextContent(getTranslationKey()));
+        return MutableText.of(new TranslatableTextContent(getTranslationKey(), "", new Object[0]));
     }
 
     @Nullable
@@ -133,7 +129,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     public ItemStack getAtlasFromLookingLectern(PlayerEntity player) {
         HitResult h = player.raycast(10, 1, false);
         if (h.getType() == HitResult.Type.BLOCK) {
-            BlockEntity e = player.getWorld().getBlockEntity(new BlockPos(h.getPos()));
+            BlockEntity e = player.getWorld().getBlockEntity(BlockPos.ofFloored(h.getPos()));
             if (e instanceof LecternBlockEntity) {
                 ItemStack book = ((LecternBlockEntity) e).getBook();
                 if (book.getItem() == MapAtlasesMod.MAP_ATLAS) {
@@ -199,7 +195,8 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
                 return ActionResult.PASS;
             }
             blockState = context.getWorld().getBlockState(context.getBlockPos());
-            LecternBlock.setHasBook(context.getWorld(), context.getBlockPos(), blockState, true);
+            LecternBlock.setHasBook(
+                    context.getPlayer(), context.getWorld(), context.getBlockPos(), blockState, true);
             context.getWorld().setBlockState(context.getBlockPos(), blockState.with(HAS_ATLAS, true));
             return ActionResult.success(context.getWorld().isClient);
         } if (blockState.isIn(BlockTags.BANNERS)) {

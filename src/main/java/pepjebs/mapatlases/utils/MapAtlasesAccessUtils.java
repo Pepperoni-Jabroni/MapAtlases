@@ -65,7 +65,7 @@ public class MapAtlasesAccessUtils {
             MapState state = world.getMapState(mapName);
             if (state == null && world instanceof ServerWorld) {
                 ItemStack map = createMapItemStackFromId(mapId);
-                state = FilledMapItem.getOrCreateMapState(map, world);
+                state = FilledMapItem.getMapState(map, world);
             }
             if (state != null) {
                 mapStates.put(mapName, state);

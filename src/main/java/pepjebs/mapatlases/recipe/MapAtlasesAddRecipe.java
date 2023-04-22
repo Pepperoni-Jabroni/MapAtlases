@@ -11,6 +11,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
@@ -74,7 +75,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public ItemStack craft(CraftingInventory inv) {
+    public ItemStack craft(CraftingInventory inv, DynamicRegistryManager registryManager) {
         if (world == null) return ItemStack.EMPTY;
         List<ItemStack> itemStacks = MapAtlasesAccessUtils.getItemStacksFromGrid(inv)
                 .stream()
@@ -127,7 +128,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
     private List<MapState> getMapStatesFromItemStacks(World world, List<ItemStack> itemStacks) {
         return itemStacks.stream()
                 .filter(i -> i.isItemEqual(new ItemStack(Items.FILLED_MAP)))
-                .map(m -> FilledMapItem.getOrCreateMapState(m, world))
+                .map(m -> FilledMapItem.getMapState(m, world))
                 .collect(Collectors.toList());
     }
 

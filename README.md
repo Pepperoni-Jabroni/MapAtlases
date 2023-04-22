@@ -31,7 +31,8 @@ The source map determines the Atlas' scale. *Who knew this whole time, all you h
 - When the Atlas is active (on your hot-bar or off-hand by default), it will render your current-position Map on the HUD if a such Map exists inside the Atlas.
 - Filled Maps inside the Atlas will continue updating your location & world-state.
 - Empty Maps are consumed when you enter an un-mapped region to generate a new Map of the corresponding Scale.
-- If the player is in Creative, un-mapped regions will generate new Maps even if there's no Empty Maps in the Atlas.
+   - If the player is in Creative, un-mapped regions will generate new Maps even if there's no Empty Maps in the Atlas.
+   - If specified, the requirement for having Empty Maps to create new regions can be disabled.
 - **Atlases do work inter-dimensionally**. They create new Maps in new Dimensions as you'd expect.
 - The mini-map supports the ability to display your current X, Y, & Z coordinates as well as your current Biome
 - **Optional Trinkets support**: 

@@ -43,6 +43,7 @@ The source map determines the Atlas' scale. *Who knew this whole time, all you h
 
 - The Atlas has a world map view as well. To access this, right-click the Atlas or press "m" while the Atlas is on your hot-bar.
 - The world map has selectable tabs for each Dimension you've explored and created Map entries for.
+- It also has selectable tabs for each Banner you've added in each Dimension. Clicking these will snap the center of your view to the map containing the Banner.
 - The world map will display the active X & Z coordinates of the point your mouse is hovering over.
 - The Atlas world view has zoom support & scales by odd numbers 1x1, 3x3, 5x5, 7x7, etc using your mouse scroll wheel.
 - The Atlas world view has full pan support as well, using your mouse to drag the world map.
@@ -105,6 +106,8 @@ Changelogs are available [at the GitHub Releases section](https://github.com/Pep
 
 ## World Map View
 ![2022-11-17_18 16 44](https://user-images.githubusercontent.com/17690401/202605175-ddc836c3-bc1e-4650-a9ae-8df7c377bfa7.png)
+![2023-04-22_18 02 59](https://user-images.githubusercontent.com/17690401/233808356-f1017102-1aa2-4728-a33c-8294acd279ec.png)
+![2023-04-22_18 03 41](https://user-images.githubusercontent.com/17690401/233808357-080b1760-483c-436c-833f-c0b2821a46b9.png)
 
 ## Cutting a Map out of an Atlas
 ![2022-06-24_19 48 45](https://user-images.githubusercontent.com/17690401/175755627-bf5ff6b5-752d-4bfd-85d2-82c863bc1257.png)

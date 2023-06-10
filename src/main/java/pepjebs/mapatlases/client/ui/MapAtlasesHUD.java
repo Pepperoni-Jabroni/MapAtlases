@@ -217,8 +217,8 @@ public class MapAtlasesHUD {
         matrices.push();
         matrices.translate(textX, textY, 5);
         matrices.scale(textScaling, textScaling, 1);
-        context.drawText(client.textRenderer, text, 1, 1, Integer.parseInt("595959", 16), true);
-        context.drawText(client.textRenderer, text, 0, 0, Integer.parseInt("E0E0E0", 16), true);
+        context.drawText(client.textRenderer, text, 1, 1, Integer.parseInt("595959", 16), false);
+        context.drawText(client.textRenderer, text, 0, 0, Integer.parseInt("E0E0E0", 16), false);
         matrices.pop();
     }
 

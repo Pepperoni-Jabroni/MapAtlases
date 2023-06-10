@@ -14,7 +14,6 @@ repositories {
 	maven { url "https://maven.shedaniel.me/" }
 	maven { url "https://maven.terraformersmc.com/" }
 	maven { url "https://ladysnake.jfrog.io/artifactory/mods" }
-	maven { url 'https://maven.wispforest.io' }
 }
 
 dependencies {
@@ -32,7 +31,6 @@ dependencies {
 	modImplementation "com.terraformersmc:modmenu:${project.mod_menu_version}"
 	modImplementation "dev.emi:trinkets:${project.trinkets_version}"
 	modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
-	modImplementation "io.wispforest:owo-lib:${project.owo_version}"
 }
 
 processResources {

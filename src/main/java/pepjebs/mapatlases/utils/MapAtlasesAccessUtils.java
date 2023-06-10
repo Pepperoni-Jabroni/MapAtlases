@@ -5,6 +5,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -84,7 +85,7 @@ public class MapAtlasesAccessUtils {
 
     public static ItemStack getAtlasFromInventory(PlayerInventory inventory) {
         return inventory.main.stream()
-                .filter(i -> i != null && i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
+                .filter(i -> i != null && i.isOf(MapAtlasesMod.MAP_ATLAS))
                 .findFirst().orElse(null);
     }
 
@@ -92,7 +93,7 @@ public class MapAtlasesAccessUtils {
         PlayerInventory inventory = entity.getInventory();
         ItemStack itemStack =  inventory.main.stream()
                 .limit(9)
-                .filter(i -> i != null && i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS)))
+                .filter(i -> i != null && i.isOf(MapAtlasesMod.MAP_ATLAS))
                 .findFirst().orElse(null);
 
         if (MapAtlasesMod.CONFIG != null) {
@@ -117,7 +118,7 @@ public class MapAtlasesAccessUtils {
         return itemStack != null ? itemStack : ItemStack.EMPTY;
     }
 
-    public static List<ItemStack> getItemStacksFromGrid(CraftingInventory inv) {
+    public static List<ItemStack> getItemStacksFromGrid(RecipeInputInventory inv) {
         List<ItemStack> itemStacks = new ArrayList<>();
         for(int i = 0; i < inv.size(); i++) {
             if (!inv.getStack(i).isEmpty()) {
@@ -128,7 +129,7 @@ public class MapAtlasesAccessUtils {
     }
 
     public static String getPlayerDimKey(PlayerEntity player) {
-        return player.world.getRegistryKey().getValue().toString();
+        return player.getWorld().getRegistryKey().getValue().toString();
     }
 
     public static String getMapStateDimKey(MapState state) {

@@ -2,6 +2,7 @@ package pepjebs.mapatlases.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -87,14 +88,15 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        renderBackground(matrices);
-        drawBackground(matrices, delta, mouseX, mouseY);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackground(context);
+        drawBackground(context, delta, mouseX, mouseY);
     }
 
     @Override
-    protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
+    protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
         if (client == null || client.player == null || client.world == null) return;
+        var matrices = context.getMatrices();
 
         // Handle zooming
         int atlasBgScaledSize = getAtlasBgScaledSize();
@@ -108,8 +110,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         double y = (height / 2.0)-(atlasBgScaledSize/2.0);
         double x = (width / 2.0)-(atlasBgScaledSize/2.0);
         RenderSystem.setShaderTexture(0, ATLAS_BACKGROUND);
-        drawTexture(
-                matrices,
+        context.drawTexture(
+                ATLAS_BACKGROUND,
                 (int) x,
                 (int) y,
                 0,
@@ -121,8 +123,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         );
 
         // Draw selectors
-        drawDimensionSelectors(matrices, x, y, atlasBgScaledSize);
-        drawMapIconSelectors(matrices, x, y, atlasBgScaledSize);
+        drawDimensionSelectors(context, x, y, atlasBgScaledSize);
+        drawMapIconSelectors(context, x, y, atlasBgScaledSize);
 
         // Draw maps, putting active map in middle of grid
         if (atlas == null) {
@@ -169,8 +171,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
         // Draw foreground
         RenderSystem.setShaderTexture(0, ATLAS_FOREGROUND);
-        drawTexture(
-                matrices,
+        context.drawTexture(
+                ATLAS_FOREGROUND,
                 (int) x,
                 (int) y,
                 0,
@@ -182,8 +184,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         );
 
         // Draw tooltips if necessary
-        drawDimensionTooltip(matrices, x, y, atlasBgScaledSize);
-        drawMapIconTooltip(matrices, x, y, atlasBgScaledSize);
+        drawDimensionTooltip(context, x, y, atlasBgScaledSize);
+        drawMapIconTooltip(context, x, y, atlasBgScaledSize);
 
         // Draw world map coords
         if (mouseX < x + drawnMapBufferSize || mouseY < y + drawnMapBufferSize
@@ -207,7 +209,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             targetHeight = 8;
         }
         float textScaling = MapAtlasesMod.CONFIG.worldMapCoordsScale;
-        drawMapTextXZCoords(matrices, (int) x, (int) y, atlasBgScaledSize, targetHeight, textScaling, cursorBlockPos);
+        drawMapTextXZCoords(context, (int) x, (int) y, atlasBgScaledSize, targetHeight, textScaling, cursorBlockPos);
     }
 
     // ================== Mouse Functions ==================
@@ -332,7 +334,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     // ================== Drawing Utils ==================
 
     public static void drawMapTextXZCoords(
-            MatrixStack matrices,
+            DrawContext context,
             int x,
             int y,
             int originOffsetWidth,
@@ -342,7 +344,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     ) {
         String coordsToDisplay = "X: "+blockPos.getX()+", Z: "+blockPos.getZ();
         MapAtlasesHUD.drawScaledText(
-                matrices, x, y, coordsToDisplay, textScaling, originOffsetWidth, originOffsetHeight);
+                context, x, y, coordsToDisplay, textScaling, originOffsetWidth, originOffsetHeight);
     }
 
     private void drawMap(
@@ -557,7 +559,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     // ================== Dimension Selectors ==================
 
     private void drawDimensionTooltip(
-            MatrixStack matrices,
+            DrawContext context,
             double x,
             double y,
             int atlasBgScaledSize
@@ -582,14 +584,15 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                     dimName = dimRegistry.toString().toString().replace("_", " ").replace(":", " ");
                 }
                 dimName = firstCharCapitalize(dimName);
-                this.renderTooltip(matrices, Text.of(dimName), (int) rawMouseXMoved, (int) rawMouseYMoved);
+                assert client != null;
+                context.drawTooltip(client.textRenderer, Text.of(dimName), (int) rawMouseXMoved, (int) rawMouseYMoved);
                 return;
             }
         }
     }
 
     private void drawDimensionSelectors(
-            MatrixStack matrices,
+            DrawContext context,
             double x,
             double y,
             int atlasBgScaledSize
@@ -605,13 +608,10 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             var dim = dimensions.get(targetIdx);
             scaledWidth = calcScaledWidth(100);
             // Draw selector
-            if (dim.compareTo(currentWorldSelected) == 0) {
-                RenderSystem.setShaderTexture(0, PAGE_SELECTED);
-            } else {
-                RenderSystem.setShaderTexture(0, PAGE_UNSELECTED);
-            }
-            drawTexture(
-                    matrices,
+            Identifier selectionPage = (dim.compareTo(currentWorldSelected) == 0) ? PAGE_SELECTED : PAGE_UNSELECTED;
+            RenderSystem.setShaderTexture(0, selectionPage);
+            context.drawTexture(
+                    selectionPage,
                     (int) x + (int) (29.5/32.0 * atlasBgScaledSize),
                     (int) y + (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize),
                     0,
@@ -622,18 +622,20 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                     scaledWidth
             );
             // Draw Icon
+            Identifier dimensionPage;
             if (dim.compareTo("minecraft:overworld") == 0) {
-                RenderSystem.setShaderTexture(0, PAGE_OVERWORLD);
+                dimensionPage = PAGE_OVERWORLD;
             } else if (dim.compareTo("minecraft:the_nether") == 0) {
-                RenderSystem.setShaderTexture(0, PAGE_NETHER);
+                dimensionPage = PAGE_NETHER;
             } else if (dim.compareTo("minecraft:the_end") == 0) {
-                RenderSystem.setShaderTexture(0, PAGE_END);
+                dimensionPage = PAGE_END;
             } else {
-                RenderSystem.setShaderTexture(0, PAGE_OTHER);
+                dimensionPage = PAGE_OTHER;
             }
+            RenderSystem.setShaderTexture(0, dimensionPage);
             scaledWidth = calcScaledWidth(75);
-            drawTexture(
-                    matrices,
+            context.drawTexture(
+                    dimensionPage,
                     (int) x + (int) (30.0/32.0 * atlasBgScaledSize),
                     (int) y + (int) (i * (4/32.0 * atlasBgScaledSize)) + (int) (4.0/64.0 * atlasBgScaledSize),
                     0,
@@ -669,7 +671,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         return mapIcons.entrySet().stream().toList();
     }
 
-    private void drawMapIconSelectors(MatrixStack matrices, double x, double y, int atlasBgScaledSize) {
+    private void drawMapIconSelectors(DrawContext context, double x, double y, int atlasBgScaledSize) {
         if (client == null) return;
         int scaledWidth = calcScaledWidth(100);
         var mapList = getMapIconList();
@@ -678,6 +680,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             if (targetIdx >= mapList.size()) {
                 continue;
             }
+            var matrices = context.getMatrices();
             var mapIconE = mapList.get(targetIdx);
             // Draw selector
             var mapIdStr = mapIconE.getKey().split("/")[0];
@@ -688,7 +691,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 RenderSystem.setShaderTexture(0, PAGE_UNSELECTED);
             }
             drawTextureFlippedX(
-                    matrices,
+                    context,
                     (int) x - (int) (1.0/16 * atlasBgScaledSize),
                     (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize),
                     0,
@@ -732,7 +735,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         }
     }
 
-    private void drawTextureFlippedX(MatrixStack matrices, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
+    private void drawTextureFlippedX(DrawContext context, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
+        var matrices = context.getMatrices();
         matrices.push();
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
@@ -750,7 +754,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     }
 
     private void drawMapIconTooltip(
-            MatrixStack matrices,
+            DrawContext context,
             double x,
             double y,
             int atlasBgScaledSize
@@ -784,7 +788,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                                 + (int) (dimAndCenters.getSecond().get(1) - (atlasScale / 2.0d) + ((atlasScale / 2.0d) * ((mapIcon.getZ() + 128) / 128.0d)))
                 );
                 MutableText formattedCoords = MutableText.of(coordsText).formatted(Formatting.GRAY);
-                this.renderTooltip(matrices, List.of(mapIconText, formattedCoords), (int) rawMouseXMoved, (int) rawMouseYMoved);
+                context.drawTooltip(client.textRenderer, List.of(mapIconText, formattedCoords), (int) rawMouseXMoved, (int) rawMouseYMoved);
                 return;
             }
         }

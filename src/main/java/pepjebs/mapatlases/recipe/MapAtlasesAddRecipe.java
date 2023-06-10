@@ -2,6 +2,7 @@ package pepjebs.mapatlases.recipe;
 
 import com.google.common.primitives.Ints;
 import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -30,7 +31,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public boolean matches(CraftingInventory inv, World world) {
+    public boolean matches(RecipeInputInventory inv, World world) {
         this.world = world;
         List<ItemStack> itemStacks = MapAtlasesAccessUtils
                 .getItemStacksFromGrid(inv)
@@ -70,12 +71,12 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
 
         // Ensure there's only one Atlas
         long atlasCount = itemStacks.stream().filter(i ->
-                i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).count();
+                i.isOf(MapAtlasesMod.MAP_ATLAS)).count();
         return atlasCount == 1;
     }
 
     @Override
-    public ItemStack craft(CraftingInventory inv, DynamicRegistryManager registryManager) {
+    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registryManager) {
         if (world == null) return ItemStack.EMPTY;
         List<ItemStack> itemStacks = MapAtlasesAccessUtils.getItemStacksFromGrid(inv)
                 .stream()
@@ -121,13 +122,13 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
 
     private ItemStack getAtlasFromItemStacks(List<ItemStack> itemStacks) {
         Optional<ItemStack> item =  itemStacks.stream()
-                .filter(i -> i.isItemEqual(new ItemStack(MapAtlasesMod.MAP_ATLAS))).findFirst();
+                .filter(i -> i.isOf(MapAtlasesMod.MAP_ATLAS)).findFirst();
         return item.orElse(ItemStack.EMPTY).copy();
     }
 
     private List<MapState> getMapStatesFromItemStacks(World world, List<ItemStack> itemStacks) {
         return itemStacks.stream()
-                .filter(i -> i.isItemEqual(new ItemStack(Items.FILLED_MAP)))
+                .filter(i -> i.isOf(Items.FILLED_MAP))
                 .map(m -> FilledMapItem.getMapState(m, world))
                 .collect(Collectors.toList());
     }

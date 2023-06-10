@@ -111,18 +111,18 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
         }
         Map<Integer, Pair<String,List<Integer>>> idsToCenters = new HashMap<>();
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.getWorld(), atlas);
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
             var id = MapAtlasesAccessUtils.getMapIntFromString(state.getKey());
             var centers = Arrays.asList(state.getValue().centerX, state.getValue().centerZ);
             var dimStr = MapAtlasesAccessUtils.getMapStateDimKey(state.getValue());
             idsToCenters.put(id, new Pair<>(dimStr, centers));
         }
-        var currentIds = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
+        var currentIds = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.getWorld(), atlas);
         // TODO: Sometimes throws bc of null when opening Lectern
         String centerMap = MapAtlasesAccessUtils
                 .getActiveAtlasMapStateServer(currentIds, (ServerPlayerEntity) player).getKey();
-        int atlasScale = MapAtlasesAccessUtils.getAtlasBlockScale(player.world, atlas);
+        int atlasScale = MapAtlasesAccessUtils.getAtlasBlockScale(player.getWorld(), atlas);
         return new MapAtlasesAtlasOverviewScreenHandler(syncId, inv, idsToCenters, atlas, centerMap, atlasScale);
     }
 
@@ -143,7 +143,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     private void sendPlayerLecternAtlasData(ServerPlayerEntity serverPlayerEntity, ItemStack atlas){
         // Send player all MapStates
         var states =
-                MapAtlasesAccessUtils.getAllMapInfoFromAtlas(serverPlayerEntity.world, atlas);
+                MapAtlasesAccessUtils.getAllMapInfoFromAtlas(serverPlayerEntity.getWorld(), atlas);
         for (var state : states.entrySet()) {
             state.getValue().getPlayerSyncData(serverPlayerEntity);
             MapAtlasesServerLifecycleEvents.relayMapStateSyncToPlayerClient(state, serverPlayerEntity);
@@ -160,12 +160,12 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         }
         if (atlas.isEmpty()) return;
         var mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(
-                serverPlayerEntity.world, atlas);
+                serverPlayerEntity.getWorld(), atlas);
         var currentInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(
-                serverPlayerEntity.world, atlas);
+                serverPlayerEntity.getWorld(), atlas);
         String centerMap = MapAtlasesAccessUtils
                 .getActiveAtlasMapStateServer(currentInfos, serverPlayerEntity).getKey();
-        int atlasScale = MapAtlasesAccessUtils.getAtlasBlockScale(serverPlayerEntity.world, atlas);
+        int atlasScale = MapAtlasesAccessUtils.getAtlasBlockScale(serverPlayerEntity.getWorld(), atlas);
         packetByteBuf.writeItemStack(atlas);
         packetByteBuf.writeString(centerMap);
         packetByteBuf.writeInt(atlasScale);

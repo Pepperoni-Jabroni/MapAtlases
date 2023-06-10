@@ -90,7 +90,7 @@ public class MapAtlasesClient implements ClientModInitializer {
         // Using ClientWorld will render default Atlas in inventories
         World queryWorld = world;
         if (queryWorld == null && entity != null)
-            queryWorld = entity.world;
+            queryWorld = entity.getWorld();
         if (queryWorld == null)
             return 0.0f;
         if (queryWorld.getRegistryKey() == World.OVERWORLD) return 0.1f;

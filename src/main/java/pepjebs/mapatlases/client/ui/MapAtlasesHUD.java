@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.MapRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -28,7 +28,7 @@ import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 import java.util.Arrays;
 
 @Environment(EnvType.CLIENT)
-public class MapAtlasesHUD extends DrawableHelper {
+public class MapAtlasesHUD {
 
     public static final Identifier MAP_BACKGROUND =
             new Identifier("map_atlases:textures/gui/hud/map_background.png");
@@ -43,9 +43,9 @@ public class MapAtlasesHUD extends DrawableHelper {
         mapRenderer = client.gameRenderer.getMapRenderer();
     }
 
-    public void render(MatrixStack matrices) {
+    public void render(DrawContext context) {
         if (shouldDraw(client)) {
-            renderMapHUD(matrices);
+            renderMapHUD(context);
         }
     }
 
@@ -67,7 +67,8 @@ public class MapAtlasesHUD extends DrawableHelper {
                                 i == MapAtlasesAccessUtils.getMapIntFromString(MapAtlasesClient.currentMapStateId));
     }
 
-    private void renderMapHUD(MatrixStack matrices) {
+    private void renderMapHUD(DrawContext context) {
+        var matrices = context.getMatrices();
         // Handle early returns
         if (client.world == null || client.player == null) {
             return;
@@ -122,7 +123,7 @@ public class MapAtlasesHUD extends DrawableHelper {
             }
         }
         RenderSystem.setShaderTexture(0, MAP_BACKGROUND);
-        drawTexture(matrices,x,y,0,0,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize);
+        context.drawTexture(MAP_BACKGROUND,x,y,0,0,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize);
 
         // Draw map data
         VertexConsumerProvider.Immediate vcp;
@@ -141,7 +142,7 @@ public class MapAtlasesHUD extends DrawableHelper {
         vcp.draw();
         matrices.pop();
         RenderSystem.setShaderTexture(0, MAP_FOREGROUND);
-        drawTexture(matrices,x,y,0,0,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize);
+        context.drawTexture(MAP_FOREGROUND,x,y,0,0,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize);
 
         // Draw text data
         float textScaling = MapAtlasesMod.CONFIG.minimapCoordsAndBiomeScale;
@@ -152,13 +153,13 @@ public class MapAtlasesHUD extends DrawableHelper {
         }
         if (MapAtlasesMod.CONFIG.drawMinimapCoords) {
             drawMapTextCoords(
-                    matrices, x, y, textWidthOffset, textHeightOffset,
+                    context, x, y, textWidthOffset, textHeightOffset,
                     textScaling, new BlockPos(new Vec3i(towardsZero(client.player.getPos().x), towardsZero(client.player.getPos().y), towardsZero(client.player.getPos().z))));
             textHeightOffset += (12 * textScaling);
         }
         if (MapAtlasesMod.CONFIG.drawMinimapBiome) {
             drawMapTextBiome(
-                    matrices, x, y, textWidthOffset, textHeightOffset,
+                    context, x, y, textWidthOffset, textHeightOffset,
                     textScaling, client.player.getBlockPos(), client.world);
         }
     }
@@ -171,7 +172,7 @@ public class MapAtlasesHUD extends DrawableHelper {
     }
 
     public static void drawMapTextCoords(
-            MatrixStack matrices,
+            DrawContext context,
             int x,
             int y,
             int originOffsetWidth,
@@ -180,11 +181,11 @@ public class MapAtlasesHUD extends DrawableHelper {
             BlockPos blockPos
     ) {
         String coordsToDisplay = blockPos.toShortString();
-        drawScaledText(matrices, x, y, coordsToDisplay, textScaling, originOffsetWidth, originOffsetHeight);
+        drawScaledText(context, x, y, coordsToDisplay, textScaling, originOffsetWidth, originOffsetHeight);
     }
 
     public static void drawMapTextBiome(
-            MatrixStack matrices,
+            DrawContext context,
             int x,
             int y,
             int originOffsetWidth,
@@ -194,11 +195,11 @@ public class MapAtlasesHUD extends DrawableHelper {
             World world
     ) {
         String biomeToDisplay = getBiomeStringToDisplay(world, blockPos);
-        drawScaledText(matrices, x, y, biomeToDisplay, textScaling, originOffsetWidth, originOffsetHeight);
+        drawScaledText(context, x, y, biomeToDisplay, textScaling, originOffsetWidth, originOffsetHeight);
     }
 
     public static void drawScaledText(
-            MatrixStack matrices,
+            DrawContext context,
             int x,
             int y,
             String text,
@@ -206,6 +207,7 @@ public class MapAtlasesHUD extends DrawableHelper {
             int originOffsetWidth,
             int originOffsetHeight
     ) {
+        var matrices = context.getMatrices();
         float textWidth = client.textRenderer.getWidth(text) * textScaling;
         float textX = (float) (x + (originOffsetWidth / 2.0) - (textWidth / 2.0));
         float textY = y + originOffsetHeight;
@@ -215,8 +217,8 @@ public class MapAtlasesHUD extends DrawableHelper {
         matrices.push();
         matrices.translate(textX, textY, 5);
         matrices.scale(textScaling, textScaling, 1);
-        client.textRenderer.draw(matrices, text, 1, 1, Integer.parseInt("595959", 16));
-        client.textRenderer.draw(matrices, text, 0, 0, Integer.parseInt("E0E0E0", 16));
+        context.drawText(client.textRenderer, text, 1, 1, Integer.parseInt("595959", 16), true);
+        context.drawText(client.textRenderer, text, 0, 0, Integer.parseInt("E0E0E0", 16), true);
         matrices.pop();
     }
 

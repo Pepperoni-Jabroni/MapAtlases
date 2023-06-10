@@ -65,7 +65,7 @@ public class MapAtlasesServerLifecycleEvents {
     ) {
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
         if (atlas.isEmpty()) return;
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.world, atlas);
+        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(player.getWorld(), atlas);
         for (Map.Entry<String, MapState> info : mapInfos.entrySet()) {
             String mapId = info.getKey();
             MapState state = info.getValue();
@@ -88,7 +88,7 @@ public class MapAtlasesServerLifecycleEvents {
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
             if (atlas.isEmpty()) continue;
             Map<String, MapState> currentMapInfos =
-                    MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.world, atlas);
+                    MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(player.getWorld(), atlas);
             Map.Entry<String, MapState> activeInfo = MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
                     currentMapInfos, player);
             // changedMapState has non-null value if player has a new active Map ID

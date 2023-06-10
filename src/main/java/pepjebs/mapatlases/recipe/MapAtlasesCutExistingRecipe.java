@@ -1,6 +1,7 @@
 package pepjebs.mapatlases.recipe;
 
 import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.RecipeSerializer;
@@ -26,7 +27,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public boolean matches(CraftingInventory inv, World world) {
+    public boolean matches(RecipeInputInventory inv, World world) {
         ItemStack atlas = ItemStack.EMPTY;
         ItemStack shears = ItemStack.EMPTY;
         int size = 0;
@@ -44,7 +45,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public ItemStack craft(CraftingInventory inv, DynamicRegistryManager registryManager) {
+    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registryManager) {
         ItemStack atlas = ItemStack.EMPTY;
         for(int i = 0; i < inv.size(); i++) {
             if (!inv.getStack(i).isEmpty()) {
@@ -69,7 +70,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public DefaultedList<ItemStack> getRemainder(CraftingInventory inv) {
+    public DefaultedList<ItemStack> getRemainder(RecipeInputInventory inv) {
         DefaultedList<ItemStack> list = DefaultedList.of();
         for(int i = 0; i < inv.size(); i++) {
             ItemStack cur = inv.getStack(i).copy();

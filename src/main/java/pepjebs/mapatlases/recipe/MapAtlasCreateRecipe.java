@@ -1,6 +1,7 @@
 package pepjebs.mapatlases.recipe;
 
 import net.minecraft.inventory.CraftingInventory;
+import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -31,7 +32,7 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public boolean matches(CraftingInventory inv, World world) {
+    public boolean matches(RecipeInputInventory inv, World world) {
         this.world = world;
         ArrayList<ItemStack> itemStacks = new ArrayList<>();
         ItemStack filledMap = ItemStack.EMPTY;
@@ -57,10 +58,10 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public ItemStack craft(CraftingInventory inv, DynamicRegistryManager registryManager) {
+    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registryManager) {
         ItemStack mapItemStack = null;
         for(int i = 0; i < inv.size(); i++) {
-            if (inv.getStack(i).isItemEqual(new ItemStack(Items.FILLED_MAP))) {
+            if (inv.getStack(i).isOf(Items.FILLED_MAP)) {
                 mapItemStack = inv.getStack(i);
             }
         }

@@ -51,10 +51,11 @@ The source map determines the Atlas' scale. *Who knew this whole time, all you h
 
 ![sharing_toast](https://user-images.githubusercontent.com/17690401/206922262-7346a3d7-8c76-4399-9d54-6cfb0f806c6e.png)
 
-- Atlases can also be **merged** with a Cartography Table - simply put an Atlas in the top & bottom slots and the Atlases will combine their mapped regions with one-another!
-- **Atlases also support Lecterns** - Show off your world by putting an Atlas in a Lectern! 
+- Atlases can be **merged** with a Cartography Table - simply put an Atlas in the top & bottom slots and the Atlases will combine their mapped regions with one-another!
+- **Atlases support Lecterns** - Show off your world by putting an Atlas in a Lectern! 
    - Simply right click a Lectern while holding an Atlas to display the Lectern
    - The Atlas will appear visually different depending on the Dimension its displayed in - there's a unique texture for the Overworld, Nether, End and "Other".
+- Atlases can be stored in Chiseled Bookshelves in 1.20+ 
 
 ## ⚙️ Config
 The mod is highly configurable and offers in-game config editing with ModMenu. See the current config [options here](https://github.com/Pepperoni-Jabroni/MapAtlases/blob/main/src/main/java/pepjebs/mapatlases/config/MapAtlasesConfig.java)!

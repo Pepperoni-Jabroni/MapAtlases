@@ -1,6 +1,5 @@
 <p align="center">
   <img src="https://github.com/Pepperoni-Jabroni/MapAtlases/assets/17690401/3c934d54-99ca-4f66-b3fd-5865ea2a3d98">
-
   </br></br>
   A vanilla-friendly mini-map/world-view mod using vanilla Maps, introducing the "Atlas".
   </br></br>

@@ -17,7 +17,7 @@
   "subtitles.map_atlases.atlas_create_map": "Atlas desenha um novo mapa",
   "text.autoconfig.map_atlases.title": "Configurações do Map Atlases",
   "text.autoconfig.map_atlases.option.activationLocation": "Local de ativação",
-  "text.autoconfig.map_atlases.option.activationLocation.@Tooltip": "Controla a localização de quando o minimapa é exibido. Pode ser: 'HANDS' (mão), 'HOTBAR' (), or 'INVENTORY'.",
+  "text.autoconfig.map_atlases.option.activationLocation.@Tooltip": "Controla a localização de quando o minimapa é exibido. Pode ser: 'HANDS', 'HOTBAR' or 'INVENTORY'.",
   "text.autoconfig.map_atlases.option.drawMiniMapHUD": "Desenhar minimapa na tela",
   "text.autoconfig.map_atlases.option.drawMiniMapHUD.@Tooltip": "Se 'true' (verdadeiro), o mini-mapa do mapa atual será desenhado na tela enquanto o Atlas estiver ativo.",
   "text.autoconfig.map_atlases.option.enableEmptyMapEntryAndFill": "Habilitar entrada de Mapas em branco e preenchimento",

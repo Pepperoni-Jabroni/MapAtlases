@@ -56,5 +56,9 @@
   "text.autoconfig.map_atlases.option.worldMapIconScale.@Tooltip": "Встановлює розмір іконок мапи, які відображаються на мапі світу",
   "text.autoconfig.map_atlases.option.acceptPaperForEmptyMaps": "Приймати папір для порожніх мап",
   "text.autoconfig.map_atlases.option.acceptPaperForEmptyMaps.@Tooltip": "Якщо ввімкнено, ви можете збільшити кількість порожніх мап, вставивши папір",
+  "text.autoconfig.map_atlases.option.soundScalar": "Показник гучності",
+  "text.autoconfig.map_atlases.option.soundScalar.@Tooltip": "Регулює гучність усіх звукових ефектів атласів",
+  "text.autoconfig.map_atlases.option.requireEmptyMapsToExpand": "Вимагати порожні мапи для розширення",
+  "text.autoconfig.map_atlases.option.requireEmptyMapsToExpand.@Tooltip": "Якщо 'true', атласи вимагатимуть порожні мапи, щоб розширювати заповнені мапи",
   "trinkets.slot.hand.atlas": "Атлас"
 }

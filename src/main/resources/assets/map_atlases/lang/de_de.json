@@ -58,5 +58,7 @@
   "text.autoconfig.map_atlases.option.acceptPaperForEmptyMaps.@Tooltip": "Setzt fest, ob Papier als leere Karte in den Atlas eingefügt werden kann",
   "text.autoconfig.map_atlases.option.soundScalar": "Lautstärke",
   "text.autoconfig.map_atlases.option.soundScalar.@Tooltip": "Setzt die Lautstärke für alle Sounds dieser Mod",
+  "text.autoconfig.map_atlases.option.requireEmptyMapsToExpand": "Leere Karten zum Erweitern fordern",
+  "text.autoconfig.map_atlases.option.requireEmptyMapsToExpand.@Tooltip": "Wenn 'true', braucht der Atlas übrige leere Karten um sich selbst zu erweitern",
   "trinkets.slot.hand.atlas": "Atlas"
 }

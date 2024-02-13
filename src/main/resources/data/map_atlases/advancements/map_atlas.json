@@ -1,0 +1,25 @@
+{
+	"parent": "minecraft:recipes/root",
+	"criteria": {
+		"has_map": {
+			"conditions": {
+				"items": [
+					{
+						"items": ["minecraft:map"]
+					}
+				]
+			},
+			"trigger": "minecraft:inventory_changed"
+		},
+		"has_the_recipe": {
+			"conditions": {
+				"recipe": "map_atlases:dummy_crafting_atlas"
+			},
+			"trigger": "minecraft:recipe_unlocked"
+		}
+	},
+	"requirements": [["has_map", "has_the_recipe"]],
+	"rewards": {
+		"recipes": ["map_atlases:dummy_crafting_atlas"]
+	}
+}

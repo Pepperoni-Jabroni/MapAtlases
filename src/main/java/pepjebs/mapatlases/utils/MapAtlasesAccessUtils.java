@@ -171,6 +171,10 @@ public class MapAtlasesAccessUtils {
                 : new int[]{};
     }
 
+    public static boolean hasAnyMap(ItemStack atlas) {
+        return getMapIdsFromItemStack(atlas).length > 0;
+    }
+
     public static int getMapCountFromItemStack(ItemStack atlas) {
         return getMapIdsFromItemStack(atlas).length;
     }

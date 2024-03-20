@@ -54,7 +54,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
             }
         }
         if (atlas.getNbt() == null) return ItemStack.EMPTY;
-        if (MapAtlasesAccessUtils.getMapCountFromItemStack(atlas) > 1) {
+        if (MapAtlasesAccessUtils.hasAnyMap(atlas)) {
             List<Integer> mapIds = Arrays.stream(atlas.getNbt()
                     .getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());
             if (mapIds.size() > 0) {
@@ -77,7 +77,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
                 cur.damage(1, Random.create(), null);
             } else if (cur.getItem() == MapAtlasesMod.MAP_ATLAS && cur.getNbt() != null) {
                 boolean didRemoveFilled = false;
-                if (MapAtlasesAccessUtils.getMapCountFromItemStack(cur) > 1) {
+                if (MapAtlasesAccessUtils.hasAnyMap(cur)) {
                     List<Integer> mapIds = Arrays.stream(cur.getNbt()
                             .getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());
                     if (mapIds.size() > 0) {

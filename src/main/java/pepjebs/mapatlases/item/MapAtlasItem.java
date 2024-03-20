@@ -90,8 +90,13 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        openHandledAtlasScreen(world, player);
-        return TypedActionResult.consume(player.getStackInHand(hand));
+        ItemStack atlas = player.getStackInHand(hand);
+        if (MapAtlasesAccessUtils.hasAnyMap(atlas)){
+            openHandledAtlasScreen(world, player);
+            return TypedActionResult.consume(atlas);
+        }
+        else
+            return TypedActionResult.pass(atlas);
     }
 
     public void openHandledAtlasScreen(World world, PlayerEntity player) {
@@ -179,9 +184,14 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     }
 
     public ActionResult useOnBlock(ItemUsageContext context) {
-        if (context.getPlayer() == null || context.getWorld() == null
-                || context.getStack() == null || context.getBlockPos() == null)
+        if (context.getPlayer() == null
+        || (context.getWorld() == null)
+        || (context.getStack() == null)
+        || (context.getBlockPos() == null)
+        || (!MapAtlasesAccessUtils.hasAnyMap(context.getStack()))
+        ) {
             return super.useOnBlock(context);
+        }
         BlockState blockState = context.getWorld().getBlockState(context.getBlockPos());
         if (blockState.isOf(Blocks.LECTERN)) {
             boolean didPut = LecternBlock.putBookIfAbsent(

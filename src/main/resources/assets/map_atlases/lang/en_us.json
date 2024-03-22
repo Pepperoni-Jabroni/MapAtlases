@@ -15,6 +15,8 @@
   "subtitles.map_atlases.atlas_open": "Atlas opens",
   "subtitles.map_atlases.atlas_page_turn": "Atlas page turns",
   "subtitles.map_atlases.atlas_create_map": "Atlas map drawn",
+  "text.autoconfig.map_atlases.category.atlas": "Atlas",
+  "text.autoconfig.map_atlases.category.hud": "HUD",
   "text.autoconfig.map_atlases.title": "Map Atlases Config",
   "text.autoconfig.map_atlases.option.activationLocation": "Activation Location",
   "text.autoconfig.map_atlases.option.activationLocation.@Tooltip": "Controls location where mini-map displays. Any of: 'HANDS', ,'HOTBAR', or 'INVENTORY'.",

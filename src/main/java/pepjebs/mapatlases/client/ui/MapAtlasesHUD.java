@@ -143,6 +143,8 @@ public class MapAtlasesHUD extends DrawableHelper {
         RenderSystem.setShaderTexture(0, MAP_FOREGROUND);
         drawTexture(matrices,x,y,0,0,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize);
 
+        MapAtlasesClient.setWorldMapZoomLevel(1);
+
         // Draw text data
         float textScaling = MapAtlasesMod.CONFIG.minimapCoordsAndBiomeScale;
         int textHeightOffset = mapBgScaledSize + 4;

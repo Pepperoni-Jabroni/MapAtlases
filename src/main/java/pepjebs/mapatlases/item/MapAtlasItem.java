@@ -75,7 +75,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             if (MapAtlasesMod.CONFIG == null || (MapAtlasesMod.CONFIG.requireEmptyMapsToExpand && MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill)) {
                 // If there's no maps & no empty maps, the atlas is "inactive", so display how many empty maps
                 // they *would* receive if they activated the atlas
-                if (mapSize + empties == 0 && MapAtlasesMod.CONFIG != null) {
+                if (stack.getNbt() == null && MapAtlasesMod.CONFIG != null) {
                     empties = MapAtlasesMod.CONFIG.pityActivationMapCount;
                 }
                 tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_2", empties)

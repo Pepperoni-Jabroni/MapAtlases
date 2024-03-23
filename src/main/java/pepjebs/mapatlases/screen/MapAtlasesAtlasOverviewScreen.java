@@ -169,6 +169,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             }
         }
 
+        MapAtlasesClient.setWorldMapZoomLevel(1);
+
         // Draw foreground
         RenderSystem.setShaderTexture(0, ATLAS_FOREGROUND);
         context.drawTexture(

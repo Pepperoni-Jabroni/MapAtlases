@@ -7,6 +7,7 @@
   "item.map_atlases.atlas.tooltip_3": "Scale: 1:%s",
   "item.map_atlases.atlas.tooltip_err": "Inactive",
   "item.map_atlases.atlas.tooltip_full": "Full!",
+  "item.map_atlases.atlas.tooltip_unknown_scale": "Unknown Scale",
   "key.map_atlases.open_minimap": "Open Minimap GUI",
   "item.map_atlases.dummy_filled_map": "Map",
   "item.map_atlases.dummy_filled_map.dummy": "Dummy",

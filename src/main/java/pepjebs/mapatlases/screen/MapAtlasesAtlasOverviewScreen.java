@@ -5,6 +5,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.util.math.Rect2i;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapIcon;
@@ -19,13 +20,16 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
+import org.joml.Vector2i;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
 import pepjebs.mapatlases.utils.MapStateIntrfc;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
+import static pepjebs.mapatlases.utils.MapAtlasesAccessUtils.getMapStateDimKey;
 
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 // TODO: If the atlas world map scaling changes, MAX_TAB_DISP needs to change too
@@ -103,6 +107,13 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         int zoomLevelDim = getZoomLevelDim();
         MapAtlasesClient.setWorldMapZoomLevel(zoomLevelDim * MapAtlasesMod.CONFIG.worldMapIconScale);
         float mapTextureScale = (float)(atlasDataScaledSize/(128.0*zoomLevelDim));
+        Vector2i centerTile = BlockPosToMapTile(currentXCenter, currentZCenter, atlasScale);
+        Rect2i tileRegion = new Rect2i(
+            centerTile.x - (zoomLevelDim / 2),
+            centerTile.y - (zoomLevelDim / 2),
+            zoomLevelDim,
+            zoomLevelDim
+        );
 
         // Draw map background
         double y = (height / 2.0)-(atlasBgScaledSize/2.0);
@@ -129,41 +140,27 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             return;
         }
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(client.world, atlas);
+        Entry<String, MapState>[][] mapGrid = CreateMapGrid(mapInfos, currentWorldSelected, tileRegion);
         double mapTextX = x + drawnMapBufferSize;
         double mapTextY = y + drawnMapBufferSize;
-        for (int i = zoomLevelDim-1; i >= 0; i--) {
-            for (int j = zoomLevelDim-1; j >= 0; j--) {
-                int iXIdx = i-(zoomLevelDim/2);
-                int jYIdx = j-(zoomLevelDim/2);
-                int reqXCenter = currentXCenter + (jYIdx * atlasScale);
-                int reqZCenter = currentZCenter + (iXIdx * atlasScale);
-                var state = findMapEntryForCenters(
-                        mapInfos, currentWorldSelected, reqXCenter, reqZCenter);
-                if (state == null) { continue; }
-                String stateDimStr = MapAtlasesAccessUtils.getMapStateDimKey(state.getValue());
-
-                boolean drawPlayerIcons = stateDimStr.compareTo(initialWorldSelected) == 0;
-                if (!mapContainsMeaningfulIcons(state)) {
-                    drawMap(matrices,i,j,state,mapTextX,mapTextY,mapTextureScale, drawPlayerIcons);
-                }
+        for (int gridX=zoomLevelDim-1; gridX>=0; --gridX)
+        for (int gridY=zoomLevelDim-1; gridY>=0; --gridY)
+        {
+            var state = mapGrid[gridX][gridY];
+            if (state != null && !mapContainsMeaningfulIcons(state)) {
+                boolean drawPlayerIcons = initialWorldSelected.equals(getMapStateDimKey(state.getValue()));
+                drawMap(matrices,mapGrid,gridX,gridY,mapTextX,mapTextY,mapTextureScale, drawPlayerIcons);
             }
         }
         // draw maps without icons first
         // and then draw maps with icons (to avoid drawing over icons)
-        for (int i = zoomLevelDim-1; i >= 0; i--) {
-            for (int j = zoomLevelDim-1; j >= 0; j--) {
-                int iXIdx = i-(zoomLevelDim/2);
-                int jYIdx = j-(zoomLevelDim/2);
-                int reqXCenter = currentXCenter + (jYIdx * atlasScale);
-                int reqZCenter = currentZCenter + (iXIdx * atlasScale);
-                var state = findMapEntryForCenters(
-                        mapInfos, currentWorldSelected, reqXCenter, reqZCenter);
-                if (state == null) { continue; }
-                String stateDimStr = MapAtlasesAccessUtils.getMapStateDimKey(state.getValue());
-                boolean drawPlayerIcons = stateDimStr.compareTo(initialWorldSelected) == 0;
-                if (mapContainsMeaningfulIcons(state)) {
-                    drawMap(matrices,i,j,state,mapTextX,mapTextY,mapTextureScale, drawPlayerIcons);
-                }
+        for (int gridX=zoomLevelDim-1; gridX>=0; --gridX)
+        for (int gridY=zoomLevelDim-1; gridY>=0; --gridY)
+        {
+            var state = mapGrid[gridX][gridY];
+            if (state != null && mapContainsMeaningfulIcons(state)) {
+                boolean drawPlayerIcons = initialWorldSelected.equals(getMapStateDimKey(state.getValue()));
+                drawMap(matrices,mapGrid,gridX,gridY,mapTextX,mapTextY,mapTextureScale, drawPlayerIcons);
             }
         }
 
@@ -347,20 +344,19 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     private void drawMap(
             MatrixStack matrices,
-            int i,
-            int j,
-            Map.Entry<String, MapState> state,
+            Entry<String, MapState>[][] mapGrid,
+            int gridX,
+            int gridY,
             double mapTextX,
             double mapTextY,
             float mapTextureScale,
             boolean drawPlayerIcons
     ) {
+        var state = mapGrid[gridX][gridY];
         if (state == null || client == null) return;
-        int zoomLevelDim = getZoomLevelDim();
-        boolean isCenterMap = (i == (zoomLevelDim / 2)  && j == (zoomLevelDim / 2));
         // Draw the map
-        double curMapTextX = mapTextX + (mapTextureScale * 128 * j);
-        double curMapTextY = mapTextY + (mapTextureScale * 128 * i);
+        double curMapTextX = mapTextX + (mapTextureScale * 128 * gridX);
+        double curMapTextY = mapTextY + (mapTextureScale * 128 * gridY);
         VertexConsumerProvider.Immediate vcp;
         vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
         matrices.push();
@@ -370,7 +366,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         Iterator<Map.Entry<String, MapIcon>> it = ((MapStateIntrfc) state.getValue())
                 .getFullIcons().entrySet().iterator();
         List<Map.Entry<String, MapIcon>> removed = new ArrayList<>();
-        Optional<String> playerIconMapId = getPlayerIconMapId();
+        Optional<String> playerIconMapId = getPlayerIconMapId(mapGrid);
         if (playerIconMapId.isEmpty() || state.getKey().compareTo(playerIconMapId.get()) != 0) {
             // Only remove the off-map icon if it's not the active map or its not the active dimension
             while (it.hasNext()) {
@@ -389,7 +385,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                         MapAtlasesAccessUtils.getMapIntFromString(state.getKey()),
                         state.getValue(),
                         false,
-                        Integer.parseInt("F000F0", 16)
+                        0xF000F0
                 );
         vcp.draw();
         matrices.pop();
@@ -434,30 +430,26 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         return (int) Math.floor(.8 * client.getWindow().getScaledHeight());
     }
 
-    private Optional<String> getPlayerIconMapId() {
+    private Optional<String> getPlayerIconMapId(Entry<String, MapState>[][] mapGrid) {
         if (currentWorldSelected.compareTo(initialWorldSelected) != 0) {
             return Optional.empty();
         }
-        Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(client.world, atlas);
         int zoomLevelDim = getZoomLevelDim();
         Optional<String> returnVal = Optional.empty();
-        double minDist = Double.MAX_VALUE;
-        for (int i = zoomLevelDim-1; i >= 0; i--) {
-            for (int j = zoomLevelDim - 1; j >= 0; j--) {
-                int iXIdx = i-(zoomLevelDim/2);
-                int jYIdx = j-(zoomLevelDim/2);
-                int reqXCenter = currentXCenter + (jYIdx * atlasScale);
-                int reqZCenter = currentZCenter + (iXIdx * atlasScale);
-                var state = findMapEntryForCenters(
-                        mapInfos, currentWorldSelected, reqXCenter, reqZCenter);
-                if (state == null) {
-                    continue;
-                }
-                double dist = Math.hypot(Math.abs(reqXCenter - client.player.getX()),Math.abs(reqZCenter - client.player.getZ()));
-                if (dist < minDist) {
-                    returnVal = Optional.of(state.getKey());
-                    minDist = dist;
-                }
+        double minSquaredDist = Double.MAX_VALUE;
+        for (int gridX=0; gridX<zoomLevelDim; ++gridX)
+        for (int gridY=0; gridY<zoomLevelDim; ++gridY)
+        {
+            var state = mapGrid[gridX][gridY];
+            if (state == null) {
+                continue;
+            }
+            double distX = state.getValue().centerX - client.player.getX();
+            double distZ = state.getValue().centerZ - client.player.getZ();
+            double squaredDist = (distX*distX) + (distZ*distZ);
+            if (squaredDist < minSquaredDist) {
+                returnVal = Optional.of(state.getKey());
+                minSquaredDist = squaredDist;
             }
         }
         return returnVal;
@@ -510,6 +502,54 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                         }
                 )
                 .findFirst().orElse(null);
+    }
+
+    /**
+     * Computes the position of a map on a grid, such that (0,0) corresponds to
+     * the map at the center of the world.
+     * @param x,z The block position at the center of the map.
+     * @param mapSize The size of the map measured in blocks.
+     * @return The position of the map on the grid.
+     */
+    private Vector2i BlockPosToMapTile(int x, int z, int mapSize){
+        Vector2i tile = new Vector2i();
+        tile.x = x / mapSize;
+        tile.y = z / mapSize;
+        return tile;
+    }
+
+    /**
+     * Find all maps that will be renderered, and their corresponding position
+     * on the grid.
+     * @param region The dimensions of the grid, and its position in the atlas.
+     */
+    private Entry<String,MapState>[][] CreateMapGrid(
+        Map<String, MapState> mapInfos,
+        String dimension,
+        Rect2i region
+    ) {
+        @SuppressWarnings("unchecked")
+        Entry<String, MapState>[][] result = new Entry[region.getWidth()][region.getHeight()];
+
+        for (var entry : mapInfos.entrySet()){
+            MapState map = entry.getValue();
+            if (!dimension.equals(getMapStateDimKey(map)))
+                continue;
+
+            Vector2i tile = BlockPosToMapTile(map.centerX, map.centerZ, 128 << map.scale);
+            tile.x -= region.getX();
+            tile.y -= region.getY();
+
+            if (tile.x >= 0
+            &&  tile.y >= 0
+            &&  tile.x < region.getWidth()
+            &&  tile.y < region.getHeight()
+            ){
+                result[tile.x][tile.y] = entry;
+            }
+        }
+
+        return result;
     }
 
     private int getZoomLevelDim() {
@@ -649,15 +689,12 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     // ================== Map Icon Selectors ==================
 
     private List<Map.Entry<String, MapIcon>> getMapIconList() {
-        var currentIdsToCenters = getDimIdsToCenters(currentWorldSelected);
         var mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(client.world, atlas);
         // Map of <"MapStateId/MapIconId": MapIcon>
         Map<String, MapIcon> mapIcons = new HashMap<>();
-        for (var e : currentIdsToCenters.entrySet()) {
-            var centers = e.getValue().getSecond();
-            var state = findMapEntryForCenters(
-                    mapInfos, currentWorldSelected, centers.get(0), centers.get(1));
-            if (state == null) continue;
+        for (var state : mapInfos.entrySet())
+        if  (state != null && currentWorldSelected.equals(getMapStateDimKey(state.getValue())))
+        {
             var fullIcons = ((MapStateIntrfc) state.getValue()).getFullIcons();
             var stateString = state.getKey();
             var keptIcons = fullIcons.entrySet().stream()
@@ -716,7 +753,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             float l = (float)(b % 16 + 1) / 16.0F;
             float m = (float)(b / 16 + 1) / 16.0F;
             Matrix4f matrix4f2 = matrices.peek().getPositionMatrix();
-            int light = Integer.parseInt("F000F0", 16);
+            int light = 0xF000F0;
             VertexConsumerProvider.Immediate vcp = VertexConsumerProvider.immediate(Tessellator.getInstance().getBuffer());
             VertexConsumer vertexConsumer2 = vcp.getBuffer(MAP_ICONS);
             vertexConsumer2.vertex(matrix4f2, -1.0F, 1.0F, (float)k * 0.001F)

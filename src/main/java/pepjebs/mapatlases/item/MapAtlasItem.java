@@ -81,10 +81,23 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
                 tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_2", empties)
                         .formatted(Formatting.GRAY));
             }
-            MapState mapState = world.getMapState(MapAtlasesClient.currentMapStateId);
-            if (mapState == null) return;
-            tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_3", 1 << mapState.scale)
-                    .formatted(Formatting.GRAY));
+
+            int[] mapIds = MapAtlasesAccessUtils.getMapIdsFromItemStack(stack);
+            MapState mapState = null;
+            // The client may not know about every map in the atlas if it has
+            // never been used, so we check them all until we find a valid one.
+            for (int i=0; i<mapIds.length; ++i){
+                mapState = world.getMapState("map_"+String.valueOf(mapIds[i]));
+                if (mapState != null) break;
+            }
+
+            if (mapState != null){
+                tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_3", 1 << mapState.scale)
+                        .formatted(Formatting.GRAY));
+            }
+            else if (mapIds.length > 0){
+                tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_unknown_scale").formatted(Formatting.GRAY));
+            }
         }
     }
 

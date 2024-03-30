@@ -144,6 +144,8 @@ public class MapAtlasesHUD {
         RenderSystem.setShaderTexture(0, MAP_FOREGROUND);
         context.drawTexture(MAP_FOREGROUND,x,y,0,0,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize,mapBgScaledSize);
 
+        MapAtlasesClient.setWorldMapZoomLevel(1);
+
         // Draw text data
         float textScaling = MapAtlasesMod.CONFIG.minimapCoordsAndBiomeScale;
         int textHeightOffset = mapBgScaledSize + 4;

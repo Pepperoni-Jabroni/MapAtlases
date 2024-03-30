@@ -75,7 +75,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             if (MapAtlasesMod.CONFIG == null || (MapAtlasesMod.CONFIG.requireEmptyMapsToExpand && MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill)) {
                 // If there's no maps & no empty maps, the atlas is "inactive", so display how many empty maps
                 // they *would* receive if they activated the atlas
-                if (mapSize + empties == 0 && MapAtlasesMod.CONFIG != null) {
+                if (stack.getNbt() == null && MapAtlasesMod.CONFIG != null) {
                     empties = MapAtlasesMod.CONFIG.pityActivationMapCount;
                 }
                 tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_2", empties)
@@ -103,8 +103,13 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
 
     @Override
     public TypedActionResult<ItemStack> use(World world, PlayerEntity player, Hand hand) {
-        openHandledAtlasScreen(world, player);
-        return TypedActionResult.consume(player.getStackInHand(hand));
+        ItemStack atlas = player.getStackInHand(hand);
+        if (MapAtlasesAccessUtils.hasAnyMap(atlas)){
+            openHandledAtlasScreen(world, player);
+            return TypedActionResult.consume(atlas);
+        }
+        else
+            return TypedActionResult.pass(atlas);
     }
 
     public void openHandledAtlasScreen(World world, PlayerEntity player) {
@@ -192,9 +197,14 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     }
 
     public ActionResult useOnBlock(ItemUsageContext context) {
-        if (context.getPlayer() == null || context.getWorld() == null
-                || context.getStack() == null || context.getBlockPos() == null)
+        if (context.getPlayer() == null
+        || (context.getWorld() == null)
+        || (context.getStack() == null)
+        || (context.getBlockPos() == null)
+        || (!MapAtlasesAccessUtils.hasAnyMap(context.getStack()))
+        ) {
             return super.useOnBlock(context);
+        }
         BlockState blockState = context.getWorld().getBlockState(context.getBlockPos());
         if (blockState.isOf(Blocks.LECTERN)) {
             boolean didPut = LecternBlock.putBookIfAbsent(

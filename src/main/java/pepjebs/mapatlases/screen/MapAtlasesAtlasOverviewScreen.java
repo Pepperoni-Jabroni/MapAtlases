@@ -30,7 +30,6 @@ import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 import static pepjebs.mapatlases.utils.MapAtlasesAccessUtils.getMapStateDimKey;
 
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 // TODO: If the atlas world map scaling changes, MAX_TAB_DISP needs to change too
@@ -91,6 +90,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 SoundCategory.PLAYERS, MapAtlasesMod.CONFIG.soundScalar, 1.0F);
     }
 
+    private record MapInfo(int id, String dimension, int centerX, int centerZ, MapState state) {}
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         renderBackground(context);
@@ -142,15 +143,15 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             return;
         }
         Map<String, MapState> mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(client.world, atlas);
-        Entry<String, MapState>[][] mapGrid = CreateMapGrid(mapInfos, currentWorldSelected, tileRegion);
+        MapInfo[][] mapGrid = CreateMapGrid(mapInfos, currentWorldSelected, tileRegion);
         double mapTextX = x + drawnMapBufferSize;
         double mapTextY = y + drawnMapBufferSize;
         for (int gridX=zoomLevelDim-1; gridX>=0; --gridX)
         for (int gridY=zoomLevelDim-1; gridY>=0; --gridY)
         {
-            var state = mapGrid[gridX][gridY];
-            if (state != null && !mapContainsMeaningfulIcons(state)) {
-                boolean drawPlayerIcons = initialWorldSelected.equals(getMapStateDimKey(state.getValue()));
+            MapInfo info = mapGrid[gridX][gridY];
+            if (info != null && !mapContainsMeaningfulIcons(info.state)) {
+                boolean drawPlayerIcons = initialWorldSelected.equals(info.dimension);
                 drawMap(matrices,mapGrid,gridX,gridY,mapTextX,mapTextY,mapTextureScale, drawPlayerIcons);
             }
         }
@@ -159,9 +160,9 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         for (int gridX=zoomLevelDim-1; gridX>=0; --gridX)
         for (int gridY=zoomLevelDim-1; gridY>=0; --gridY)
         {
-            var state = mapGrid[gridX][gridY];
-            if (state != null && mapContainsMeaningfulIcons(state)) {
-                boolean drawPlayerIcons = initialWorldSelected.equals(getMapStateDimKey(state.getValue()));
+            MapInfo info = mapGrid[gridX][gridY];
+            if (info != null && mapContainsMeaningfulIcons(info.state)) {
+                boolean drawPlayerIcons = initialWorldSelected.equals(info.dimension);
                 drawMap(matrices,mapGrid,gridX,gridY,mapTextX,mapTextY,mapTextureScale, drawPlayerIcons);
             }
         }
@@ -348,7 +349,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     private void drawMap(
             MatrixStack matrices,
-            Entry<String, MapState>[][] mapGrid,
+            MapInfo[][] mapGrid,
             int gridX,
             int gridY,
             double mapTextX,
@@ -356,8 +357,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             float mapTextureScale,
             boolean drawPlayerIcons
     ) {
-        var state = mapGrid[gridX][gridY];
-        if (state == null || client == null) return;
+        var info = mapGrid[gridX][gridY];
+        if (info == null || client == null) return;
         // Draw the map
         double curMapTextX = mapTextX + (mapTextureScale * 128 * gridX);
         double curMapTextY = mapTextY + (mapTextureScale * 128 * gridY);
@@ -367,11 +368,11 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         matrices.translate(curMapTextX, curMapTextY, 0.0);
         matrices.scale(mapTextureScale, mapTextureScale, -1);
         // Remove the off-map player icons temporarily during render
-        Iterator<Map.Entry<String, MapIcon>> it = ((MapStateIntrfc) state.getValue())
+        Iterator<Map.Entry<String, MapIcon>> it = ((MapStateIntrfc) info.state)
                 .getFullIcons().entrySet().iterator();
         List<Map.Entry<String, MapIcon>> removed = new ArrayList<>();
-        Optional<String> playerIconMapId = getPlayerIconMapId(mapGrid);
-        if (playerIconMapId.isEmpty() || state.getKey().compareTo(playerIconMapId.get()) != 0) {
+        Optional<Integer> playerIconMapId = getPlayerIconMapId(mapGrid);
+        if (playerIconMapId.isEmpty() || info.id != playerIconMapId.get()) {
             // Only remove the off-map icon if it's not the active map or its not the active dimension
             while (it.hasNext()) {
                 Map.Entry<String, MapIcon> e = it.next();
@@ -386,8 +387,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 .draw(
                         matrices,
                         vcp,
-                        MapAtlasesAccessUtils.getMapIntFromString(state.getKey()),
-                        state.getValue(),
+                        info.id,
+                        info.state,
                         false,
                         0xF000F0
                 );
@@ -395,7 +396,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         matrices.pop();
         // Re-add the off-map player icons after render
         for (Map.Entry<String, MapIcon> e : removed) {
-            ((MapStateIntrfc) state.getValue()).getFullIcons().put(e.getKey(), e.getValue());
+            ((MapStateIntrfc) info.state).getFullIcons().put(e.getKey(), e.getValue());
         }
     }
 
@@ -434,25 +435,25 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         return (int) Math.floor(.8 * client.getWindow().getScaledHeight());
     }
 
-    private Optional<String> getPlayerIconMapId(Entry<String, MapState>[][] mapGrid) {
+    private Optional<Integer> getPlayerIconMapId(MapInfo[][] mapGrid) {
         if (currentWorldSelected.compareTo(initialWorldSelected) != 0) {
             return Optional.empty();
         }
         int zoomLevelDim = getZoomLevelDim();
-        Optional<String> returnVal = Optional.empty();
+        Optional<Integer> returnVal = Optional.empty();
         double minSquaredDist = Double.MAX_VALUE;
         for (int gridX=0; gridX<zoomLevelDim; ++gridX)
         for (int gridY=0; gridY<zoomLevelDim; ++gridY)
         {
-            var state = mapGrid[gridX][gridY];
-            if (state == null) {
+            var info = mapGrid[gridX][gridY];
+            if (info == null) {
                 continue;
             }
-            double distX = state.getValue().centerX - client.player.getX();
-            double distZ = state.getValue().centerZ - client.player.getZ();
+            double distX = info.centerX - client.player.getX();
+            double distZ = info.centerZ - client.player.getZ();
             double squaredDist = (distX*distX) + (distZ*distZ);
             if (squaredDist < minSquaredDist) {
-                returnVal = Optional.of(state.getKey());
+                returnVal = Optional.of(info.id);
                 minSquaredDist = squaredDist;
             }
         }
@@ -480,8 +481,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 (int) (Math.floor(atlasMapsRelativeMouseZ * zoomLevelDim * (atlasScale / 2.0)) + centerScreenZCenter));
     }
 
-    private boolean mapContainsMeaningfulIcons(Map.Entry<String, MapState> state) {
-        return ((MapStateIntrfc) state.getValue()).getFullIcons().values().stream()
+    private boolean mapContainsMeaningfulIcons(MapState state) {
+        return ((MapStateIntrfc) state).getFullIcons().values().stream()
                 .anyMatch(i -> this.isMeaningfulMapIcon(i.getType()));
     }
 
@@ -515,7 +516,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
      * @param mapSize The size of the map measured in blocks.
      * @return The position of the map on the grid.
      */
-    private Vector2i BlockPosToMapTile(int x, int z, int mapSize){
+    static private Vector2i BlockPosToMapTile(int x, int z, int mapSize){
         Vector2i tile = new Vector2i();
         tile.x = x / mapSize;
         tile.y = z / mapSize;
@@ -527,20 +528,21 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
      * on the grid.
      * @param region The dimensions of the grid, and its position in the atlas.
      */
-    private Entry<String,MapState>[][] CreateMapGrid(
+    private MapInfo[][] CreateMapGrid(
         Map<String, MapState> mapInfos,
         String dimension,
         Rect2i region
     ) {
-        @SuppressWarnings("unchecked")
-        Entry<String, MapState>[][] result = new Entry[region.getWidth()][region.getHeight()];
+        MapInfo[][] result = new MapInfo[region.getWidth()][region.getHeight()];
 
         for (var entry : mapInfos.entrySet()){
-            MapState map = entry.getValue();
-            if (!dimension.equals(getMapStateDimKey(map)))
+            int id = MapAtlasesAccessUtils.getMapIntFromString(entry.getKey());
+            var coords = idsToCenters.get(id);
+            if (!dimension.equals(coords.getFirst()))
                 continue;
 
-            Vector2i tile = BlockPosToMapTile(map.centerX, map.centerZ, 128 << map.scale);
+            var blockpos = idsToCenters.get(id).getSecond();
+            Vector2i tile = BlockPosToMapTile(blockpos.get(0), blockpos.get(1), atlasScale);
             tile.x -= region.getX();
             tile.y -= region.getY();
 
@@ -549,7 +551,13 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             &&  tile.x < region.getWidth()
             &&  tile.y < region.getHeight()
             ){
-                result[tile.x][tile.y] = entry;
+                result[tile.x][tile.y] = new MapInfo(
+                    id,
+                    dimension,
+                    blockpos.get(0),
+                    blockpos.get(1),
+                    entry.getValue()
+                );
             }
         }
 

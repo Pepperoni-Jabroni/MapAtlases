@@ -517,9 +517,10 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
      * @return The position of the map on the grid.
      */
     static private Vector2i BlockPosToMapTile(int x, int z, int mapSize){
+        int origin = (mapSize/2) - 64; //The blockpos at the center of the (0,0) map.
         Vector2i tile = new Vector2i();
-        tile.x = x / mapSize;
-        tile.y = z / mapSize;
+        tile.x = (x-origin) / mapSize;
+        tile.y = (z-origin) / mapSize;
         return tile;
     }
 

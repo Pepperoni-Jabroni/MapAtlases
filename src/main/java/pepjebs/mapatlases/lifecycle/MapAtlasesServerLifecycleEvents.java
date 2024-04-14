@@ -2,6 +2,7 @@ package pepjebs.mapatlases.lifecycle;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -9,7 +10,6 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -73,9 +73,7 @@ public class MapAtlasesServerLifecycleEvents {
             state.getPlayerSyncData(player);
             PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
             (new MapAtlasesInitAtlasS2CPacket(mapId, state)).write(packetByteBuf);
-            player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                    MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
-                    packetByteBuf));
+            ServerPlayNetworking.send(player, MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT, packetByteBuf);
         }
     }
 
@@ -179,9 +177,7 @@ public class MapAtlasesServerLifecycleEvents {
         if (p != null) {
             PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
             p.write(packetByteBuf);
-            player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                    MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC,
-                    packetByteBuf));
+            ServerPlayNetworking.send(player, MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC, packetByteBuf);
         }
     }
 
@@ -204,14 +200,14 @@ public class MapAtlasesServerLifecycleEvents {
                 playerToActiveMapId.put(playerName, activeInfo.getKey());
                 PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
                 packetByteBuf.writeString(activeInfo.getKey());
-                player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                        MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
+                ServerPlayNetworking.send(player,
+                        MapAtlasesServerLifecycleEvents.MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf);
             }
         } else if (playerToActiveMapId.get(playerName) != null){
             PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
             packetByteBuf.writeString("null");
-            player.networkHandler.sendPacket(new CustomPayloadS2CPacket(
-                    MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf));
+            ServerPlayNetworking.send(player,
+                    MapAtlasesServerLifecycleEvents.MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf);
             playerToActiveMapId.put(playerName, null);
         }
         return changedMapState;

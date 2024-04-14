@@ -54,7 +54,7 @@ public class MapAtlasesHUD {
         // Check config disable
         if (MapAtlasesMod.CONFIG != null && !MapAtlasesMod.CONFIG.drawMiniMapHUD) return false;
         // Check F3 menu displayed
-        if (client.options.debugEnabled) return false;
+        if (client.getDebugHud().shouldShowDebugHud()) return false;
         ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player);
         // Check the player for an Atlas
         if (atlas.isEmpty()) return false;

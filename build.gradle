@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.1-SNAPSHOT'
+	id 'fabric-loom' version '1.6-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -13,7 +13,7 @@ group = project.maven_group
 repositories {
 	maven { url "https://maven.shedaniel.me/" }
 	maven { url "https://maven.terraformersmc.com/" }
-	maven { url "https://ladysnake.jfrog.io/artifactory/mods" }
+	maven { url "https://maven.ladysnake.org/releases" }
 }
 
 dependencies {
@@ -30,7 +30,6 @@ dependencies {
 	}
 	modImplementation "com.terraformersmc:modmenu:${project.mod_menu_version}"
 	modImplementation "dev.emi:trinkets:${project.trinkets_version}"
-	modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}"
 }
 
 processResources {

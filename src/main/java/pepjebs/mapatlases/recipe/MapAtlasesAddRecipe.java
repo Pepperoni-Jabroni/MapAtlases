@@ -26,8 +26,8 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
 
     private World world = null;
 
-    public MapAtlasesAddRecipe(Identifier id, CraftingRecipeCategory category) {
-        super(id, category);
+    public MapAtlasesAddRecipe(CraftingRecipeCategory category) {
+        super(category);
     }
 
     @Override

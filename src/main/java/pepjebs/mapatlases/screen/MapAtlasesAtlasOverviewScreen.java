@@ -13,8 +13,8 @@ import net.minecraft.item.map.MapIcon;
 import net.minecraft.item.map.MapState;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.text.LiteralTextContent;
 import net.minecraft.text.MutableText;
+import net.minecraft.text.PlainTextContent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -94,7 +94,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context);
+        renderBackground(context, mouseX, mouseY, delta);
         drawBackground(context, delta, mouseX, mouseY);
     }
 
@@ -233,7 +233,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         // Handle dim selector scroll
         var dims =
                 idsToCenters.values().stream().map(Pair::getFirst).collect(Collectors.toSet()).stream().toList();
@@ -244,7 +244,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         int targetX = (int) x + (int) (29.5/32.0 * atlasBgScaledSize);
         if (mouseX >= targetX && mouseX <= targetX + scaledWidth) {
             dimSelectorOffset =
-                    Math.max(0, Math.min(dims.size() - MAX_TAB_DISP, dimSelectorOffset + (amount > 0 ? -1 : 1)));
+                    Math.max(0, Math.min(dims.size() - MAX_TAB_DISP, dimSelectorOffset + (verticalAmount > 0 ? -1 : 1)));
             return true;
         }
         // Handle map icon selector scroll
@@ -252,7 +252,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
         targetX = (int) x - (int) (1.0/16 * atlasBgScaledSize);
         if (mouseX >= targetX && mouseX <= targetX + scaledWidth) {
             mapIconSelectorOffset =
-                    Math.max(0, Math.min(mapList.size() - MAX_TAB_DISP, mapIconSelectorOffset + (amount > 0 ? -1 : 1)));
+                    Math.max(0, Math.min(mapList.size() - MAX_TAB_DISP, mapIconSelectorOffset + (verticalAmount > 0 ? -1 : 1)));
             return true;
         }
         // Handle world map zooming
@@ -261,7 +261,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                 || mouseX > x + atlasBgScaledSize - drawnMapBufferSize
                 || mouseY > y + atlasBgScaledSize - drawnMapBufferSize)
             return true;
-        zoomValue += -1 * amount;
+        zoomValue += (int) (-1 * verticalAmount);
         zoomValue = Math.max(zoomValue, -1 * ZOOM_BUCKET);
         return true;
     }
@@ -376,8 +376,8 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             // Only remove the off-map icon if it's not the active map or its not the active dimension
             while (it.hasNext()) {
                 Map.Entry<String, MapIcon> e = it.next();
-                if (!isMeaningfulMapIcon(e.getValue().getType())
-                        || (e.getValue().getType() == MapIcon.Type.PLAYER && !drawPlayerIcons)) {
+                if (!isMeaningfulMapIcon(e.getValue().getTypeId())
+                        || (e.getValue().getTypeId() == MapIcon.Type.PLAYER.getId() && !drawPlayerIcons)) {
                     it.remove();
                     removed.add(e);
                 }
@@ -416,7 +416,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                             return false;
                         }
                         return !((MapStateIntrfc) state).getFullIcons().entrySet().stream()
-                                .filter(e -> e.getValue().getType().isAlwaysRendered())
+                                .filter(e -> e.getValue().type().isAlwaysRendered())
                                 .collect(Collectors.toSet())
                                 .isEmpty();
                     })
@@ -483,11 +483,11 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
 
     private boolean mapContainsMeaningfulIcons(MapState state) {
         return ((MapStateIntrfc) state).getFullIcons().values().stream()
-                .anyMatch(i -> this.isMeaningfulMapIcon(i.getType()));
+                .anyMatch(i -> this.isMeaningfulMapIcon(i.getTypeId()));
     }
 
-    private boolean isMeaningfulMapIcon(MapIcon.Type type) {
-        return type != MapIcon.Type.PLAYER_OFF_MAP && type != MapIcon.Type.PLAYER_OFF_LIMITS;
+    private boolean isMeaningfulMapIcon(Byte type) {
+        return type != MapIcon.Type.PLAYER_OFF_MAP.getId() && type != MapIcon.Type.PLAYER_OFF_LIMITS.getId();
     }
 
     private Map.Entry<String, MapState> findMapEntryForCenters(
@@ -711,7 +711,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             var fullIcons = ((MapStateIntrfc) state.getValue()).getFullIcons();
             var stateString = state.getKey();
             var keptIcons = fullIcons.entrySet().stream()
-                    .filter(t -> t.getValue().getType().isAlwaysRendered())
+                    .filter(t -> t.getValue().type().isAlwaysRendered())
                     .map(t -> new AbstractMap.SimpleEntry<>(stateString + "/" + t.getKey(), t.getValue()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             mapIcons.putAll(keptIcons);
@@ -758,7 +758,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
                     (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.75/16.0 * atlasBgScaledSize),
                     1
             );
-            matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float)(mapIcon.getRotation() * 360) / 16.0F));
+            matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float)(mapIcon.rotation() * 360) / 16.0F));
             matrices.scale((0.25f * scaledWidth) ,(0.25f * scaledWidth), 1);
             matrices.translate(-0.125D, 0.125D, -1.0D);
             byte b = mapIcon.getTypeId();
@@ -821,19 +821,19 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             var mapState = client.world.getMapState(stateIdStr);
             if (mapState == null) continue;
             var mapIcon = entry.getValue();
-            var mapIconText = mapIcon.getText() == null
-                    ? MutableText.of(new LiteralTextContent(
-                            firstCharCapitalize(mapIcon.getType().name().replace("_", " "))))
-                    : mapIcon.getText();
+            var mapIconText = mapIcon.text() == null
+                    ? MutableText.of(new PlainTextContent.Literal(
+                            firstCharCapitalize(mapIcon.type().name().replace("_", " "))))
+                    : mapIcon.text();
             if (rawMouseXMoved >= (int) x - (int) (1.0/16 * atlasBgScaledSize)
                     && rawMouseXMoved <= (int) x - (int) (1.0/16 * atlasBgScaledSize) + scaledWidth
                     && rawMouseYMoved >= (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize)
                     && rawMouseYMoved <= (int) y + (int) (k * (4/32.0 * atlasBgScaledSize)) + (int) (1.0/16.0 * atlasBgScaledSize) + scaledWidth) {
                 // draw text
-                LiteralTextContent coordsText = new LiteralTextContent(
-                        "X: " + (int) (dimAndCenters.getSecond().get(0) - (atlasScale / 2.0d) + ((atlasScale / 2.0d) * ((mapIcon.getX() + 128) / 128.0d)))
+                PlainTextContent.Literal coordsText = new PlainTextContent.Literal(
+                        "X: " + (int) (dimAndCenters.getSecond().get(0) - (atlasScale / 2.0d) + ((atlasScale / 2.0d) * ((mapIcon.x() + 128) / 128.0d)))
                                 + ", Z: "
-                                + (int) (dimAndCenters.getSecond().get(1) - (atlasScale / 2.0d) + ((atlasScale / 2.0d) * ((mapIcon.getZ() + 128) / 128.0d)))
+                                + (int) (dimAndCenters.getSecond().get(1) - (atlasScale / 2.0d) + ((atlasScale / 2.0d) * ((mapIcon.z() + 128) / 128.0d)))
                 );
                 MutableText formattedCoords = MutableText.of(coordsText).formatted(Formatting.GRAY);
                 context.drawTooltip(client.textRenderer, List.of(mapIconText, formattedCoords), (int) rawMouseXMoved, (int) rawMouseYMoved);

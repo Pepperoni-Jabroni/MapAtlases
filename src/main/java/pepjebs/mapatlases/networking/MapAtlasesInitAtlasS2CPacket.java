@@ -18,6 +18,7 @@ public class MapAtlasesInitAtlasS2CPacket implements Packet<ClientPlayPacketList
     private final MapState mapState;
 
     public MapAtlasesInitAtlasS2CPacket(PacketByteBuf buf) {
+        buf.readIdentifier();
         mapId = buf.readString();
         NbtCompound nbt = buf.readNbt();
         if (nbt == null) {
@@ -35,6 +36,7 @@ public class MapAtlasesInitAtlasS2CPacket implements Packet<ClientPlayPacketList
 
     @Override
     public void write(PacketByteBuf buf) {
+        buf.writeIdentifier(MAP_ATLAS_INIT);
         NbtCompound mapAsTag = new NbtCompound();
         mapState.writeNbt(mapAsTag);
         buf.writeString(mapId);

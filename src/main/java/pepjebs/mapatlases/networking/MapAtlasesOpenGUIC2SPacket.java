@@ -20,10 +20,12 @@ public class MapAtlasesOpenGUIC2SPacket implements Packet {
     }
 
     public void read(PacketByteBuf buf) {
+        buf.readIdentifier();
         atlas = buf.readItemStack();
     }
 
     public void write(PacketByteBuf buf) {
+        buf.writeIdentifier(MAP_ATLAS_OPEN_GUI);
         buf.writeItemStack(atlas);
     }
 

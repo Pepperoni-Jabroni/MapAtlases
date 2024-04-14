@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 
 public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
 
-    public MapAtlasesCutExistingRecipe(Identifier id, CraftingRecipeCategory category) {
-        super(id, category);
+    public MapAtlasesCutExistingRecipe(CraftingRecipeCategory category) {
+        super(category);
     }
 
     @Override

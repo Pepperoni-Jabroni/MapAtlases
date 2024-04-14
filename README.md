@@ -1,4 +1,6 @@
 <p align="center">
+  <b>NOTE: </b> This is the Original version of Map Atlases (Fabric only). You may be interested in the <a href="https://github.com/MehVahdJukaar/mapatlases-neoforge">Multi-Platform fork</a> which also contains a larger feature-set.
+  </br></br>
   <img src="https://github.com/Pepperoni-Jabroni/MapAtlases/assets/17690401/3c934d54-99ca-4f66-b3fd-5865ea2a3d98">
   </br></br>
   A vanilla-friendly mini-map/world-view mod using vanilla Maps, introducing the "Atlas".

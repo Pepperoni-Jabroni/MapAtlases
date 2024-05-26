@@ -194,6 +194,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     }
 
     public ActionResult useOnBlock(ItemUsageContext context) {
+        
         if (context.getPlayer() == null
         || (context.getWorld() == null)
         || (context.getStack() == null)
@@ -203,6 +204,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             return super.useOnBlock(context);
         }
         BlockState blockState = context.getWorld().getBlockState(context.getBlockPos());
+        World world = context.getWorld();
         if (blockState.isOf(Blocks.LECTERN)) {
             boolean didPut = LecternBlock.putBookIfAbsent(
                     context.getPlayer(),
@@ -218,9 +220,9 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             LecternBlock.setHasBook(
                     context.getPlayer(), context.getWorld(), context.getBlockPos(), blockState, true);
             context.getWorld().setBlockState(context.getBlockPos(), blockState.with(HAS_ATLAS, true));
-            return ActionResult.success(context.getWorld().isClient);
+            return ActionResult.success(world.isClient);
         } if (blockState.isIn(BlockTags.BANNERS)) {
-            if (!context.getWorld().isClient) {
+            if (!world.isClient) {
                 Map<String, MapState> currentDimMapInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(
                         context.getWorld(), context.getStack());
                 MapState mapState = MapAtlasesAccessUtils.getActiveAtlasMapStateServer(
@@ -231,9 +233,10 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
                 if (!didAdd)
                     return ActionResult.FAIL;
             }
-            return ActionResult.success(context.getWorld().isClient);
+            return ActionResult.success(world.isClient);
         } else {
             return super.useOnBlock(context);
         }
+        
     }
 }

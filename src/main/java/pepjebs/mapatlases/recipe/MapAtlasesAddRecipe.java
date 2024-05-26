@@ -1,7 +1,6 @@
 package pepjebs.mapatlases.recipe;
 
 import com.google.common.primitives.Ints;
-import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
@@ -13,7 +12,6 @@ import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
 import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;

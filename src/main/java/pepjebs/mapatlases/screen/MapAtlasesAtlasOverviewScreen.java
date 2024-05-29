@@ -15,7 +15,6 @@ import net.minecraft.item.map.MapDecorationTypes;
 import net.minecraft.item.map.MapState;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.ScreenHandler;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.PlainTextContent;
 import net.minecraft.text.Text;
@@ -29,6 +28,7 @@ import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
 import pepjebs.mapatlases.client.ui.MapAtlasesHUD;
 import pepjebs.mapatlases.utils.MapStateIntrfc;
+import pepjebs.mapatlases.utils.MapTypeByte;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 import static pepjebs.mapatlases.utils.MapAtlasesAccessUtils.getMapStateDimKey;
 
@@ -764,7 +764,7 @@ public class MapAtlasesAtlasOverviewScreen extends HandledScreen<ScreenHandler> 
             matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees((float)(mapIcon.rotation() * 360) / 16.0F));
             matrices.scale((0.25f * scaledWidth) ,(0.25f * scaledWidth), 1);
             matrices.translate(-0.125D, 0.125D, -1.0D);
-            byte b = mapIcon.getTypeId();
+            byte b = MapTypeByte.getTypeId(mapIcon.type());
             float g = (float)(b % 16 + 0) / 16.0F;
             float h = (float)(b / 16 + 0) / 16.0F;
             float l = (float)(b % 16 + 1) / 16.0F;

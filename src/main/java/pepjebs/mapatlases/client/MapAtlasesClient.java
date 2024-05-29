@@ -4,24 +4,24 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.minecraft.client.MinecraftClient;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.item.ModelPredicateProviderRegistry;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.lwjgl.glfw.GLFW;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.lifecycle.MapAtlasesClientLifecycleEvents;
 import pepjebs.mapatlases.lifecycle.MapAtlasesServerLifecycleEvents;
-import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
+import pepjebs.mapatlases.networking.MapAtlasesActiveStateChangePacket;
+import pepjebs.mapatlases.networking.MapAtlasesInitAtlasPacket;
+import pepjebs.mapatlases.networking.MapAtlasesOpenGUIPacket;
+import pepjebs.mapatlases.networking.MapAtlasesSyncPacket;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreen;
 
 public class MapAtlasesClient implements ClientModInitializer {
@@ -41,16 +41,14 @@ public class MapAtlasesClient implements ClientModInitializer {
 
         // Register client events
         ClientTickEvents.END_CLIENT_TICK.register(MapAtlasesClientLifecycleEvents::mapAtlasClientTick);
-        ClientPlayNetworking.registerGlobalReceiver(MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT,
+        ClientPlayNetworking.registerGlobalReceiver(MapAtlasesInitAtlasPacket.PACKET_ID,
                 MapAtlasesClientLifecycleEvents::mapAtlasClientInit);
-        ClientPlayNetworking.registerGlobalReceiver(MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC,
+            ServerPlayNetworking.registerGlobalReceiver(MapAtlasesOpenGUIPacket.PACKET_ID, 
+        MapAtlasesServerLifecycleEvents::openGuiEvent);
+        ClientPlayNetworking.registerGlobalReceiver(MapAtlasesSyncPacket.PACKET_ID,
                 MapAtlasesClientLifecycleEvents::mapAtlasClientSync);
-        ClientPlayNetworking.registerGlobalReceiver(MapAtlasesServerLifecycleEvents.MAP_ATLAS_ACTIVE_STATE_CHANGE, (
-            MinecraftClient _client,
-            ClientPlayNetworkHandler _handler,
-            PacketByteBuf buf,
-            PacketSender _sender) -> {
-                String str = buf.readString();
+        ClientPlayNetworking.registerGlobalReceiver(MapAtlasesActiveStateChangePacket.PACKET_ID, (MapAtlasesActiveStateChangePacket packet, ClientPlayNetworking.Context context) -> {
+                String str = packet.activeMapId();
                 if (str.compareTo("null") == 0)
                     currentMapStateId = null;
                 else

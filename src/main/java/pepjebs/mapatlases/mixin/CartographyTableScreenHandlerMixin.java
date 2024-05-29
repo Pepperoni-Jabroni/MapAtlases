@@ -6,6 +6,8 @@
  */
 package pepjebs.mapatlases.mixin;
 
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -64,7 +66,7 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
                         + MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(bottomItem)) / 2.0);
                 mergedNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, halfEmptyCount);
                 mergedNbt.putIntArray(MapAtlasItem.MAP_LIST_NBT, filteredMapIds);
-                result.setNbt(mergedNbt);
+                NbtComponent.set(DataComponentTypes.CUSTOM_DATA, result, mergedNbt);
 
                 result.increment(1);
                 this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
@@ -76,10 +78,10 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
         } else if (atlas.getItem() == MapAtlasesMod.MAP_ATLAS && (bottomItem.getItem() == Items.MAP
                 || (MapAtlasesMod.CONFIG.acceptPaperForEmptyMaps && bottomItem.getItem() == Items.PAPER))) {
             ItemStack result = atlas.copy();
-            NbtCompound nbt = result.getNbt() != null ? result.getNbt() : new NbtCompound();
+            NbtCompound nbt = result.get(DataComponentTypes.CUSTOM_DATA).copyNbt() != null ? result.get(DataComponentTypes.CUSTOM_DATA).copyNbt() : new NbtCompound();
             int amountToAdd = MapAtlasesAccessUtils.getMapCountToAdd(atlas, bottomItem);
             nbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, nbt.getInt(MapAtlasItem.EMPTY_MAP_NBT) + amountToAdd);
-            result.setNbt(nbt);
+            NbtComponent.set(DataComponentTypes.CUSTOM_DATA, result, nbt);
             this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
 
             this.sendContentUpdates();
@@ -87,10 +89,10 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
             info.cancel();
         } else if (atlas.getItem() == MapAtlasesMod.MAP_ATLAS && bottomItem.getItem() == Items.FILLED_MAP) {
             ItemStack result = atlas.copy();
-            if (bottomItem.getNbt() == null || !bottomItem.hasNbt() || !bottomItem.getNbt().contains("map"))
+            if (bottomItem.get(DataComponentTypes.CUSTOM_DATA).copyNbt() == null || !bottomItem.get(DataComponentTypes.CUSTOM_DATA).copyNbt().contains("map"))
                 return;
-            int mapId = bottomItem.getNbt().getInt("map");
-            NbtCompound compound = result.getNbt();
+            int mapId = bottomItem.get(DataComponentTypes.CUSTOM_DATA).copyNbt().getInt("map");
+            NbtCompound compound = result.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
             if (compound == null) return;
             int[] existentMapIdArr = compound.getIntArray(MapAtlasItem.MAP_LIST_NBT);
             List<Integer> existentMapIds =
@@ -103,7 +105,7 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
                         filterIntArrayForUniqueMaps(world, existentMapIds.stream().mapToInt(s -> s).toArray());
 
                 compound.putIntArray(MapAtlasItem.MAP_LIST_NBT, filteredMapIds);
-                result.setNbt(compound);
+                NbtComponent.set(DataComponentTypes.CUSTOM_DATA, result, compound);
 
                 this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
             });
@@ -113,15 +115,15 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
             info.cancel();
         } else if (atlas.getItem() == Items.BOOK && bottomItem.getItem() == Items.FILLED_MAP) {
             ItemStack result = new ItemStack(MapAtlasesMod.MAP_ATLAS);
-            if (bottomItem.getNbt() == null || !bottomItem.hasNbt() || !bottomItem.getNbt().contains("map"))
+            if (bottomItem.get(DataComponentTypes.CUSTOM_DATA).copyNbt() == null || !bottomItem.get(DataComponentTypes.CUSTOM_DATA).copyNbt().contains("map"))
                 return;
-            int mapId = bottomItem.getNbt().getInt("map");
+            int mapId = bottomItem.get(DataComponentTypes.CUSTOM_DATA).copyNbt().getInt("map");
             NbtCompound compound = new NbtCompound();
             compound.putIntArray(MapAtlasItem.MAP_LIST_NBT, new int[]{mapId});
             if (MapAtlasesMod.CONFIG != null && MapAtlasesMod.CONFIG.pityActivationMapCount > 0) {
                 compound.putInt(MapAtlasItem.EMPTY_MAP_NBT, MapAtlasesMod.CONFIG.pityActivationMapCount);
             }
-            result.setNbt(compound);
+            NbtComponent.set(DataComponentTypes.CUSTOM_DATA, result, compound);
             this.resultInventory.setStack(CartographyTableScreenHandler.RESULT_SLOT_INDEX, result);
 
             this.sendContentUpdates();
@@ -151,9 +153,10 @@ public abstract class CartographyTableScreenHandlerMixin extends ScreenHandler {
 
     // Filters for both duplicate map id (e.g. "map_25") and duplicate X+Z+Dimension
     private int[] filterIntArrayForUniqueMaps(World world, int[] toFilter) {
+
         Map<String, Pair<Integer, MapState>> uniqueXZMapIds =
                 Arrays.stream(toFilter)
-                        .mapToObj(mId -> new Pair<>(mId, world.getMapState("map_" + mId)))
+                        .mapToObj(mId -> new Pair<>(mId, world.getMapState(MapAtlasesAccessUtils.getMapIdComponentFromString("map_" + mId))))
                         .filter(m -> m.getRight() != null)
                         .collect(Collectors.toMap(
                                 m -> m.getRight().centerX + ":" + m.getRight().centerZ

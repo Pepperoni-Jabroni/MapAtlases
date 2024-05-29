@@ -3,6 +3,9 @@ package pepjebs.mapatlases.lifecycle;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.MapIdComponent;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -10,17 +13,19 @@ import net.minecraft.item.map.MapState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.MathHelper;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
-import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
-import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
+import pepjebs.mapatlases.networking.MapAtlasesActiveStateChangePacket;
+import pepjebs.mapatlases.networking.MapAtlasesInitAtlasPacket;
+import pepjebs.mapatlases.networking.MapAtlasesOpenGUIPacket;
+import pepjebs.mapatlases.networking.MapAtlasesSyncPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 import java.util.*;
@@ -29,27 +34,16 @@ import java.util.stream.Collectors;
 
 public class MapAtlasesServerLifecycleEvents {
 
-    public static final Identifier MAP_ATLAS_ACTIVE_STATE_CHANGE = new Identifier(
-            MapAtlasesMod.MOD_ID, "active_state_change");
-
     // Used to prevent Map creation spam consuming all Empty Maps on auto-create
     private static final Semaphore mutex = new Semaphore(1);
 
     // Holds the current MapState ID for each player
     private static final Map<String, String> playerToActiveMapId = new HashMap<>();
 
-    public static void openGuiEvent(
-            MinecraftServer server,
-            ServerPlayerEntity player,
-            ServerPlayNetworkHandler _handler,
-            PacketByteBuf buf,
-            PacketSender _responseSender) {
-        MapAtlasesOpenGUIC2SPacket p = new MapAtlasesOpenGUIC2SPacket();
-        p.read(buf);
-        server.execute(() -> {
-            ItemStack atlas = p.atlas;
-            player.openHandledScreen((MapAtlasItem) atlas.getItem());
-        });
+    
+
+    public static void openGuiEvent(MapAtlasesOpenGUIPacket payload, ServerPlayNetworking.Context context) {
+        context.player().openHandledScreen((MapAtlasItem) payload.atlas().getItem());
     }
 
     public static void mapAtlasPlayerJoin(
@@ -71,9 +65,7 @@ public class MapAtlasesServerLifecycleEvents {
             MapState state = info.getValue();
             state.update(player, atlas);
             state.getPlayerSyncData(player);
-            PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-            (new MapAtlasesInitAtlasS2CPacket(mapId, state)).write(packetByteBuf);
-            ServerPlayNetworking.send(player, MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_INIT, packetByteBuf);
+            ServerPlayNetworking.send(player, new MapAtlasesInitAtlasPacket(mapId, state));
         }
     }
 
@@ -167,17 +159,15 @@ public class MapAtlasesServerLifecycleEvents {
             Map.Entry<String, MapState> mapInfo,
             ServerPlayerEntity player
     ) {
-        int mapId = MapAtlasesAccessUtils.getMapIntFromString(mapInfo.getKey());
+        MapIdComponent mapId = MapAtlasesAccessUtils.getMapIdComponentFromString(mapInfo.getKey());
         Packet<?> p = null;
         int tries = 0;
         while (p == null && tries < 10) {
             p = mapInfo.getValue().getPlayerMarkerPacket(mapId, player);
             tries++;
         }
-        if (p != null) {
-            PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-            p.write(packetByteBuf);
-            ServerPlayNetworking.send(player, MapAtlasesInitAtlasS2CPacket.MAP_ATLAS_SYNC, packetByteBuf);
+        if (p instanceof MapUpdateS2CPacket p2) {
+            ServerPlayNetworking.send(player, new MapAtlasesSyncPacket(p2.mapId(), p2.scale(), p2.locked(), p2.decorations(), p2.updateData()));
         }
     }
 
@@ -198,16 +188,14 @@ public class MapAtlasesServerLifecycleEvents {
                     || activeInfo.getKey().compareTo(playerToActiveMapId.get(playerName)) != 0) {
                 changedMapState = playerToActiveMapId.get(playerName);
                 playerToActiveMapId.put(playerName, activeInfo.getKey());
-                PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-                packetByteBuf.writeString(activeInfo.getKey());
                 ServerPlayNetworking.send(player,
-                        MapAtlasesServerLifecycleEvents.MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf);
+                new MapAtlasesActiveStateChangePacket(activeInfo.getKey()));
             }
         } else if (playerToActiveMapId.get(playerName) != null){
             PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
             packetByteBuf.writeString("null");
             ServerPlayNetworking.send(player,
-                    MapAtlasesServerLifecycleEvents.MAP_ATLAS_ACTIVE_STATE_CHANGE, packetByteBuf);
+            new MapAtlasesActiveStateChangePacket("null"));
             playerToActiveMapId.put(playerName, null);
         }
         return changedMapState;
@@ -221,9 +209,10 @@ public class MapAtlasesServerLifecycleEvents {
             int destZ
     ) {
         List<Integer> mapIds = new ArrayList<>();
-        if (atlas.getNbt() != null) {
+        NbtCompound nbt = atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+        if (nbt != null) {
             mapIds = Arrays.stream(
-                    atlas.getNbt().getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());
+                    nbt.getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());
         } else {
             // If the Atlas is "inactive", give it a pity Empty Map count
             NbtCompound defaultAtlasNbt = new NbtCompound();
@@ -231,7 +220,7 @@ public class MapAtlasesServerLifecycleEvents {
                 defaultAtlasNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, MapAtlasesMod.CONFIG.pityActivationMapCount);
             else
                 defaultAtlasNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, 1);
-            atlas.setNbt(defaultAtlasNbt);
+            NbtComponent.set(DataComponentTypes.CUSTOM_DATA, atlas, defaultAtlasNbt);
         }
         int emptyCount = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(atlas);
         boolean bypassEmptyMaps = !MapAtlasesMod.CONFIG.requireEmptyMapsToExpand;
@@ -242,10 +231,9 @@ public class MapAtlasesServerLifecycleEvents {
 
                 // Make the new map
                 if (!player.isCreative() && !bypassEmptyMaps) {
-                    atlas.getNbt().putInt(
-                            MapAtlasItem.EMPTY_MAP_NBT,
-                            atlas.getNbt().getInt(MapAtlasItem.EMPTY_MAP_NBT) - 1
-                    );
+                    NbtCompound nbt2 = atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                    nbt2.putInt(MapAtlasItem.EMPTY_MAP_NBT, nbt2.getInt(MapAtlasItem.EMPTY_MAP_NBT) - 1);
+                    NbtComponent.set(DataComponentTypes.CUSTOM_DATA, atlas, nbt2);
                 }
                 ItemStack newMap = FilledMapItem.createMap(
                         player.getWorld(),
@@ -254,8 +242,10 @@ public class MapAtlasesServerLifecycleEvents {
                         (byte) scale,
                         true,
                         false);
-                mapIds.add(FilledMapItem.getMapId(newMap));
-                atlas.getNbt().putIntArray(MapAtlasItem.MAP_LIST_NBT, mapIds);
+                mapIds.add(newMap.get(DataComponentTypes.MAP_ID).id());
+                NbtCompound nbt3 = atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                nbt3.putIntArray(MapAtlasItem.MAP_LIST_NBT, mapIds);
+                NbtComponent.set(DataComponentTypes.CUSTOM_DATA, atlas, nbt3);
 
                 // Play the sound
                 player.getWorld().playSound(null, player.getBlockPos(),

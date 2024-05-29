@@ -7,14 +7,14 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.LecternBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.LecternBlockEntity;
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.map.MapState;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -30,6 +30,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.lifecycle.MapAtlasesServerLifecycleEvents;
+import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenData;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
@@ -37,8 +38,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
-public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
+public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory<MapAtlasesAtlasOverviewScreenData> {
 
     public static final String EMPTY_MAP_NBT = "empty";
     public static final String MAP_LIST_NBT = "maps";
@@ -57,10 +59,9 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     }
 
     @Override
-    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
-        super.appendTooltip(stack, world, tooltip, context);
-
-        if (world != null && world.isClient) {
+    public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> tooltip, TooltipType type) {
+        super.appendTooltip(stack, context, tooltip, type);
+        
             int mapSize = MapAtlasesAccessUtils.getMapCountFromItemStack(stack);
             int empties = MapAtlasesAccessUtils.getEmptyMapCountFromItemStack(stack);
             if (getMaxMapCount() != -1 && mapSize + empties >= getMaxMapCount()) {
@@ -72,7 +73,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             if (MapAtlasesMod.CONFIG == null || (MapAtlasesMod.CONFIG.requireEmptyMapsToExpand && MapAtlasesMod.CONFIG.enableEmptyMapEntryAndFill)) {
                 // If there's no maps & no empty maps, the atlas is "inactive", so display how many empty maps
                 // they *would* receive if they activated the atlas
-                if (stack.getNbt() == null && MapAtlasesMod.CONFIG != null) {
+                if (stack.get(DataComponentTypes.CUSTOM_DATA).copyNbt() == null && MapAtlasesMod.CONFIG != null) {
                     empties = MapAtlasesMod.CONFIG.pityActivationMapCount;
                 }
                 tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_2", empties)
@@ -84,7 +85,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             // The client may not know about every map in the atlas if it has
             // never been used, so we check them all until we find a valid one.
             for (int i=0; i<mapIds.length; ++i){
-                mapState = world.getMapState("map_"+String.valueOf(mapIds[i]));
+                mapState = context.getMapState(MapAtlasesAccessUtils.getMapIdComponentFromString("map_"+String.valueOf(mapIds[i])));
                 if (mapState != null) break;
             }
 
@@ -95,7 +96,7 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
             else if (mapIds.length > 0){
                 tooltip.add(Text.translatable("item.map_atlases.atlas.tooltip_unknown_scale").formatted(Formatting.GRAY));
             }
-        }
+        
     }
 
     @Override
@@ -166,31 +167,36 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
     }
 
     @Override
-    public void writeScreenOpeningData(ServerPlayerEntity serverPlayerEntity, PacketByteBuf packetByteBuf) {
-        ItemStack atlas = getAtlasFromLookingLectern(serverPlayerEntity);
+    public MapAtlasesAtlasOverviewScreenData getScreenOpeningData(ServerPlayerEntity player) {
+        ItemStack atlas = getAtlasFromLookingLectern(player);
         if (atlas.isEmpty()) {
-            atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(serverPlayerEntity);
+            atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(player);
         } else {
-            sendPlayerLecternAtlasData(serverPlayerEntity, atlas);
+            sendPlayerLecternAtlasData(player, atlas);
         }
-        if (atlas.isEmpty()) return;
+        if (atlas.isEmpty()) return null;
         var mapInfos = MapAtlasesAccessUtils.getAllMapInfoFromAtlas(
-                serverPlayerEntity.getWorld(), atlas);
+            player.getWorld(), atlas);
         var currentInfos = MapAtlasesAccessUtils.getCurrentDimMapInfoFromAtlas(
-                serverPlayerEntity.getWorld(), atlas);
+            player.getWorld(), atlas);
         String centerMap = MapAtlasesAccessUtils
-                .getActiveAtlasMapStateServer(currentInfos, serverPlayerEntity).getKey();
-        int atlasScale = MapAtlasesAccessUtils.getAtlasBlockScale(serverPlayerEntity.getWorld(), atlas);
-        packetByteBuf.writeItemStack(atlas);
-        packetByteBuf.writeString(centerMap);
-        packetByteBuf.writeInt(atlasScale);
-        packetByteBuf.writeInt(mapInfos.size());
+                .getActiveAtlasMapStateServer(currentInfos, player).getKey();
+        int atlasScale = MapAtlasesAccessUtils.getAtlasBlockScale(player.getWorld(), atlas);
+
+        Map<Integer, Pair<String,List<Integer>>> idsToCenters = new HashMap<>();
+        
+
+        
+
+
+
         for (Map.Entry<String, MapState> state : mapInfos.entrySet()) {
-            packetByteBuf.writeInt(MapAtlasesAccessUtils.getMapIntFromString(state.getKey()));
-            packetByteBuf.writeString(MapAtlasesAccessUtils.getMapStateDimKey(state.getValue()));
-            packetByteBuf.writeInt(state.getValue().centerX);
-            packetByteBuf.writeInt(state.getValue().centerZ);
+            ArrayList<Integer> centers = new ArrayList<Integer>();
+            centers.add(state.getValue().centerX); centers.add(state.getValue().centerZ);
+            idsToCenters.put(MapAtlasesAccessUtils.getMapIntFromString(state.getKey()), new Pair<String,List<Integer>>(MapAtlasesAccessUtils.getMapStateDimKey(state.getValue()), centers));
         }
+
+        return new MapAtlasesAtlasOverviewScreenData(atlas, centerMap, atlasScale, idsToCenters);
     }
 
     public ActionResult useOnBlock(ItemUsageContext context) {
@@ -239,4 +245,8 @@ public class MapAtlasItem extends Item implements ExtendedScreenHandlerFactory {
         }
         
     }
+
+    
+
+    
 }

@@ -23,8 +23,9 @@ import pepjebs.mapatlases.lifecycle.MapAtlasesServerLifecycleEvents;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesCutExistingRecipe;
+import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenData;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
-import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
+import pepjebs.mapatlases.networking.MapAtlasesOpenGUIPacket;
 
 public class MapAtlasesMod implements ModInitializer {
 
@@ -65,11 +66,9 @@ public class MapAtlasesMod implements ModInitializer {
                 new Identifier(MOD_ID, "cutting_atlas"), new SpecialRecipeSerializer<>(MapAtlasesCutExistingRecipe::new));
 
         // Register screen
-        ATLAS_OVERVIEW_HANDLER = Registry.register(
-                Registries.SCREEN_HANDLER,
-                new Identifier(MOD_ID, "atlas_overview"),
-                new ExtendedScreenHandlerType<>(MapAtlasesAtlasOverviewScreenHandler::new)
-        );
+        ATLAS_OVERVIEW_HANDLER = new ExtendedScreenHandlerType<MapAtlasesAtlasOverviewScreenHandler, MapAtlasesAtlasOverviewScreenData>(MapAtlasesAtlasOverviewScreenHandler::new, MapAtlasesAtlasOverviewScreenData.PACKET_CODEC);
+
+        Registry.register(Registries.SCREEN_HANDLER, new Identifier(MOD_ID, "atlas_overview"), ATLAS_OVERVIEW_HANDLER);
 
         // Register sounds
         Registry.register(Registries.SOUND_EVENT, ATLAS_OPEN_SOUND_ID, ATLAS_OPEN_SOUND_EVENT);
@@ -85,8 +84,9 @@ public class MapAtlasesMod implements ModInitializer {
 
         // Register events/callbacks
         ServerPlayConnectionEvents.JOIN.register(MapAtlasesServerLifecycleEvents::mapAtlasPlayerJoin);
-        ServerPlayNetworking.registerGlobalReceiver(MapAtlasesOpenGUIC2SPacket.MAP_ATLAS_OPEN_GUI,
-                MapAtlasesServerLifecycleEvents::openGuiEvent);
+        ServerPlayNetworking.registerGlobalReceiver(MapAtlasesOpenGUIPacket.PACKET_ID, 
+        MapAtlasesServerLifecycleEvents::openGuiEvent);
+
         ServerTickEvents.START_SERVER_TICK.register(MapAtlasesServerLifecycleEvents::mapAtlasServerTick);
     }
 }

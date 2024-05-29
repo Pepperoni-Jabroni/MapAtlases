@@ -1,7 +1,8 @@
 package pepjebs.mapatlases.mixin;
 
 import com.google.common.collect.Maps;
-import net.minecraft.item.map.MapIcon;
+
+import net.minecraft.item.map.MapDecoration;
 import net.minecraft.item.map.MapState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,9 +13,9 @@ import java.util.Map;
 @Mixin(value = MapState.class, priority = 1100)
 public class MapStateMixin implements MapStateIntrfc {
     @Shadow
-    Map<String, MapIcon> icons = Maps.newLinkedHashMap();
+    Map<String, MapDecoration> decorations = Maps.newLinkedHashMap();
 
-    public Map<String, MapIcon> getFullIcons(){
-        return icons;
+    public Map<String, MapDecoration> getFullIcons(){
+        return decorations;
     }
 }

@@ -1,18 +1,15 @@
 package pepjebs.mapatlases.lifecycle;
 
-import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.MapUpdateS2CPacket;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.client.MapAtlasesClient;
-import pepjebs.mapatlases.networking.MapAtlasesInitAtlasS2CPacket;
-import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
+import pepjebs.mapatlases.networking.MapAtlasesInitAtlasPacket;
+import pepjebs.mapatlases.networking.MapAtlasesOpenGUIPacket;
+import pepjebs.mapatlases.networking.MapAtlasesSyncPacket;
 import pepjebs.mapatlases.utils.MapAtlasesAccessUtils;
 
 public class MapAtlasesClientLifecycleEvents {
@@ -22,40 +19,35 @@ public class MapAtlasesClientLifecycleEvents {
             if (client.world == null || client.player == null) return;
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player);
             if (atlas.isEmpty()) return;
-            MapAtlasesOpenGUIC2SPacket p = new MapAtlasesOpenGUIC2SPacket(atlas);
-            PacketByteBuf packetByteBuf = new PacketByteBuf(Unpooled.buffer());
-            p.write(packetByteBuf);
-            ClientPlayNetworking.send(MapAtlasesOpenGUIC2SPacket.MAP_ATLAS_OPEN_GUI, packetByteBuf);
+            MapAtlasesOpenGUIPacket p = new MapAtlasesOpenGUIPacket(atlas);
+            ClientPlayNetworking.send(p);
         }
     }
 
-    public static void mapAtlasClientInit(
-            MinecraftClient client,
-            ClientPlayNetworkHandler _handler,
-            PacketByteBuf buf,
-            PacketSender _sender) {
-        MapAtlasesInitAtlasS2CPacket p = new MapAtlasesInitAtlasS2CPacket(buf);
+    
+
+    public static void mapAtlasClientInit(MapAtlasesInitAtlasPacket packet, ClientPlayNetworking.Context context) {
+        MinecraftClient client = context.client();
         client.execute(() -> {
             if (client.world == null || client.player == null) {
                 return;
             }
-            MapState state = p.getMapState();
+            MapState state = packet.mapState;
             ItemStack atlas = MapAtlasesAccessUtils.getAtlasFromPlayerByConfig(client.player);
             state.update(client.player, atlas);
             state.getPlayerSyncData(client.player);
-            client.world.putClientsideMapState(p.getMapId(), state);
+            client.world.putClientsideMapState(MapAtlasesAccessUtils.getMapIdComponentFromString(packet.mapId), state);
         });
     }
 
-    public static void mapAtlasClientSync(
-            MinecraftClient client,
-            ClientPlayNetworkHandler handler,
-            PacketByteBuf buf,
-            PacketSender _sender) {
+    
+
+    public static void mapAtlasClientSync(MapAtlasesSyncPacket packet, ClientPlayNetworking.Context context) {
         try {
-            MapUpdateS2CPacket p = new MapUpdateS2CPacket(buf);
+            MapUpdateS2CPacket p = new MapUpdateS2CPacket(packet.mapId(), packet.scale(), packet.locked(), packet.decorations(), packet.updateData());
+            MinecraftClient client = context.client();
             client.execute(() -> {
-                handler.onMapUpdate(p);
+                client.getNetworkHandler().onMapUpdate(p);
             });
         } catch (ArrayIndexOutOfBoundsException e) {
             MapAtlasesMod.LOGGER.error("Bad Minecraft MapUpdate packet sent to client by server");

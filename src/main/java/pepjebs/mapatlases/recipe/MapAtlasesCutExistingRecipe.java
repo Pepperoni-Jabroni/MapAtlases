@@ -1,12 +1,14 @@
 package pepjebs.mapatlases.recipe;
 
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
@@ -43,7 +45,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registryManager) {
+    public ItemStack craft(RecipeInputInventory inv, RegistryWrapper.WrapperLookup lookup) {
         ItemStack atlas = ItemStack.EMPTY;
         for(int i = 0; i < inv.size(); i++) {
             if (!inv.getStack(i).isEmpty()) {
@@ -52,9 +54,9 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
                 }
             }
         }
-        if (atlas.getNbt() == null) return ItemStack.EMPTY;
+        if (atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt() == null) return ItemStack.EMPTY;
         if (MapAtlasesAccessUtils.hasAnyMap(atlas)) {
-            List<Integer> mapIds = Arrays.stream(atlas.getNbt()
+            List<Integer> mapIds = Arrays.stream(atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt()
                     .getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());
             if (mapIds.size() > 0) {
                 int lastId = mapIds.remove(mapIds.size() - 1);
@@ -73,15 +75,17 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
         for(int i = 0; i < inv.size(); i++) {
             ItemStack cur = inv.getStack(i).copy();
             if (cur.getItem() == Items.SHEARS) {
-                cur.damage(1, Random.create(), null);
-            } else if (cur.getItem() == MapAtlasesMod.MAP_ATLAS && cur.getNbt() != null) {
+                cur.damage(1, Random.create(), null, () -> {});
+            } else if (cur.getItem() == MapAtlasesMod.MAP_ATLAS && cur.get(DataComponentTypes.CUSTOM_DATA).copyNbt() != null) {
                 boolean didRemoveFilled = false;
                 if (MapAtlasesAccessUtils.hasAnyMap(cur)) {
-                    List<Integer> mapIds = Arrays.stream(cur.getNbt()
+                    List<Integer> mapIds = Arrays.stream(cur.get(DataComponentTypes.CUSTOM_DATA).copyNbt()
                             .getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());
                     if (mapIds.size() > 0) {
                         mapIds.remove(mapIds.size() - 1);
-                        cur.getNbt().putIntArray(MapAtlasItem.MAP_LIST_NBT, mapIds);
+                        cur.apply(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT, comp -> comp.apply(currentNbt -> {
+                            currentNbt.putIntArray(MapAtlasItem.MAP_LIST_NBT, mapIds);
+                        }));
                         didRemoveFilled = true;
                     }
 
@@ -91,8 +95,10 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
                     if (MapAtlasesMod.CONFIG != null) {
                         multiplier = MapAtlasesMod.CONFIG.mapEntryValueMultiplier;
                     }
-                    int amountToSet = Math.max(cur.getNbt().getInt(MapAtlasItem.EMPTY_MAP_NBT) - multiplier, 0);
-                    cur.getNbt().putInt(MapAtlasItem.EMPTY_MAP_NBT, amountToSet);
+                    int amountToSet = Math.max(cur.get(DataComponentTypes.CUSTOM_DATA).copyNbt().getInt(MapAtlasItem.EMPTY_MAP_NBT) - multiplier, 0);
+                    cur.apply(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT, comp -> comp.apply(currentNbt -> {
+                        currentNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, amountToSet);
+                    }));
                 }
             }
             list.add(cur);

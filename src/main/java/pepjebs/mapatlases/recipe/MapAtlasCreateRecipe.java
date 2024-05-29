@@ -1,5 +1,7 @@
 package pepjebs.mapatlases.recipe;
 
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
@@ -10,8 +12,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
@@ -56,28 +58,25 @@ public class MapAtlasCreateRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registryManager) {
+    public ItemStack craft(RecipeInputInventory inv, RegistryWrapper.WrapperLookup lookup) {
         ItemStack mapItemStack = null;
         for(int i = 0; i < inv.size(); i++) {
             if (inv.getStack(i).isOf(Items.FILLED_MAP)) {
                 mapItemStack = inv.getStack(i);
             }
         }
-        if (mapItemStack == null || world == null || mapItemStack.getNbt() == null) {
+        if (mapItemStack == null || world == null || mapItemStack.get(DataComponentTypes.MAP_ID) == null) {
             return ItemStack.EMPTY;
         }
-        MapState mapState = FilledMapItem.getMapState(mapItemStack.getNbt().getInt("map"), world);
+        MapState mapState = FilledMapItem.getMapState(mapItemStack.get(DataComponentTypes.MAP_ID), world);
         if (mapState == null) return ItemStack.EMPTY;
         NbtCompound compoundTag = new NbtCompound();
-        Integer mapId = FilledMapItem.getMapId(mapItemStack);
-        if (mapId == null) {
-            MapAtlasesMod.LOGGER.warn("MapAtlasCreateRecipe found null Map ID from Filled Map");
-            compoundTag.putIntArray(MapAtlasItem.MAP_LIST_NBT, new int[]{});
-        }
-        else
-            compoundTag.putIntArray(MapAtlasItem.MAP_LIST_NBT, new int[]{mapId});
+        Integer mapId = mapItemStack.get(DataComponentTypes.MAP_ID).id();
+        
+        compoundTag.putIntArray(MapAtlasItem.MAP_LIST_NBT, new int[]{mapId});
         ItemStack atlasItemStack = new ItemStack(MapAtlasesMod.MAP_ATLAS);
-        atlasItemStack.setNbt(compoundTag);
+        NbtComponent.set(DataComponentTypes.CUSTOM_DATA, atlasItemStack, compoundTag);
+
         return atlasItemStack;
     }
 

@@ -56,7 +56,8 @@ public class MapAtlasesAccessUtils {
                     + FabricLoader.getInstance().getEnvironmentType());
             return 0;
         }
-        return Integer.parseInt(id.substring(4));
+        MapAtlasesMod.LOGGER.info(id);
+        return id.contains("map_") ? Integer.parseInt(id.substring(4)) : Integer.parseInt(id);
     }
 
     public static MapIdComponent getMapIdComponentFromString(String id) {
@@ -77,7 +78,7 @@ public class MapAtlasesAccessUtils {
             if (state != null) {
                 ItemStack map = createMapItemStackFromId(mapId);
 
-                mapStates.put(map.get(DataComponentTypes.CUSTOM_NAME).getString(), state);
+                mapStates.put(map.getName().getString(), state);
             }
         }
         return mapStates;

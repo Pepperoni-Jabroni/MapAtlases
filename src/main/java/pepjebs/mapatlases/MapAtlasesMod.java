@@ -4,6 +4,7 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
@@ -25,7 +26,10 @@ import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesCutExistingRecipe;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenData;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
+import pepjebs.mapatlases.networking.MapAtlasesActiveStateChangePacket;
+import pepjebs.mapatlases.networking.MapAtlasesInitAtlasPacket;
 import pepjebs.mapatlases.networking.MapAtlasesOpenGUIPacket;
+import pepjebs.mapatlases.networking.MapAtlasesSyncPacket;
 
 public class MapAtlasesMod implements ModInitializer {
 
@@ -84,6 +88,11 @@ public class MapAtlasesMod implements ModInitializer {
 
         // Register events/callbacks
         ServerPlayConnectionEvents.JOIN.register(MapAtlasesServerLifecycleEvents::mapAtlasPlayerJoin);
+        PayloadTypeRegistry.playS2C().register(MapAtlasesInitAtlasPacket.PACKET_ID, MapAtlasesInitAtlasPacket.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(MapAtlasesSyncPacket.PACKET_ID, MapAtlasesSyncPacket.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(MapAtlasesActiveStateChangePacket.PACKET_ID, MapAtlasesActiveStateChangePacket.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(MapAtlasesOpenGUIPacket.PACKET_ID, MapAtlasesOpenGUIPacket.PACKET_CODEC);
+        
         ServerPlayNetworking.registerGlobalReceiver(MapAtlasesOpenGUIPacket.PACKET_ID, 
         MapAtlasesServerLifecycleEvents::openGuiEvent);
 

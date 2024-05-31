@@ -31,7 +31,7 @@ public class MapAtlasesAccessUtils {
     }
 
     public static MapState getMapStateByIndexFromAtlas(World world, ItemStack atlas, int i) {
-        if (atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt() == null) return null;
+        if (atlas.get(DataComponentTypes.CUSTOM_DATA) == null || atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt() == null) return null;
         int[] mapIds = Arrays.stream(atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt().getIntArray(MapAtlasItem.MAP_LIST_NBT)).toArray();
         if (i < 0 || i >= mapIds.length) return null;
         ItemStack map = createMapItemStackFromId(mapIds[i]);
@@ -64,7 +64,7 @@ public class MapAtlasesAccessUtils {
     }
 
     public static Map<String, MapState> getAllMapInfoFromAtlas(World world, ItemStack atlas) {
-        if (atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt() == null) return new HashMap<>();
+        if (atlas.get(DataComponentTypes.CUSTOM_DATA) == null || atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt() == null) return new HashMap<>();
         int[] mapIds = Arrays.stream(atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt().getIntArray(MapAtlasItem.MAP_LIST_NBT)).toArray();
         Map<String, MapState> mapStates = new HashMap<>();
         for (int mapId : mapIds) {

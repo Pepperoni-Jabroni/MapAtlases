@@ -54,7 +54,7 @@ public class MapAtlasesCutExistingRecipe extends SpecialCraftingRecipe {
                 }
             }
         }
-        if (atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt() == null) return ItemStack.EMPTY;
+        if (atlas.get(DataComponentTypes.CUSTOM_DATA) == null || atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt() == null) return ItemStack.EMPTY;
         if (MapAtlasesAccessUtils.hasAnyMap(atlas)) {
             List<Integer> mapIds = Arrays.stream(atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt()
                     .getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());

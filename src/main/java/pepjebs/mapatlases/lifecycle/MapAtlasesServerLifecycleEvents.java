@@ -209,7 +209,7 @@ public class MapAtlasesServerLifecycleEvents {
             int destZ
     ) {
         List<Integer> mapIds = new ArrayList<>();
-        NbtCompound nbt = atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+        NbtCompound nbt = atlas.get(DataComponentTypes.CUSTOM_DATA) == null ? null : atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
         if (nbt != null) {
             mapIds = Arrays.stream(
                     nbt.getIntArray(MapAtlasItem.MAP_LIST_NBT)).boxed().collect(Collectors.toList());
@@ -231,7 +231,7 @@ public class MapAtlasesServerLifecycleEvents {
 
                 // Make the new map
                 if (!player.isCreative() && !bypassEmptyMaps) {
-                    NbtCompound nbt2 = atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                    NbtCompound nbt2 = atlas.get(DataComponentTypes.CUSTOM_DATA) == null ? null : atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
                     nbt2.putInt(MapAtlasItem.EMPTY_MAP_NBT, nbt2.getInt(MapAtlasItem.EMPTY_MAP_NBT) - 1);
                     NbtComponent.set(DataComponentTypes.CUSTOM_DATA, atlas, nbt2);
                 }
@@ -243,7 +243,7 @@ public class MapAtlasesServerLifecycleEvents {
                         true,
                         false);
                 mapIds.add(newMap.get(DataComponentTypes.MAP_ID).id());
-                NbtCompound nbt3 = atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+                NbtCompound nbt3 = atlas.get(DataComponentTypes.CUSTOM_DATA) == null ? null : atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
                 nbt3.putIntArray(MapAtlasItem.MAP_LIST_NBT, mapIds);
                 NbtComponent.set(DataComponentTypes.CUSTOM_DATA, atlas, nbt3);
 

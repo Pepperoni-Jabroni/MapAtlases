@@ -90,7 +90,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         // Set NBT Data
         int initialEmptyMapCount = (int)itemStacks.stream().filter(i -> i != null && (i.isOf(Items.MAP) || i.isOf(Items.PAPER))).count();
         int emptyMapCount = MapAtlasesMod.CONFIG == null ? initialEmptyMapCount : initialEmptyMapCount * MapAtlasesMod.CONFIG.mapEntryValueMultiplier;
-        NbtCompound compoundTag = atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+        NbtCompound compoundTag = atlas.get(DataComponentTypes.CUSTOM_DATA) == null ? null : atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
         Set<Integer> existingMaps = new HashSet<>(Ints.asList(compoundTag.getIntArray(MapAtlasItem.MAP_LIST_NBT)));
         existingMaps.addAll(mapIds);
         atlas.apply(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT, comp -> comp.apply(currentNbt -> {

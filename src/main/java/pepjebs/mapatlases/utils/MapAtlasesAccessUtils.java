@@ -169,12 +169,12 @@ public class MapAtlasesAccessUtils {
     }
 
     public static int getEmptyMapCountFromItemStack(ItemStack atlas) {
-        NbtCompound tag = atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+        NbtCompound tag = atlas.get(DataComponentTypes.CUSTOM_DATA) == null ? null : atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
         return tag != null && tag.contains(MapAtlasItem.EMPTY_MAP_NBT) ? tag.getInt(MapAtlasItem.EMPTY_MAP_NBT) : 0;
     }
 
     public static int[] getMapIdsFromItemStack(ItemStack atlas) {
-        NbtCompound tag = atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+        NbtCompound tag = atlas.get(DataComponentTypes.CUSTOM_DATA) == null ? null : atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
         return tag != null && tag.contains(MapAtlasItem.MAP_LIST_NBT)
                 ? tag.getIntArray(MapAtlasItem.MAP_LIST_NBT)
                 : new int[]{};

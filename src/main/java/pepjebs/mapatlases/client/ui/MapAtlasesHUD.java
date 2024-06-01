@@ -9,7 +9,8 @@ import net.minecraft.client.render.MapRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.map.MapState;
 import net.minecraft.registry.RegistryKey;
@@ -61,8 +62,8 @@ public class MapAtlasesHUD {
         // Check the client has an active map id
         if (MapAtlasesClient.currentMapStateId == null) return false;
         // Check the active map id is in the active atlas
-        return atlas.getNbt() != null && atlas.getNbt().contains(MapAtlasItem.MAP_LIST_NBT) &&
-                Arrays.stream(atlas.getNbt().getIntArray(MapAtlasItem.MAP_LIST_NBT))
+        return atlas.get(DataComponentTypes.CUSTOM_DATA) != null && atlas.get(DataComponentTypes.CUSTOM_DATA).contains(MapAtlasItem.MAP_LIST_NBT) &&
+                Arrays.stream(atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt().getIntArray(MapAtlasItem.MAP_LIST_NBT))
                         .anyMatch(i ->
                                 i == MapAtlasesAccessUtils.getMapIntFromString(MapAtlasesClient.currentMapStateId));
     }
@@ -74,7 +75,7 @@ public class MapAtlasesHUD {
             return;
         }
         String curMapId = MapAtlasesClient.currentMapStateId;
-        MapState state = client.world.getMapState(MapAtlasesClient.currentMapStateId);
+        MapState state = client.world.getMapState(new MapIdComponent(Integer.valueOf(MapAtlasesClient.currentMapStateId)));
         if (state == null) return;
         // Update client current map id
         if (currentMapId == null || curMapId.compareTo(currentMapId) != 0) {
@@ -108,9 +109,9 @@ public class MapAtlasesHUD {
         }
         if (anchorLocation.contentEquals("UpperRight")) {
             boolean hasBeneficial =
-                    client.player.getStatusEffects().stream().anyMatch(p -> p.getEffectType().isBeneficial());
+                    client.player.getStatusEffects().stream().anyMatch(p -> p.getEffectType().value().isBeneficial());
             boolean hasNegative =
-                    client.player.getStatusEffects().stream().anyMatch(p -> !p.getEffectType().isBeneficial());
+                    client.player.getStatusEffects().stream().anyMatch(p -> !p.getEffectType().value().isBeneficial());
             int offsetForEffects = 26;
 
             if (MapAtlasesMod.CONFIG != null) {
@@ -134,7 +135,7 @@ public class MapAtlasesHUD {
         mapRenderer.draw(
                 matrices,
                 vcp,
-                MapAtlasesAccessUtils.getMapIntFromString(curMapId),
+                new MapIdComponent(MapAtlasesAccessUtils.getMapIntFromString(curMapId)),
                 state,
                 false,
                 Integer.parseInt("F000F0", 16)

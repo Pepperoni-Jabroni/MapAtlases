@@ -4,11 +4,9 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import pepjebs.mapatlases.MapAtlasesMod;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,18 +18,12 @@ public class MapAtlasesAtlasOverviewScreenHandler extends ScreenHandler {
     public int atlasScale = 128;
     public Map<Integer, Pair<String,List<Integer>>> idsToCenters = new HashMap<>();
 
-    public MapAtlasesAtlasOverviewScreenHandler(int syncId, PlayerInventory _playerInventory, PacketByteBuf buf) {
+    public MapAtlasesAtlasOverviewScreenHandler(int syncId, PlayerInventory _playerInventory, MapAtlasesAtlasOverviewScreenData data) {
         super(MapAtlasesMod.ATLAS_OVERVIEW_HANDLER, syncId);
-        atlas = buf.readItemStack();
-        centerMapId = buf.readString();
-        atlasScale = buf.readInt();
-        int numToRead = buf.readInt();
-        for (int i = 0; i < numToRead; i++) {
-            int id = buf.readInt();
-            var dim = buf.readString();
-            var centers = Arrays.asList(buf.readInt(), buf.readInt());
-            idsToCenters.put(id, new Pair<>(dim, centers));
-        }
+        atlas = data.atlas();
+        centerMapId = data.centerMapId();
+        atlasScale = data.atlasScale();
+        idsToCenters = data.idsToCenters();
     }
 
     public MapAtlasesAtlasOverviewScreenHandler(int syncId, PlayerInventory _playerInventory,

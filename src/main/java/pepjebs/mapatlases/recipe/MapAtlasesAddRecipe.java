@@ -1,7 +1,9 @@
 package pepjebs.mapatlases.recipe;
 
 import com.google.common.primitives.Ints;
-import net.minecraft.inventory.CraftingInventory;
+
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.inventory.RecipeInputInventory;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.item.Item;
@@ -12,8 +14,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.recipe.book.CraftingRecipeCategory;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.World;
 import pepjebs.mapatlases.MapAtlasesMod;
 import pepjebs.mapatlases.item.MapAtlasItem;
@@ -76,7 +77,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
     }
 
     @Override
-    public ItemStack craft(RecipeInputInventory inv, DynamicRegistryManager registryManager) {
+    public ItemStack craft(RecipeInputInventory inv, RegistryWrapper.WrapperLookup lookup) {
         if (world == null) return ItemStack.EMPTY;
         List<ItemStack> itemStacks = MapAtlasesAccessUtils.getItemStacksFromGrid(inv)
                 .stream()
@@ -87,18 +88,16 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
         // Get the Map Ids in the Grid
         Set<Integer> mapIds = getMapIdsFromItemStacks(itemStacks);
         // Set NBT Data
-        int emptyMapCount = (int)itemStacks.stream()
-                .filter(i -> i != null && (i.isOf(Items.MAP) || i.isOf(Items.PAPER))).count();
-        if (MapAtlasesMod.CONFIG != null) {
-            emptyMapCount *= MapAtlasesMod.CONFIG.mapEntryValueMultiplier;
-        }
-        NbtCompound compoundTag = atlas.getOrCreateNbt();
+        int initialEmptyMapCount = (int)itemStacks.stream().filter(i -> i != null && (i.isOf(Items.MAP) || i.isOf(Items.PAPER))).count();
+        int emptyMapCount = MapAtlasesMod.CONFIG == null ? initialEmptyMapCount : initialEmptyMapCount * MapAtlasesMod.CONFIG.mapEntryValueMultiplier;
+        NbtCompound compoundTag = atlas.get(DataComponentTypes.CUSTOM_DATA) == null ? null : atlas.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
         Set<Integer> existingMaps = new HashSet<>(Ints.asList(compoundTag.getIntArray(MapAtlasItem.MAP_LIST_NBT)));
         existingMaps.addAll(mapIds);
-        compoundTag.putIntArray(
-                MapAtlasItem.MAP_LIST_NBT, existingMaps.stream().filter(Objects::nonNull).mapToInt(i->i).toArray());
-        compoundTag.putInt(MapAtlasItem.EMPTY_MAP_NBT, emptyMapCount + compoundTag.getInt(MapAtlasItem.EMPTY_MAP_NBT));
-        atlas.setNbt(compoundTag);
+        atlas.apply(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT, comp -> comp.apply(currentNbt -> {
+                        currentNbt.putIntArray(
+                            MapAtlasItem.MAP_LIST_NBT, existingMaps.stream().filter(Objects::nonNull).mapToInt(i->i).toArray());
+                        currentNbt.putInt(MapAtlasItem.EMPTY_MAP_NBT, emptyMapCount + compoundTag.getInt(MapAtlasItem.EMPTY_MAP_NBT));
+                    }));
         return atlas;
     }
 
@@ -134,7 +133,7 @@ public class MapAtlasesAddRecipe extends SpecialCraftingRecipe {
     }
 
     private Set<Integer> getMapIdsFromItemStacks(List<ItemStack> itemStacks) {
-        return itemStacks.stream().map(FilledMapItem::getMapId).collect(Collectors.toSet());
+        return itemStacks.stream().map(stack -> { return stack.get(DataComponentTypes.MAP_ID).id();}).collect(Collectors.toSet());
     }
 
     private boolean isListOnlyIngredients(List<ItemStack> itemStacks, List<Item> items) {

@@ -11,7 +11,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -57,12 +56,11 @@ public class LecternBlockMixin extends Block {
     }
 
     @Inject(
-            method = "onUse(Lnet/minecraft/block/BlockState;Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)Lnet/minecraft/util/ActionResult;",
+            method = "onUse",
             at = @At(value = "INVOKE"),
             cancellable = true
     )
-    public void injectAtlasRemoval(BlockState state, World world, BlockPos pos, PlayerEntity player,
-                                   Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> ci) {
+    public void injectAtlasRemoval(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit, CallbackInfoReturnable<ActionResult> ci) {
         if (state.contains(MapAtlasItem.HAS_ATLAS) && state.get(MapAtlasItem.HAS_ATLAS) && player.getPose()
                 == EntityPose.CROUCHING) {
             LecternBlockEntity lbe = (LecternBlockEntity) world.getBlockEntity(pos);

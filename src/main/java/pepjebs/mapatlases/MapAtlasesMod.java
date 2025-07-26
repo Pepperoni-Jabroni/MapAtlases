@@ -4,6 +4,7 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
@@ -23,8 +24,12 @@ import pepjebs.mapatlases.lifecycle.MapAtlasesServerLifecycleEvents;
 import pepjebs.mapatlases.recipe.MapAtlasCreateRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesAddRecipe;
 import pepjebs.mapatlases.recipe.MapAtlasesCutExistingRecipe;
+import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenData;
 import pepjebs.mapatlases.screen.MapAtlasesAtlasOverviewScreenHandler;
-import pepjebs.mapatlases.networking.MapAtlasesOpenGUIC2SPacket;
+import pepjebs.mapatlases.networking.MapAtlasesActiveStateChangePacket;
+import pepjebs.mapatlases.networking.MapAtlasesInitAtlasPacket;
+import pepjebs.mapatlases.networking.MapAtlasesOpenGUIPacket;
+import pepjebs.mapatlases.networking.MapAtlasesSyncPacket;
 
 public class MapAtlasesMod implements ModInitializer {
 
@@ -65,11 +70,9 @@ public class MapAtlasesMod implements ModInitializer {
                 new Identifier(MOD_ID, "cutting_atlas"), new SpecialRecipeSerializer<>(MapAtlasesCutExistingRecipe::new));
 
         // Register screen
-        ATLAS_OVERVIEW_HANDLER = Registry.register(
-                Registries.SCREEN_HANDLER,
-                new Identifier(MOD_ID, "atlas_overview"),
-                new ExtendedScreenHandlerType<>(MapAtlasesAtlasOverviewScreenHandler::new)
-        );
+        ATLAS_OVERVIEW_HANDLER = new ExtendedScreenHandlerType<MapAtlasesAtlasOverviewScreenHandler, MapAtlasesAtlasOverviewScreenData>(MapAtlasesAtlasOverviewScreenHandler::new, MapAtlasesAtlasOverviewScreenData.PACKET_CODEC);
+
+        Registry.register(Registries.SCREEN_HANDLER, new Identifier(MOD_ID, "atlas_overview"), ATLAS_OVERVIEW_HANDLER);
 
         // Register sounds
         Registry.register(Registries.SOUND_EVENT, ATLAS_OPEN_SOUND_ID, ATLAS_OPEN_SOUND_EVENT);
@@ -85,8 +88,14 @@ public class MapAtlasesMod implements ModInitializer {
 
         // Register events/callbacks
         ServerPlayConnectionEvents.JOIN.register(MapAtlasesServerLifecycleEvents::mapAtlasPlayerJoin);
-        ServerPlayNetworking.registerGlobalReceiver(MapAtlasesOpenGUIC2SPacket.MAP_ATLAS_OPEN_GUI,
-                MapAtlasesServerLifecycleEvents::openGuiEvent);
+        PayloadTypeRegistry.playS2C().register(MapAtlasesInitAtlasPacket.PACKET_ID, MapAtlasesInitAtlasPacket.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(MapAtlasesSyncPacket.PACKET_ID, MapAtlasesSyncPacket.PACKET_CODEC);
+        PayloadTypeRegistry.playS2C().register(MapAtlasesActiveStateChangePacket.PACKET_ID, MapAtlasesActiveStateChangePacket.PACKET_CODEC);
+        PayloadTypeRegistry.playC2S().register(MapAtlasesOpenGUIPacket.PACKET_ID, MapAtlasesOpenGUIPacket.PACKET_CODEC);
+        
+        ServerPlayNetworking.registerGlobalReceiver(MapAtlasesOpenGUIPacket.PACKET_ID, 
+        MapAtlasesServerLifecycleEvents::openGuiEvent);
+
         ServerTickEvents.START_SERVER_TICK.register(MapAtlasesServerLifecycleEvents::mapAtlasServerTick);
     }
 }
